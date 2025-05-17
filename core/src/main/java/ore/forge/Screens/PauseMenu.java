@@ -15,9 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import ore.forge.ButtonHelper;
+import ore.forge.ItemManager;
 import ore.forge.OreForge;
 import ore.forge.Player.Player;
-import ore.forge.ItemManager;
 
 
 public class PauseMenu extends CustomScreen {
@@ -45,7 +45,7 @@ public class PauseMenu extends CustomScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 ButtonHelper.getButtonClickSound().play();
-                game.setScreen(game.gameWorld);
+                game.setScreen(game.gameplayScreen);
 //                dispose();
             }
         });
@@ -105,7 +105,7 @@ public class PauseMenu extends CustomScreen {
         //Kinda buggy
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             ButtonHelper.getButtonClickSound().play();
-            game.setScreen(game.gameWorld);
+            game.setScreen(game.gameplayScreen);
         }
 
         stage.act(delta);

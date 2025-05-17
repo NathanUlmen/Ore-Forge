@@ -25,7 +25,7 @@ public class MainMenu extends CustomScreen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 ButtonHelper.getButtonClickSound().play();
-                game.setScreen(game.gameWorld);
+                game.setScreen(game.gameplayScreen);
             }
         });
 

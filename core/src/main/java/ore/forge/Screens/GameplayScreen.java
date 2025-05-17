@@ -10,7 +10,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import ore.forge.*;
-import ore.forge.Input.*;
+import ore.forge.Input.Building;
+import ore.forge.Input.InputHandler;
+import ore.forge.Input.InputManager;
+import ore.forge.Input.OreObserver;
 import ore.forge.Items.Conveyor;
 import ore.forge.Items.Dropper;
 import ore.forge.Items.Item;
@@ -21,7 +24,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 
-public class GameWorld extends CustomScreen {
+public class GameplayScreen extends CustomScreen {
     private ArrayList<Long> frameTimes;
     private final SpriteBatch batch;
     private final OreRealm oreRealm = OreRealm.getSingleton();
@@ -38,7 +41,7 @@ public class GameWorld extends CustomScreen {
 
     private InputManager inputManager;
 
-    public GameWorld(OreForge game, ItemManager itemManager, QuestManager questManager) {
+    public GameplayScreen(OreForge game, ItemManager itemManager, QuestManager questManager) {
         super(game, itemManager);
 //        frameTimes = new ArrayList<>((int) 2e8);
 //            frostbite.load(Gdx.files.internal("Effects/Frostbite.p"),Gdx.files.internal("Effects"));

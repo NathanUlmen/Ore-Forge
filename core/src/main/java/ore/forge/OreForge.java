@@ -12,7 +12,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import ore.forge.Player.Player;
 import ore.forge.QuestComponents.QuestManager;
-import ore.forge.Screens.*;
+import ore.forge.Screens.GameplayScreen;
+import ore.forge.Screens.MainMenu;
+import ore.forge.Screens.PauseMenu;
+import ore.forge.Screens.SettingsMenu;
 
 /**@author Nathan Ulmen*/
 public class OreForge extends Game {
@@ -22,7 +25,7 @@ public class OreForge extends Game {
 
 
 	public PauseMenu pauseMenu;
-	public GameWorld gameWorld;
+	public GameplayScreen gameplayScreen;
 	public SettingsMenu settingsMenu;
 
 	private SpriteBatch spriteBatch;
@@ -57,7 +60,7 @@ public class OreForge extends Game {
 //        ItemMap.getSingleton().loadState(resourceManager);
 		mainMenuScreen = new MainMenu(this, itemManager);
 		settingsMenu = new SettingsMenu(this, itemManager);
-		gameWorld = new GameWorld(this, itemManager, questManager);
+		gameplayScreen = new GameplayScreen(this, itemManager, questManager);
 		pauseMenu = new PauseMenu(this, itemManager);
 
 

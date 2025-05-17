@@ -27,7 +27,7 @@ public abstract class Item {
     protected Block[][] blockConfig;
     protected final int[][] numberConfig;
     //Example config
-//    { 0, 1, 1, 0},
+//    { 0, 1, 1, 0},N
 //    { 0, 2, 2, 0},
 //    { 0, 1, 1, 0},
     protected float direction;
