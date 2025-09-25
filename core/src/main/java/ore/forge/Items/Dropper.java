@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Expressions.Function;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operators.NumericOperator;
+import ore.forge.GameWorld;
 import ore.forge.Items.Blocks.Block;
 import ore.forge.Items.Blocks.DropperBlock;
 import ore.forge.ReflectionLoader;
@@ -45,9 +46,8 @@ public class Dropper extends Item {
 //        setTexture(new Texture(Gdx.files.internal("Dropper.png")));
     }
 
-    public Dropper(JsonValue jsonValue) {
-
-        super(jsonValue);
+    public Dropper(JsonValue jsonValue, GameWorld world) {
+        super(jsonValue, world);
         this.oreName = jsonValue.getString("oreName");
         this.oreValue = jsonValue.getDouble("oreValue");
         this.oreTemp = jsonValue.getInt("oreTemp");

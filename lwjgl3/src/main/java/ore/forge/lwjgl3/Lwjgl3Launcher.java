@@ -3,7 +3,6 @@ package ore.forge.lwjgl3;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.badlogic.gdx.math.Vector2;
 import ore.forge.OreForge;
 
 /** Launches the desktop (LWJGL3) application. */
@@ -14,6 +13,7 @@ public class Lwjgl3Launcher {
     }
 
     private static void createApplication() {
+//        new Lwjgl3Application(new OreForge(), getDefaultConfiguration());
         new Lwjgl3Application(new OreForge(), getDefaultConfiguration());
     }
 

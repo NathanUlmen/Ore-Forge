@@ -3,6 +3,7 @@ package ore.forge.Items;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.GameWorld;
 import ore.forge.Items.Blocks.Block;
 import ore.forge.Items.Blocks.ConveyorBlock;
 
@@ -19,8 +20,8 @@ public class Conveyor extends Item {
     }
 
     //Used to create from json data.
-    public Conveyor(JsonValue jsonValue) {
-        super(jsonValue);
+    public Conveyor(JsonValue jsonValue, GameWorld world) {
+        super(jsonValue, world);
         this.conveyorSpeed = jsonValue.getFloat("conveyorSpeed");
         initBlockConfiguration(this.numberConfig);
         setTexture(new Texture(Gdx.files.internal("BasicConveyor.png")));

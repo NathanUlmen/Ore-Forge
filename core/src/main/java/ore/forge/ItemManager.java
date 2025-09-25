@@ -21,7 +21,7 @@ public class ItemManager {
     private final HashMap<String, Item> allItems;
     private int loadCount;
 
-    public ItemManager() {
+    public ItemManager(GameWorld gameWorld) {
         Gdx.app.log("Resource Manager", "Initializing Resource Manager...");
         loadCount = 0;
         allItems = new HashMap<>();
@@ -31,10 +31,10 @@ public class ItemManager {
 //        mongoConnect();
 
         stopwatch.restart();
-        loadItems(Constants.CONVEYORS_FP);
-        loadItems(Constants.DROPPERS_FP);
-        loadItems(Constants.UPGRADER_FP);
-        loadItems(Constants.FURNACE_FP);
+        loadItems(Constants.CONVEYORS_FP, gameWorld);
+        loadItems(Constants.DROPPERS_FP, gameWorld);
+        loadItems(Constants.UPGRADER_FP, gameWorld);
+        loadItems(Constants.FURNACE_FP, gameWorld);
         stopwatch.stop();
         Gdx.app.log("Resource Manager", Color.highlightString("Loaded: " + loadCount + " items in " + stopwatch.getElapsedTime() + " ms.", Color.GREEN));
     }
@@ -54,29 +54,29 @@ public class ItemManager {
         throw new IllegalArgumentException("Item with ID: " + id + " not found.");
     }
 
-    private void loadItems(String fileToParse) {
+    private void loadItems(String fileToParse, GameWorld gameWorld) {
         JsonReader jsonReader = new JsonReader();
         JsonValue fileContents = jsonReader.parse(Gdx.files.local(fileToParse));
         fileContents.child().remove();//Remove version field from file.
         switch (fileToParse) {
             case Constants.DROPPERS_FP:
                 for (JsonValue jsonValue : fileContents) {
-                    addToAllItems(new Dropper(jsonValue), Color.PINK);
+                    addToAllItems(new Dropper(jsonValue, gameWorld), Color.PINK);
                 }
                 break;
             case Constants.FURNACE_FP:
                 for (JsonValue jsonValue : fileContents) {
-                    addToAllItems(new Furnace(jsonValue), Color.CYAN);
+                    addToAllItems(new Furnace(jsonValue, gameWorld), Color.CYAN);
                 }
                 break;
             case Constants.UPGRADER_FP:
                 for (JsonValue jsonValue : fileContents) {
-                    addToAllItems(new Upgrader(jsonValue), Color.BLUE);
+                    addToAllItems(new Upgrader(jsonValue, gameWorld), Color.BLUE);
                 }
                 break;
             case Constants.CONVEYORS_FP:
                 for (JsonValue jsonValue : fileContents) {
-                    addToAllItems(new Conveyor(jsonValue), Color.PURPLE);
+                    addToAllItems(new Conveyor(jsonValue, gameWorld), Color.PURPLE);
                 }
                 break;
         }

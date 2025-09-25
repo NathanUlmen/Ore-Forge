@@ -3,6 +3,7 @@ package ore.forge.Items;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.GameWorld;
 import ore.forge.Items.Blocks.Block;
 import ore.forge.Items.Blocks.FurnaceBlock;
 import ore.forge.ReflectionLoader;
@@ -26,8 +27,8 @@ public class Furnace extends Item {
 //        setTexture(new Texture(Gdx.files.internal("Furnace.png")));
     }
 
-    public Furnace(JsonValue jsonValue) {
-        super(jsonValue);
+    public Furnace(JsonValue jsonValue, GameWorld world) {
+        super(jsonValue, world);
         this.rewardThreshold = jsonValue.getInt("rewardThreshold");
         this.specialPointReward = jsonValue.getInt("specialPointReward");
         this.upgrade = ReflectionLoader.load(jsonValue.get("upgrade"), "upgradeName");

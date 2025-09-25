@@ -2,13 +2,13 @@ package ore.forge.Items;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Color;
-import ore.forge.Currency;
-import ore.forge.Direction;
-import ore.forge.ItemMap;
+import ore.forge.*;
 import ore.forge.Items.Blocks.Block;
 
 import java.math.BigDecimal;
@@ -24,10 +24,11 @@ public abstract class Item {
     public enum UnlockMethod {SPECIAL_POINTS, PRESTIGE_LEVEL, QUEST, NONE}
 
     protected static final ItemMap ITEM_MAP = ItemMap.getSingleton();
+    protected final GameWorld gameWorld;
     protected Block[][] blockConfig;
     protected final int[][] numberConfig;
     //Example config
-//    { 0, 1, 1, 0},N
+//    { 0, 1, 1, 0},
 //    { 0, 2, 2, 0},
 //    { 0, 1, 1, 0},
     protected float direction;
@@ -37,6 +38,8 @@ public abstract class Item {
     private Texture itemTexture;
     protected final Vector2 vector2;
     protected String name, description, id;
+
+//    protected final AcquisitionInfo acquisitionInfo;
 
     protected boolean isPrestigeProof;
     protected float rarity; //Rarity of item. Only matters if item is prestige item.
@@ -51,6 +54,7 @@ public abstract class Item {
 
 
     public Item(String name, String description, int[][] blockLayout, Tier TIER, double itemValue, float rarity) {
+        gameWorld = null;
         this.name = name;
         this.description = description;
         vector2 = new Vector2();
@@ -62,7 +66,8 @@ public abstract class Item {
         this.rarity = BigDecimal.valueOf(rarity).setScale(1, RoundingMode.HALF_UP).floatValue();
     }
 
-    public Item(JsonValue jsonValue) {
+    public Item(JsonValue jsonValue, GameWorld gameWorld) {
+        this.gameWorld = gameWorld;
         //TODO: Handle errors when creating from Json.
         this.name = jsonValue.getString("name");
         this.id = jsonValue.getString("id");
@@ -73,6 +78,9 @@ public abstract class Item {
         this.itemValue = jsonValue.getDouble("itemValue");
         this.vector2 = new Vector2();
         this.direction = Direction.NORTH.getAngle();
+
+//        var temp = jsonValue.get("acquisitionInfo");
+//        acquisitionInfo = new AcquisitionInfo(jsonValue, jsonValue.get)
 
         //Tier could be used to identify how to load Acquisition info.
 
@@ -150,7 +158,19 @@ public abstract class Item {
 
     }
 
+    private Body createBody(JsonValue bodyFixtures) {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.angle = MathUtils.degreesToRadians * 90;
+
+
+        Body body = gameWorld.physicsWorld().createBody(bodyDef);
+
+        return null;
+    }
+
     public Item(Item itemToClone) {
+        this.gameWorld = itemToClone.gameWorld;
         vector2 = new Vector2();
         name = itemToClone.name;
         id = itemToClone.id;

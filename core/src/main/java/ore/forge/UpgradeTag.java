@@ -33,8 +33,12 @@ public class UpgradeTag {
         currentUpgrades = 0;
     }
 
-    public Boolean isResetter() {
+    public boolean isResetter() {
         return isResetter;
+    }
+
+    public boolean atUpgradeLimit() {
+        return currentUpgrades >= maxUpgrades;
     }
 
     public String getID() {
@@ -64,6 +68,16 @@ public class UpgradeTag {
     public String toString() {
         return "Name: " + name + "  Max Upgrades: " + maxUpgrades +
                 "  CurrentUpgrades: " + currentUpgrades;
+    }
+
+    @Override
+    public boolean equals(Object tag) {
+        return tag instanceof UpgradeTag upgTag && this.id.equals(upgTag.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
     }
 
 }

@@ -5,6 +5,7 @@ package ore.forge;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -12,7 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import ore.forge.Player.Player;
 import ore.forge.QuestComponents.QuestManager;
-import ore.forge.Screens.GameplayScreen;
+import ore.forge.Screens.Gameplay;
 import ore.forge.Screens.MainMenu;
 import ore.forge.Screens.PauseMenu;
 import ore.forge.Screens.SettingsMenu;
@@ -25,7 +26,7 @@ public class OreForge extends Game {
 
 
 	public PauseMenu pauseMenu;
-	public GameplayScreen gameplayScreen;
+	public Screen gameplayScreen;
 	public SettingsMenu settingsMenu;
 
 	private SpriteBatch spriteBatch;
@@ -48,7 +49,7 @@ public class OreForge extends Game {
 		*
 		* */
 		spriteBatch = new SpriteBatch();
-        ItemManager itemManager = new ItemManager();
+        ItemManager itemManager = new ItemManager(null);
         var questManager = new QuestManager();
         OreRealm.getSingleton().populate(); //Create/pool all ore.
         Player.getSingleton().loadSaveData();
@@ -58,13 +59,13 @@ public class OreForge extends Game {
         var prestigeManager = new PrestigeManager(itemManager);
 
 //        ItemMap.getSingleton().loadState(resourceManager);
-		mainMenuScreen = new MainMenu(this, itemManager);
-		settingsMenu = new SettingsMenu(this, itemManager);
-		gameplayScreen = new GameplayScreen(this, itemManager, questManager);
-		pauseMenu = new PauseMenu(this, itemManager);
+//		mainMenuScreen = new MainMenu(this, itemManager);
+//		settingsMenu = new SettingsMenu(this, itemManager);
+		gameplayScreen = new Gameplay(this, itemManager, GameWorld.getInstance());
+//		pauseMenu = new PauseMenu(this, itemManager);
 
 
-		setScreen(mainMenuScreen);
+		setScreen(gameplayScreen);
 	}
 
 	public void render() {

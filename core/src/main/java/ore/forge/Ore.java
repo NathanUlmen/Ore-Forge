@@ -1,6 +1,9 @@
 package ore.forge;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
 import ore.forge.Items.Blocks.Worker;
 import ore.forge.Strategies.OreEffects.BundledOreEffect;
@@ -19,6 +22,15 @@ public class Ore {
     //Ore can be classified by name, id, type. Ores can have multiple types.
     protected final static ItemMap itemMap = ItemMap.getSingleton();
     protected final static OreRealm oreRealm = OreRealm.getSingleton();
+    private final static Filter collisionFilter = new Filter();
+
+    static {
+        collisionFilter.categoryBits = CollisionRules.ORE.getBit();
+        collisionFilter.maskBits = CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR);
+    }
+
+
+    private Body body;
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;
     private final ArrayList<OreEffect> effects;
@@ -34,6 +46,8 @@ public class Ore {
     private float deltaTime;
     private boolean isActive;
     private int resetCount;
+
+    private HashMap<UpgradeTag, UpgradeCooldown> cooldownLookup;
 
     public Ore() {
         this.oreValue = 0;
@@ -51,6 +65,7 @@ public class Ore {
         effects = new ArrayList<>();
         removalStack = new Stack<>();
         observerEffects = new ArrayList<>();
+        cooldownLookup = new HashMap<>();
         this.resetCount = 0;
     }
 
@@ -189,6 +204,12 @@ public class Ore {
                 tag.reset();
             }
         }
+
+        for (UpgradeCooldown cooldown : cooldownLookup.values()) {
+            TimerUpdater.unregister(cooldown);
+        }
+        cooldownLookup.clear();
+
         resetCount++;
     }
 
@@ -333,6 +354,31 @@ public class Ore {
 
     public void setResetCount(int resetCount) {
         this.resetCount = resetCount;
+    }
+
+    public boolean isUpgradable(UpgradeTag tag) {
+        var oreTag = getUpgradeTag(tag);
+        return !oreTag.atUpgradeLimit() && !cooldownLookup.containsKey(tag);
+    }
+
+    public void addUpgradeCooldown(UpgradeTag tag, UpgradeCooldown cooldown) {
+        cooldownLookup.put(tag, cooldown);
+    }
+
+    public void removeUpgradeCooldown(UpgradeTag tag) {
+        cooldownLookup.remove(tag);
+    }
+
+    public void setBody(Body body) {
+        this.body = body;
+        body.setUserData(this);
+        for (Fixture fixture : body.getFixtureList()) {
+            fixture.setFilterData(collisionFilter);
+        }
+    }
+
+    public Body getBody() {
+        return body;
     }
 
     public boolean isBurning() {

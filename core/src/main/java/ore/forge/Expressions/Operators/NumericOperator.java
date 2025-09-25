@@ -15,19 +15,6 @@ public enum NumericOperator {
     private final Associativity associativity;
     private final int precedence;
 
-    public static NumericOperator fromSymbol(char operatorSymbol) {
-        return switch (operatorSymbol) {
-            case '+' -> NumericOperator.ADD;
-            case '-' -> NumericOperator.SUBTRACT;
-            case '*' -> NumericOperator.MULTIPLY;
-            case '/' -> NumericOperator.DIVIDE;
-            case '^' -> NumericOperator.EXPONENT;
-            case '=' -> NumericOperator.ASSIGNMENT;
-            case '%' -> NumericOperator.MODULO;
-            default -> throw new IllegalArgumentException("Invalid operator: " + operatorSymbol);
-        };
-    }
-
     public static NumericOperator fromSymbol(String operatorSymbol) {
         return switch (operatorSymbol) {
             case "+" -> NumericOperator.ADD;
@@ -74,7 +61,7 @@ public enum NumericOperator {
             case SUBTRACT -> (x, y) -> x - y;
             case MULTIPLY -> (x, y) -> x * y;
             case DIVIDE -> (x, y) -> y == 0 ? 1 : x / y;
-            case EXPONENT -> (x, y) -> x < 0 && y != Math.floor(y) ? Math.pow(Math.abs(x),y) * -1 : Math.pow(x,y);
+            case EXPONENT -> (x, y) -> x < 0 && y != Math.floor(y) ? Math.pow(Math.abs(x), y) * -1 : Math.pow(x, y);
             case ASSIGNMENT -> (x, y) -> y;
             case MODULO -> (x, y) -> y == 0 ? 1 : x % y;
         };

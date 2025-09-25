@@ -2,7 +2,9 @@ package ore.forge.Items;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.GameWorld;
 import ore.forge.Items.Blocks.Block;
 import ore.forge.Items.Blocks.ConveyorBlock;
 import ore.forge.Items.Blocks.UpgradeBlock;
@@ -14,8 +16,8 @@ import ore.forge.UpgradeTag;
 public class Upgrader extends Item {
 
     private final UpgradeTag upgradeTag;
-
     private final UpgradeStrategy upgrade;
+    private FixtureDef fixtureDef;
 
     private final float conveyorSpeed;
 
@@ -29,8 +31,8 @@ public class Upgrader extends Item {
 //        setTexture(new Texture(Gdx.files.internal("Upgrader.png")));
     }
 
-    public Upgrader(JsonValue jsonValue) {
-        super(jsonValue);
+    public Upgrader(JsonValue jsonValue, GameWorld gameWorld) {
+        super(jsonValue, gameWorld);
         this.conveyorSpeed = jsonValue.getFloat("conveyorSpeed");
         this.upgradeTag = new UpgradeTag(jsonValue.get("upgradeTag"));
         this.upgrade = ReflectionLoader.load(jsonValue.get("upgrade"), "upgradeName");

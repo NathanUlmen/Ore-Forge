@@ -38,11 +38,13 @@ public class GameplayScreen extends CustomScreen {
     private final Texture buildModeTexture = new Texture(Gdx.files.internal("PlayerSelect.png"));
     private final Texture blockTexture = new Texture(Gdx.files.internal("RockTile.png"));
     private final Texture oreTexture = new Texture(Gdx.files.internal("Ruby2.png"));
+    private final GameWorld gameWorld;
 
     private InputManager inputManager;
 
     public GameplayScreen(OreForge game, ItemManager itemManager, QuestManager questManager) {
         super(game, itemManager);
+        gameWorld = GameWorld.getInstance();
 //        frameTimes = new ArrayList<>((int) 2e8);
 //            frostbite.load(Gdx.files.internal("Effects/Frostbite.p"),Gdx.files.internal("Effects"));
 //            frostbite.start();
@@ -100,7 +102,6 @@ public class GameplayScreen extends CustomScreen {
 
         //Draw Held Item.
         drawHeldItem(); // Draw it that we are building with.
-
 
         batch.end();
 
