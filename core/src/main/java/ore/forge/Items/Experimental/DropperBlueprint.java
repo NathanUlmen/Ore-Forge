@@ -16,7 +16,6 @@ public class DropperBlueprint extends ItemBlueprint {
         burstDrop = new BurstDrop(jsonValue.get("burstDrop"));
     }
 
-    @Override
     public Item createItem() {
         return new Dropper();
     }

@@ -67,9 +67,9 @@ public class Gameplay extends CustomScreen {
         Body testFurnace = furnace.spawnItem();
         testFurnace.setTransform(new Vector2(5, 0), 0);
 
-        var dropper = new ItemBlueprint(value.next.next);
-        Body testDropper = dropper.spawnItem();
-        testDropper.setTransform(new Vector2(10, 0), 0);
+//        var dropper = new ItemBlueprint(value.next.next);
+//        Body testDropper = dropper.spawnItem();
+//        testDropper.setTransform(new Vector2(10, 0), 0);
 
 
         conveyor = testItemBlueprint.spawnItem();

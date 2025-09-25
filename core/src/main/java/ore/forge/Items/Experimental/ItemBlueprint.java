@@ -18,7 +18,7 @@ import java.util.HashMap;
  * An Item is a struct of data that encapsulates/holds all data (Physics model, Behaviors, Sounds, Materials, How its acquired, etc...) needed
  * for an Item.
  **/
-public abstract class ItemBlueprint {
+public class ItemBlueprint {
     private final String name, id, description;
     private final BodyDef bodyDef;
     private final ArrayList<CustomFixtureDef> fixtureDefs;
@@ -94,7 +94,6 @@ public abstract class ItemBlueprint {
         return behaviorMap;
     }
 
-    public abstract Item createItem();
 
     //TODO: NEEDS WORK
     public Body spawnItem() {
