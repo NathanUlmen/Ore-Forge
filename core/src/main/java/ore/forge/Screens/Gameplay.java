@@ -17,9 +17,11 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
 import ore.forge.Items.Experimental.ItemBlueprint;
+import ore.forge.Items.Experimental.ItemInstance;
 import ore.forge.Items.Experimental.UpgraderBlueprint;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 
 public class Gameplay extends CustomScreen {
@@ -27,14 +29,16 @@ public class Gameplay extends CustomScreen {
     private final OrthographicCamera camera;
     private final ShapeRenderer shapeRenderer;
     private final ShapeRenderer shapeDrawer;
-    private final Body player, conveyor;
-    private final ItemBlueprint testItemBlueprint;
-    private final Deque<Body> bodyStack;
+    private final Body player;
+    private final ItemBlueprint upgraderBlueprint, furnaceBlueprint;
+    private final ArrayList<ItemInstance> items;
+    private final Deque<ItemInstance> itemInstanceStack;
     private float rotation;
 
     public Gameplay(OreForge game, ItemManager itemManager, GameWorld gameWorld) {
         super(game, itemManager);
         this.gameWorld = gameWorld;
+        items = new ArrayList<>();
 
         // Camera setup
         camera = new OrthographicCamera(16, 9);
@@ -63,22 +67,29 @@ public class Gameplay extends CustomScreen {
         JsonValue value = reader.parse(handle);
         value = value.child;
 
-        testItemBlueprint = new UpgraderBlueprint(value);
 
-        var furnace = new FurnaceBlueprint(value.next);
-        Body testFurnace = furnace.bindBehaviors();
-        testFurnace.setTransform(new Vector2(5, 0), 0);
+        upgraderBlueprint = new UpgraderBlueprint(value);
+
+        furnaceBlueprint = new FurnaceBlueprint(value.next);
+
+
+        ItemInstance upgraderInstance = upgraderBlueprint.createItem();
+        ItemInstance furnaceInstance = furnaceBlueprint.createItem();
+
+
+//        Body testFurnace = furnaceBlueprint.bindBehaviors();
+//        testFurnace.setTransform(new Vector2(5, 0), 0);
 
 //        var dropper = new ItemBlueprint(value.next.next);
 //        Body testDropper = dropper.spawnItem();
 //        testDropper.setTransform(new Vector2(10, 0), 0);
 
 
-        conveyor = testItemBlueprint.bindBehaviors();
-        System.out.println(conveyor);
-        assert conveyor != null;
-        conveyor.setTransform(conveyor.getPosition(), 90 * MathUtils.degreesToRadians);
-        bodyStack = new ArrayDeque<>();
+//        conveyor = upgraderBlueprint.bindBehaviors();
+//        System.out.println(conveyor);
+//        assert conveyor != null;
+//        conveyor.setTransform(conveyor.getPosition(), 90 * MathUtils.degreesToRadians);
+        itemInstanceStack = new ArrayDeque<>();
         rotation = 0;
     }
 
@@ -157,18 +168,20 @@ public class Gameplay extends CustomScreen {
         }
 
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            var temp = testItemBlueprint.bindBehaviors();
+            ItemInstance itemInstance = upgraderBlueprint.createItem();
             float x = Gdx.input.getX();
             float y = Gdx.input.getY();
             Vector3 mouseWorld = camera.unproject(new Vector3(x, y, 0));
             System.out.println(mouseWorld);
-            temp.setTransform(MathUtils.round(mouseWorld.x), MathUtils.round(mouseWorld.y), rotation * MathUtils.degreesToRadians);
-            bodyStack.push(temp);
+            Vector2 transformPosition = new Vector2(MathUtils.round(mouseWorld.x), MathUtils.round(mouseWorld.y));
+            itemInstance.transform(transformPosition, rotation * MathUtils.degreesToRadians);
+            itemInstance.place();
+            itemInstanceStack.push(itemInstance);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
-            var temp = bodyStack.pop();
-            GameWorld.getInstance().physicsWorld().destroyBody(temp);
+            ItemInstance toRemove = itemInstanceStack.pop();
+            toRemove.remove();
         }
 
         player.applyForceToCenter(velocity, true);

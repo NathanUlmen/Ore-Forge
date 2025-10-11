@@ -44,7 +44,7 @@ public class GameplayScreen extends CustomScreen {
 
     public GameplayScreen(OreForge game, ItemManager itemManager, QuestManager questManager) {
         super(game, itemManager);
-        gameWorld = GameWorld.getInstance();
+        gameWorld = GameWorld.instance();
 //        frameTimes = new ArrayList<>((int) 2e8);
 //            frostbite.load(Gdx.files.internal("Effects/Frostbite.p"),Gdx.files.internal("Effects"));
 //            frostbite.start();

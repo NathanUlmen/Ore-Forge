@@ -91,8 +91,8 @@ public abstract class ItemBlueprint {
         return behaviorMap;
     }
 
-    public final Body bindBehaviors() {
-        Body body = GameWorld.getInstance().physicsWorld().createBody(bodyDef);
+    public final ItemInstance createItem() {
+        Body body = GameWorld.instance().physicsWorld().createBody(bodyDef);
         body.setUserData(this);
         for (ExtendedFixtureDef customFixtureDef : fixtureDefs) {
             var fixture = body.createFixture(customFixtureDef);
@@ -105,7 +105,7 @@ public abstract class ItemBlueprint {
             fixture.setSensor(!customFixtureDef.isCollisionEnabled());
             fixture.setFilterData(FILTER);
         }
-        return body;
+        return new ItemInstance(this, body);
     }
 
 

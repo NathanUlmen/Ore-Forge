@@ -20,16 +20,22 @@ public class ItemInstance implements Disposable {
     //TODO: Add body to render list, register all behaviors,
     public void place(Vector2 location, float direction) {
         transform(location, direction);
+        place();
+        //TODO: Add body to "render list"
+    }
+
+    public void place() {
         body.setActive(true);
         //Register behaviors to their respective systems
         for (Fixture fixture : body.getFixtureList()) {
             var userData = fixture.getUserData();
             assert userData instanceof ItemUserData;
             var itemUserData = (ItemUserData) userData;
-            itemUserData.behavior().register();
+            if (itemUserData.behavior() != null) {
+                itemUserData.behavior().register();
+            }
         }
         //TODO: Add body to "render list"
-
     }
 
     //Removes body from gameworld, unregisters behaviors, disposes body.
@@ -47,17 +53,13 @@ public class ItemInstance implements Disposable {
         return body.getPosition();
     }
 
-    public void rotate(float angleDegrees) {
-        body.setTransform(body.getPosition().x, body.getPosition().y, MathUtils.degreesToRadians * angleDegrees);
-    }
-
     public void transform(Vector2 position, float angleDegrees) {
         body.setTransform(position.x, position.y, MathUtils.degreesToRadians * angleDegrees);
     }
 
     @Override
     public void dispose() {
-        GameWorld.getInstance().physicsWorld().destroyBody(body);
+        GameWorld.instance().physicsWorld().destroyBody(body);
     }
 
 }

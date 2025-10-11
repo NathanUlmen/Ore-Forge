@@ -2,7 +2,6 @@ package ore.forge;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import ore.forge.Items.Experimental.ItemBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Strategies.Move;
 
@@ -11,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GameWorld {
-    private static final GameWorld instance = getInstance();
+    private static final GameWorld instance = instance();
     private final World world;
     private final HashMap<Fixture, BodyContactCounter> touchingBodies;
     private final ArrayList<UpdatePair> updateList;
@@ -23,7 +22,7 @@ public class GameWorld {
         updateList = new ArrayList<>();
     }
 
-    public static GameWorld getInstance() {
+    public static GameWorld instance() {
         return instance != null ? instance : new GameWorld();
     }
 

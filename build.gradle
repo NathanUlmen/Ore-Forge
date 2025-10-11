@@ -77,14 +77,14 @@ subprojects {
     implementation 'org.slf4j:slf4j-simple:2.0.7'
     implementation 'org.slf4j:slf4j-api:2.0.7'
 
-    implementation("io.github.ad417:BreakInfinity:0.2.0")
-//    implementation 'org.jbox2d:jbox2d-library:2.2.1.1'
-//    implementation 'org.jbox2d:jbox2d-library:2.2.1.1'
-//    testImplementation 'junit:junit:4.13'
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+    //Font
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+
+    api "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
 
   }
 

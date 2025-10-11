@@ -6,7 +6,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.*;
-import ore.forge.Items.Experimental.ItemBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
@@ -57,7 +56,7 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     @Override
     public void update(float delta) {
         if (dropperStrategy.drop(delta)) {
-            var body = GameWorld.getInstance().physicsWorld().createBody(oreDef);
+            var body = GameWorld.instance().physicsWorld().createBody(oreDef);
             body.createFixture(blueprint.fixtureDef);
             Ore ore = OreRealm.getSingleton().giveOre();
             ore.applyBaseStats(blueprint.oreValue, blueprint.oreTemperature, blueprint.multiOre, blueprint.name, "TESTING", null);
