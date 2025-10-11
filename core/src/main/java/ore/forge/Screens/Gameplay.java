@@ -15,7 +15,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
+import ore.forge.Items.Experimental.FurnaceBlueprint;
 import ore.forge.Items.Experimental.ItemBlueprint;
+import ore.forge.Items.Experimental.UpgraderBlueprint;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -61,10 +63,10 @@ public class Gameplay extends CustomScreen {
         JsonValue value = reader.parse(handle);
         value = value.child;
 
-        testItemBlueprint = new ItemBlueprint(value);
+        testItemBlueprint = new UpgraderBlueprint(value);
 
-        var furnace = new ItemBlueprint(value.next);
-        Body testFurnace = furnace.spawnItem();
+        var furnace = new FurnaceBlueprint(value.next);
+        Body testFurnace = furnace.bindBehaviors();
         testFurnace.setTransform(new Vector2(5, 0), 0);
 
 //        var dropper = new ItemBlueprint(value.next.next);
@@ -72,8 +74,10 @@ public class Gameplay extends CustomScreen {
 //        testDropper.setTransform(new Vector2(10, 0), 0);
 
 
-        conveyor = testItemBlueprint.spawnItem();
-        conveyor.setTransform(conveyor.getPosition(), 0 * MathUtils.degreesToRadians);
+        conveyor = testItemBlueprint.bindBehaviors();
+        System.out.println(conveyor);
+        assert conveyor != null;
+        conveyor.setTransform(conveyor.getPosition(), 90 * MathUtils.degreesToRadians);
         bodyStack = new ArrayDeque<>();
         rotation = 0;
     }
@@ -153,7 +157,7 @@ public class Gameplay extends CustomScreen {
         }
 
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            var temp = testItemBlueprint.spawnItem();
+            var temp = testItemBlueprint.bindBehaviors();
             float x = Gdx.input.getX();
             float y = Gdx.input.getY();
             Vector3 mouseWorld = camera.unproject(new Vector3(x, y, 0));

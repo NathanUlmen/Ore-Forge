@@ -3,6 +3,7 @@ package ore.forge;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import ore.forge.Items.Experimental.ItemBlueprint;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Strategies.Move;
 
 import java.util.ArrayList;
@@ -41,14 +42,14 @@ public class GameWorld {
             var userA = fixtureA.getUserData();
             var userB = fixtureB.getUserData();
 
-            if (userB instanceof ItemBlueprint.ItemUserData conveyor) {
-                var trigger = conveyor.collisionBehavior();
+            if (userB instanceof ItemUserData conveyor) {
+                var trigger = conveyor.behavior();
                 if (trigger != null) {
                     trigger.interact(fixtureA, conveyor);
                 }
             }
-            if (userA instanceof ItemBlueprint.ItemUserData conveyor) {
-                var trigger = conveyor.collisionBehavior();
+            if (userA instanceof ItemUserData conveyor) {
+                var trigger = conveyor.behavior();
                 if (trigger != null) {
                     trigger.interact(fixtureB, conveyor);
                 }
@@ -83,23 +84,23 @@ public class GameWorld {
                 var userB = fixtureB.getUserData();
 
                 //only add item to list if it moves.
-                if (userB instanceof ItemBlueprint.ItemUserData item) {
-                    if (item.collisionBehavior() instanceof Move) {
+                if (userB instanceof ItemUserData item) {
+                    if (item.behavior() instanceof Move) {
                         updateList.add(new UpdatePair(fixtureA, fixtureB));
                     }
-                } else if (userA instanceof ItemBlueprint.ItemUserData item) {
-                    if (item.collisionBehavior() instanceof Move) {
+                } else if (userA instanceof ItemUserData item) {
+                    if (item.behavior() instanceof Move) {
                         updateList.add(new UpdatePair(fixtureA, fixtureB));
                     }
                 }
 
-                if (userB instanceof ItemBlueprint.ItemUserData item && !(userA instanceof ItemBlueprint.ItemUserData)) {
-                    if (item.collisionBehavior() != null) {
-                        item.collisionBehavior().interact(fixtureA, item);
+                if (userB instanceof ItemUserData item && !(userA instanceof ItemUserData)) {
+                    if (item.behavior() != null) {
+                        item.behavior().interact(fixtureA, item);
                     }
-                } else if (userA instanceof ItemBlueprint.ItemUserData item && !(userB instanceof ItemBlueprint.ItemUserData)) {
-                    if (item.collisionBehavior() != null) {
-                        item.collisionBehavior().interact(fixtureB, item);
+                } else if (userA instanceof ItemUserData item && !(userB instanceof ItemUserData)) {
+                    if (item.behavior() != null) {
+                        item.behavior().interact(fixtureB, item);
                     }
                 }
             }

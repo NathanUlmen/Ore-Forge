@@ -1,20 +1,19 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.*;
 import ore.forge.Items.Experimental.ItemBlueprint;
+import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
 
-public class DropOreBehavior implements TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
+public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
     private final Vector2 spawnOffset; //Offset from item center that Ore location is set to.
-    private DropStrategy dropperStrategy;
+    private final DropStrategy dropperStrategy;
     private Fixture fixture;
     private final OreBlueprint blueprint;
     private final static BodyDef oreDef = new BodyDef();
@@ -41,6 +40,21 @@ public class DropOreBehavior implements TimeUpdatable, GameEventListener<ItemRem
     }
 
     @Override
+    public void register() {
+
+    }
+
+    @Override
+    public void unregister() {
+
+    }
+
+    @Override
+    public void attach(Body body, Fixture fixture) {
+        this.fixture = fixture;
+    }
+
+    @Override
     public void update(float delta) {
         if (dropperStrategy.drop(delta)) {
             var body = GameWorld.getInstance().physicsWorld().createBody(oreDef);
@@ -51,13 +65,28 @@ public class DropOreBehavior implements TimeUpdatable, GameEventListener<ItemRem
             Vector2 dropperLocation = fixture.getBody().getPosition();
             var itemData = fixture.getUserData();
             Vector2 finalSpawnOffset = null;
-            if (itemData instanceof ItemBlueprint.ItemUserData data) {
-                finalSpawnOffset = spawnOffset.rotateDeg(fixture.getBody().getAngle() + data.angleOffset());
+            if (itemData instanceof ItemUserData data) {
+                finalSpawnOffset = spawnOffset.rotateDeg(fixture.getBody().getAngle() + data.relativeAngle());
             }
             assert finalSpawnOffset != null;
             body.setTransform(dropperLocation.x + finalSpawnOffset.x, dropperLocation.y + finalSpawnOffset.y, fixture.getBody().getAngle());
 
         }
+    }
+
+    @Override
+    public void interact(Fixture contact, ItemUserData userData) {
+        assert false;
+    }
+
+    @Override
+    public Behavior clone(Fixture parent) {
+        return null;
+    }
+
+    @Override
+    public boolean isCollisionBehavior() {
+        return false;
     }
 
     @Override

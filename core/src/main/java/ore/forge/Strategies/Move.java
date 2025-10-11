@@ -3,12 +3,14 @@ package ore.forge.Strategies;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemBlueprint;
-import ore.forge.Screens.CollisionBehavior;
+import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Screens.Behavior;
 
-public class Move implements CollisionBehavior {
+public class Move implements Behavior {
     private final float force;
 
     public Move(JsonValue jsonValue) {
@@ -16,8 +18,28 @@ public class Move implements CollisionBehavior {
     }
 
     @Override
-    public void interact(Fixture fixture, ItemBlueprint.ItemUserData itemUserData) {
-        float direction = (itemUserData.angleOffset() + itemUserData.body().getAngle() * MathUtils.radiansToDegrees);
+    public void register() {
+
+    }
+
+    @Override
+    public void unregister() {
+
+    }
+
+    @Override
+    public void attach(Body body, Fixture fixture) {
+        fixture.setUserData(this);
+    }
+
+    @Override
+    public void update(float delta) {
+        assert false;
+    }
+
+    @Override
+    public void interact(Fixture fixture, ItemUserData itemUserData) {
+        float direction = (itemUserData.relativeAngle() + itemUserData.body().getAngle() * MathUtils.radiansToDegrees);
         direction *= MathUtils.degreesToRadians;
         float deltaTime = Gdx.graphics.getDeltaTime();
         float xForce = MathUtils.cos(direction) * force * deltaTime;
@@ -27,8 +49,13 @@ public class Move implements CollisionBehavior {
     }
 
     @Override
-    public CollisionBehavior clone(Fixture parent) {
+    public Behavior clone(Fixture parent) {
         return this;
+    }
+
+    @Override
+    public boolean isCollisionBehavior() {
+        return true;
     }
 
 }

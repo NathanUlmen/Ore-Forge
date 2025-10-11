@@ -3,7 +3,10 @@ package ore.forge.Items.Experimental;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.Items.ExtendedFixtureDef;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
+
+import java.util.ArrayList;
 
 public class DropperBlueprint extends ItemBlueprint {
     private final OreBlueprint oreBlueprint;
@@ -14,10 +17,6 @@ public class DropperBlueprint extends ItemBlueprint {
         super(jsonValue);
         oreBlueprint = OreBlueprint.load(jsonValue.get("oreInfo"));
         burstDrop = new BurstDrop(jsonValue.get("burstDrop"));
-    }
-
-    public Item createItem() {
-        return new Dropper();
     }
 
     private record OreBlueprint(String oreName, double oreValue, int oreTemp, int multiOre, FixtureDef oreShape) {

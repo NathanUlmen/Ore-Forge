@@ -58,14 +58,16 @@ public class OreForge extends Game {
 
         var prestigeManager = new PrestigeManager(itemManager);
 
-//        ItemMap.getSingleton().loadState(resourceManager);
-//		mainMenuScreen = new MainMenu(this, itemManager);
-//		settingsMenu = new SettingsMenu(this, itemManager);
+        ItemMap.getSingleton().loadState(itemManager);
+		mainMenuScreen = new MainMenu(this, itemManager);
+		settingsMenu = new SettingsMenu(this, itemManager);
 		gameplayScreen = new Gameplay(this, itemManager, GameWorld.getInstance());
-//		pauseMenu = new PauseMenu(this, itemManager);
+		pauseMenu = new PauseMenu(this, itemManager);
 
 
-		setScreen(gameplayScreen);
+//		setScreen(mainMenuScreen); commented out so we can experiment with rework
+        setScreen(gameplayScreen);
+
 	}
 
 	public void render() {

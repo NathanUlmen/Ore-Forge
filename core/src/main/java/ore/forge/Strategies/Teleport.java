@@ -5,21 +5,47 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.ItemBlueprint;
-import ore.forge.Screens.CollisionBehavior;
+import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Screens.Behavior;
 
-public class Teleport implements CollisionBehavior, GameEventListener<ItemPlacedGameEvent> {
+public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent> {
     private Fixture receiver;
     private String type;
 
     @Override
-    public void interact(Fixture contact, ItemBlueprint.ItemUserData userData) {
+    public void register() {
+
+    }
+
+    @Override
+    public void unregister() {
+
+    }
+
+    @Override
+    public void attach(Body body, Fixture fixture) {
+
+    }
+
+    @Override
+    public void update(float delta) {
+
+    }
+
+    @Override
+    public void interact(Fixture contact, ItemUserData userData) {
         //move contact to teleporter position
         contact.getBody().setTransform(receiver.getBody().getTransform().getPosition(), contact.getBody().getAngle());
     }
 
     @Override
-    public CollisionBehavior clone(Fixture parent) {
+    public Behavior clone(Fixture parent) {
         return null;
+    }
+
+    @Override
+    public boolean isCollisionBehavior() {
+        return true;
     }
 
 

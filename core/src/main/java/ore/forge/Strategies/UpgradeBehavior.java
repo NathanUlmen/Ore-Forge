@@ -1,18 +1,21 @@
 package ore.forge.Strategies;
 
 
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemBlueprint;
+import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderBlueprint;
 import ore.forge.Ore;
 import ore.forge.ReflectionLoader;
-import ore.forge.Screens.CollisionBehavior;
+import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 import ore.forge.UpgradeCooldown;
 import ore.forge.UpgradeTag;
 
 @SuppressWarnings("unused")
-public class UpgradeBehavior implements CollisionBehavior {
+public class UpgradeBehavior implements Behavior {
     private UpgradeTag upgradeTag;
     private final UpgradeStrategy upgradeStrategy;
     private final float cooldownDuration; //time before it can be upgraded in seconds.
@@ -20,7 +23,6 @@ public class UpgradeBehavior implements CollisionBehavior {
     public UpgradeBehavior(JsonValue value) {
         upgradeStrategy = ReflectionLoader.load(value.get("upgrade"), "upgradeName");
         cooldownDuration = value.getFloat("cooldownDuration", 0.5f);
-        this.upgradeTag = new UpgradeTag(value.parent.parent.get("upgradeTag"));
     }
 
     private UpgradeBehavior(UpgradeBehavior behavior) {
@@ -30,7 +32,31 @@ public class UpgradeBehavior implements CollisionBehavior {
     }
 
     @Override
-    public void interact(Fixture contact, ItemBlueprint.ItemUserData userData) {
+    public void register() {
+
+    }
+
+    @Override
+    public void unregister() {
+
+    }
+
+    @Override
+    public void attach(Body body, Fixture fixture) {
+        assert body.getUserData() instanceof UpgraderBlueprint bp;
+        if (body.getUserData() instanceof  UpgraderBlueprint bp) {
+            this.upgradeTag = new UpgradeTag(bp.getUpgradeTag());
+        }
+    }
+
+    @Override
+    public void update(float delta) {
+        assert false;
+    }
+
+    @Override
+    public void interact(Fixture contact, ItemUserData userData) {
+        assert upgradeTag != null && upgradeStrategy != null;
         if (contact.getUserData() instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
             upgradeStrategy.applyTo(ore);
             ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
@@ -40,8 +66,13 @@ public class UpgradeBehavior implements CollisionBehavior {
     }
 
     @Override
-    public CollisionBehavior clone(Fixture parent) {
+    public Behavior clone(Fixture parent) {
         return new UpgradeBehavior(this);
+    }
+
+    @Override
+    public boolean isCollisionBehavior() {
+        return true;
     }
 
 }

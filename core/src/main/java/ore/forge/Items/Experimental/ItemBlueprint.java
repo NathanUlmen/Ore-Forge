@@ -8,7 +8,7 @@ import ore.forge.GameWorld;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.ExtendedFixtureDef;
 import ore.forge.ReflectionLoader;
-import ore.forge.Screens.CollisionBehavior;
+import ore.forge.Screens.Behavior;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,19 +19,17 @@ import java.util.HashMap;
  * for an Item.
  **/
 public abstract class ItemBlueprint {
-    private final String name, id, description;
-    private final BodyDef bodyDef;
-    private final AcquisitionInfo acquisitionInfo;
-    private final ArrayList<ExtendedFixtureDef> fixtureDefs;
+    protected final String name, id, description;
+    protected final BodyDef bodyDef;
+    protected final AcquisitionInfo acquisitionInfo;
+    protected final ArrayList<ExtendedFixtureDef> fixtureDefs;
+    protected final HashMap<String, Behavior> behaviors;
 
-
-    private static final Filter FILTER = new Filter();
-
+    protected static final Filter FILTER = new Filter();
     static {
         FILTER.categoryBits = CollisionRules.ORE_PROCESSOR.getBit();
         FILTER.maskBits = CollisionRules.ORE.getBit();
     }
-
 
     public ItemBlueprint(JsonValue jsonValue) {
         this.name = jsonValue.getString("name");
@@ -43,7 +41,9 @@ public abstract class ItemBlueprint {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         bodyDef.angle = 90f * MathUtils.degreesToRadians;
 
-        fixtureDefs = loadFixtures();
+        fixtureDefs = loadFixtures(jsonValue.get("fixtures"));
+        behaviors = loadBehaviors(jsonValue.get("behaviors"));
+
     }
 
     public String toString() {
@@ -58,12 +58,10 @@ public abstract class ItemBlueprint {
         return var.getClass();
     }
 
-    protected abstract ArrayList<ExtendedFixtureDef> loadFixtures();
-
-    private static ArrayList<ExtendedFixtureDef> loadFixtures(JsonValue fixtures, HashMap<String, CollisionBehavior> behaviors) {
+    private static ArrayList<ExtendedFixtureDef> loadFixtures(JsonValue fixtures) {
         ArrayList<ExtendedFixtureDef> fixtureDefs = new ArrayList<>();
         for (JsonValue jsonFixtureData : fixtures) {
-            float angleOffset = jsonFixtureData.getFloat("angleOffset", 0);
+            float angleOffset = jsonFixtureData.getFloat("relativeDirection", 0);
             boolean collisionEnabled = jsonFixtureData.getBoolean("collisionEnabled");
             String behaviorKey = jsonFixtureData.getString("behaviorKey", "");
             ExtendedFixtureDef customFixtureDef = new ExtendedFixtureDef(angleOffset, collisionEnabled, behaviorKey);
@@ -85,31 +83,31 @@ public abstract class ItemBlueprint {
         return fixtureDefs;
     }
 
-    private static HashMap<String, CollisionBehavior> loadBehaviors(JsonValue behaviors) {
-        HashMap<String, CollisionBehavior> behaviorMap = new HashMap<>();
+    private static HashMap<String, Behavior> loadBehaviors(JsonValue behaviors) {
+        HashMap<String, Behavior> behaviorMap = new HashMap<>();
         for (JsonValue behaviorData : behaviors) {
             behaviorMap.put(behaviorData.getString("key"), ReflectionLoader.load(behaviorData, "behaviorName"));
         }
         return behaviorMap;
     }
 
-
-    //TODO: NEEDS WORK
-    public Body spawnItem() {
+    public final Body bindBehaviors() {
         Body body = GameWorld.getInstance().physicsWorld().createBody(bodyDef);
+        body.setUserData(this);
         for (ExtendedFixtureDef customFixtureDef : fixtureDefs) {
             var fixture = body.createFixture(customFixtureDef);
-            CollisionBehavior collisionBehavior = behaviors.get(customFixtureDef.getCollisionBehaviorKey());
-            if  (collisionBehavior != null) {
-                collisionBehavior = collisionBehavior.clone(fixture);
+            Behavior behavior = behaviors.get(customFixtureDef.getCollisionBehaviorKey());
+            if  (behavior != null) {
+                behavior = behavior.clone(fixture);
+                behavior.attach(body, fixture);
             }
-            fixture.setUserData(new ItemUserData(customFixtureDef.relativeAngle, collisionBehavior, body));
-            fixture.setSensor(!customFixtureDef.collisionEnabled);
+            fixture.setUserData(new ItemUserData(customFixtureDef.getRelativeAngle(), behavior, body));
+            fixture.setSensor(!customFixtureDef.isCollisionEnabled());
             fixture.setFilterData(FILTER);
         }
         return body;
     }
 
-    public record ItemUserData(float angleOffset, CollisionBehavior collisionBehavior, Body body) {}
+
 
 }
