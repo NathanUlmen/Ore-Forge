@@ -31,7 +31,7 @@ public class Lwjgl3Launcher {
         config.setWindowedMode(mode.width, mode.height);
         config.setResizable(true);
         config.setDecorated(false);
-        config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8);
+       config.setBackBufferConfig(8, 8, 8, 8, 16, 0, 8);
 
 
         //// If you remove the above line and set Vsync to false, you can get unlimited FPS, which can be

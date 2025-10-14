@@ -13,10 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import ore.forge.Player.Player;
 import ore.forge.QuestComponents.QuestManager;
-import ore.forge.Screens.Gameplay;
-import ore.forge.Screens.MainMenu;
-import ore.forge.Screens.PauseMenu;
-import ore.forge.Screens.SettingsMenu;
+import ore.forge.Screens.*;
 
 /**@author Nathan Ulmen*/
 public class OreForge extends Game {
@@ -64,9 +61,11 @@ public class OreForge extends Game {
 		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
 		pauseMenu = new PauseMenu(this, itemManager);
 
+        Gameplay3D gameplay3D = new Gameplay3D();
 
 //		setScreen(mainMenuScreen); commented out so we can experiment with rework
-        setScreen(gameplayScreen);
+//        setScreen(gameplayScreen);
+        setScreen(gameplay3D);
 
 	}
 
