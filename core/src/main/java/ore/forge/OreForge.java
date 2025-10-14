@@ -42,8 +42,6 @@ public class OreForge extends Game {
 		* AllGameItems
 		* Load Save Data
 		* Create the Objects for elements like the map and UI.
-		*
-		*
 		* */
 		spriteBatch = new SpriteBatch();
         ItemManager itemManager = new ItemManager(null);
@@ -62,9 +60,8 @@ public class OreForge extends Game {
 		pauseMenu = new PauseMenu(this, itemManager);
 
         Gameplay3D gameplay3D = new Gameplay3D();
-
-//		setScreen(mainMenuScreen); commented out so we can experiment with rework
-//        setScreen(gameplayScreen);
+//		setScreen(mainMenuScreen); commented out so we can experiment with rework 2D
+//      setScreen(gameplayScreen); commented out so we can experiment with rework 3D
         setScreen(gameplay3D);
 
 	}
@@ -74,8 +71,6 @@ public class OreForge extends Game {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		memoryCounter.setText(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024) + "MB");
-//		Gdx.app.log("MB", String.valueOf(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024)));
-//        Gdx.app.log("FPS" , String.valueOf(Gdx.graphics.getFramesPerSecond()));
 		// Update and render the current screen
 		super.render();
 	}

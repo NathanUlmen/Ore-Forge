@@ -28,7 +28,7 @@ public class Gameplay3D implements Screen {
 
     public Gameplay3D() {
         //Config camera
-        camera  = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera  = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1f; //Min distance can see/draw
         camera.far = 1000f; //Max distance can see/draw
         camera.position.set(10, 10, 10);
@@ -79,7 +79,7 @@ public class Gameplay3D implements Screen {
         modelBatch.render(instance, environment);
 
         modelBatch.end();
-        System.out.println(camera.position);
+        System.out.println(Gdx.graphics.getFramesPerSecond());
     }
 
     @Override
