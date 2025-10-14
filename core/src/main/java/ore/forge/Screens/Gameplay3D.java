@@ -20,7 +20,7 @@ public class Gameplay3D implements Screen {
     private final PerspectiveCamera camera;
     private final ModelBatch  modelBatch;
     private final Environment environment;
-    private final CameraInputController cameraController;
+    private CameraInputController cameraController;
     private final CameraController3D cameraController3D;
 
     private final Model model;
@@ -35,7 +35,7 @@ public class Gameplay3D implements Screen {
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
-        cameraController = new CameraInputController(camera);
+//        cameraController = new CameraInputController(camera);
         cameraController3D = new CameraController3D(camera);
 
         //Config ModelBatch
@@ -55,10 +55,10 @@ public class Gameplay3D implements Screen {
             VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
         instance = new ModelInstance(model);
 
+
         Matrix4 transform = new Matrix4();
         transform = transform.translate(0,0,0);
         instance.transform.set(transform);
-
     }
 
     @Override
@@ -74,10 +74,7 @@ public class Gameplay3D implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         camera.update();
-        modelBatch.begin(camera);
-
-        modelBatch.render(instance, environment);
-
+        modelBatch.begin(camera); modelBatch.render(instance, environment);
         modelBatch.end();
         System.out.println(Gdx.graphics.getFramesPerSecond());
     }

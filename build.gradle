@@ -83,9 +83,13 @@ subprojects {
     //Font
     implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
 
+    //Physics
     api "com.badlogicgames.gdx:gdx-bullet:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
 
+    //Model Loader
+    api "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
+    implementation "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
   }
 
   test {
