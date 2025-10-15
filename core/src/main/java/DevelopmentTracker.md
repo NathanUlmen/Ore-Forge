@@ -4,8 +4,8 @@
 
 *[X] Draw a simple 3D model 
 *[X] Create Controller for 3D camera
-*[ ] Setup basic scene geometry (A simple flat plane that functions as the "base") 
-*[ ] Create a basic Plane for testing Physics 
+*[X] Setup basic scene geometry (A simple flat plane that functions as the "base") 
+*[X] Create a basic Plane for testing Physics 
 *[ ] Setup simple physics 
 
 ## Gameplay
