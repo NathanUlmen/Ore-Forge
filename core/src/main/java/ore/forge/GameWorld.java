@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
 public class GameWorld {
     private static final GameWorld instance = instance();
     private final World world;
     private final HashMap<Fixture, BodyContactCounter> touchingBodies;
     private final ArrayList<UpdatePair> updateList;
+
 
     private GameWorld() {
         world = new World(new Vector2(0, 0), true);
