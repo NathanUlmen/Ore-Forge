@@ -56,6 +56,7 @@ public class Gameplay3D implements Screen {
         instance = new ModelInstance(model);
 
 
+
         Matrix4 transform = new Matrix4();
         transform = transform.translate(0,0,0);
         instance.transform.set(transform);
