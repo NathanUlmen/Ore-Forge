@@ -11,13 +11,11 @@ import com.badlogic.gdx.math.Vector3;
 public class CameraController3D {
     private final PerspectiveCamera camera;
     private static final float MOVE_SPEED = 10;
-    private Vector2 mouseScreen;
-    private Quaternion rotationQuaternion;
+    private final Vector2 mouseScreen;
 
     public CameraController3D(PerspectiveCamera camera) {
         this.camera = camera;
         mouseScreen = new Vector2();
-        rotationQuaternion = new Quaternion();
     }
 
     public void update() {

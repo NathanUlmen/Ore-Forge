@@ -123,11 +123,16 @@ public class Gameplay3D implements Screen {
             motionState.getWorldTransform(modelInstances.get(0).transform);
         }
 
-        //lock camera onto cube
-        Vector3 cubePos = new Vector3();
-        modelInstances.get(0).transform.getTranslation(cubePos);
-        Vector3 desiredDir = cubePos.cpy().sub(camera.position).nor();
-        camera.direction.lerp(desiredDir, delta * 2f).nor(); // *2f = controls smoothness
+        //lock camera onto cube if its moving
+        if (cubeBody.getLinearVelocity().len2() > 0.0001f) {
+            Vector3 cubePos = new Vector3();
+            modelInstances.get(0).transform.getTranslation(cubePos);
+            Vector3 desiredDir = cubePos.cpy().sub(camera.position).nor();
+            camera.direction.lerp(desiredDir, delta * 2f).nor();
+        } else {
+            cameraController3D.update();
+        }
+
         camera.update();
 
         //updarte physics
@@ -140,6 +145,7 @@ public class Gameplay3D implements Screen {
             modelBatch.render(instance, environment);
         }
         modelBatch.end();
+        System.out.println(camera.direction);
     }
 
     @Override
