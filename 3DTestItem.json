@@ -1,0 +1,75 @@
+{
+  "name": "Basic Upgrader",
+  "description": "An upgrader that adds 2 to the value of ore it upgrades.",
+  "id": "abc123",
+  "upgradeTag": {
+    "name": "Basic Upgrader",
+    "id": "abc123",
+    "maxUpgrades": 500,
+    "isResetter": false
+  },
+  "tier": "COMMON",
+  "acquisitionInfo": {
+    "unlockMethod": "NONE",
+    "unlockRequirement": 0,
+    "isUnlocked": false,
+    "canBeSold": true,
+    "isPrestigeProof": false,
+    "currency": "CASH",
+    "itemValue": 50,
+    "sellPrice": 30,
+    "rarity": -1
+  },
+  "behaviors": [
+    {
+      "behaviorName": "ore.forge.Strategies.Move",
+      "force": 825,
+      "key": "b1"
+    },
+    {
+      "behaviorName": "ore.forge.Strategies.UpgradeBehavior",
+      "upgradeCooldown": 0.5,
+      "upgrade": {
+        "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
+        "valueToModify": "ORE_VALUE",
+        "modifier": 2,
+        "operator": "ADD"
+      },
+      "key": "b2"
+    }
+  ],
+  "parts": [
+    {
+      "type": "box",
+      "collisionEnabled": false,
+      "relativePosition": [0, 0, 0],
+      "relativeRotation": [0, 0, 0],
+      "dimensions": [4, 0.1, 4],
+      "behaviorKey": "b1"
+    },
+    {
+      "type": "box",
+      "collisionEnabled": false,
+      "relativePosition": [0, 0, 0],
+      "relativeRotation": [0, 0, 0],
+      "dimensions": [2, 4, 4],
+      "behaviorKey": "b2"
+    },
+    {
+      "type" : "box",
+      "collisionEnabled": true,
+      "relativePosition": [0, 0, -2.5],
+      "relativeRotation": [0, 0, 0],
+      "dimensions": [0.5, 0.75, 1],
+      "behaviorKey": ""
+    },
+    {
+      "type" : "box",
+      "collisionEnabled": true,
+      "relativePosition": [0, 0, 2.5],
+      "relativeRotation": [0, 0, 0],
+      "dimensions": [4, 0.75, 1],
+      "behaviorKey": ""
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSol
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import ore.forge.Input.CameraController3D;
+import ore.forge.Items.Experimental.ItemInstance;
 
 import java.util.ArrayList;
 
@@ -63,9 +64,9 @@ public class Gameplay3D implements Screen {
 
         //create cube and apply transform
         Matrix4 transform = new Matrix4();
-        Model model = createBox(5, 5, 5, Color.PINK);
+        Model model = createBox(1.5f, 1.5f, 1.5f, Color.PINK);
         var instance = new ModelInstance(model);
-        transform.translate(0, 2.5f, 0);
+        transform.translate(0, .75f, 0);
         instance.transform.set(transform);
         modelInstances.add(instance);
 
@@ -87,18 +88,18 @@ public class Gameplay3D implements Screen {
         dynamicsWorld.setGravity(new Vector3(0, -9.81f, 0));
 
         // Create collision shapes
-        btCollisionShape boxShape = new btBoxShape(new Vector3(2.5f, 2.5f, 2.5f));
+        btCollisionShape boxShape = new btBoxShape(new Vector3(1.5f/2, 1.5f/2, 1.5f/2));
         btCollisionShape planeShape = new btBoxShape(new Vector3(25f, 0.01f, 25f));
 
         // Create rigid bodies
         btRigidBody cubeBody = createDynamicBody(modelInstances.get(0), boxShape, 10f);
         btRigidBody groundBody = createStaticBody(modelInstances.get(1), planeShape);
 
-
         // Add to world
         dynamicsWorld.addRigidBody(cubeBody);
         dynamicsWorld.addRigidBody(groundBody);
 
+        //Transform cube to be in the air.
         Matrix4 t3 = new Matrix4();
         cubeBody.getWorldTransform(t3);
         t3.setToTranslation(0, 20f, 0);
@@ -106,6 +107,40 @@ public class Gameplay3D implements Screen {
         cubeBody.setWorldTransform(t3);
         cubeBody.getMotionState().setWorldTransform(t3);
 
+        //Test
+        //Conveyor
+        ModelInstance partInstance;
+        Matrix4 transform1;
+        Model baseModel = createBox(4, 0.1f, 4, Color.GRAY);
+        partInstance = new ModelInstance(baseModel);
+        transform1 = new Matrix4();
+        transform1.translate(0, 0, 0);
+        partInstance.transform.set(transform1);
+        modelInstances.add(partInstance);
+
+        //Upgrade Beam
+        Model beamModel = createBox(0.5f, .75f, 4, Color.BLUE);
+        partInstance = new ModelInstance(beamModel);
+        transform1 = new Matrix4();
+        transform1.translate(0, .75f/2f, 0); // center y = height/2
+        partInstance.transform.set(transform1);
+        modelInstances.add(partInstance);
+
+        //Wall 1
+        Model wall1Model = createBox(4, .75f, 1, Color.RED);
+        partInstance = new ModelInstance(wall1Model);
+        transform1 = new Matrix4();
+        transform1.translate(0f, .75f/2, -2.5f); // y = height/2
+        partInstance.transform.set(transform1);
+        modelInstances.add(partInstance);
+
+        //Wall 2
+        Model wall2Model = createBox(4, 0.75f, 1, Color.RED);
+        partInstance = new ModelInstance(wall2Model);
+        transform1 = new Matrix4();
+        transform1.translate(0f, .75f/2, 2.5f);
+        partInstance.transform.set(transform1);
+        modelInstances.add(partInstance);
 
     }
 
@@ -116,36 +151,35 @@ public class Gameplay3D implements Screen {
 
     @Override
     public void render(float delta) {
-        //update cube transform
+        // Physics and transforms
+        dynamicsWorld.stepSimulation(delta, 5, 1f / 240f);
+
         btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
         btMotionState motionState = cubeBody.getMotionState();
         if (motionState != null) {
             motionState.getWorldTransform(modelInstances.get(0).transform);
         }
 
-        //lock camera onto cube if its moving
-        if (cubeBody.getLinearVelocity().len2() > 0.0001f) {
-            Vector3 cubePos = new Vector3();
-            modelInstances.get(0).transform.getTranslation(cubePos);
-            Vector3 desiredDir = cubePos.cpy().sub(camera.position).nor();
-            camera.direction.lerp(desiredDir, delta * 2f).nor();
+        //Camera logic
+        btRigidBody trackedBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
+        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
+            Vector3 pos = new Vector3();
+            modelInstances.get(0).transform.getTranslation(pos);
+            Vector3 dir = pos.cpy().sub(camera.position).nor();
+            camera.direction.lerp(dir, delta * 2f).nor();
         } else {
             cameraController3D.update();
         }
-
         camera.update();
 
-        //updarte physics
-        dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
-
+        //Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        camera.update();
+
         modelBatch.begin(camera);
         for (var instance : modelInstances) {
             modelBatch.render(instance, environment);
         }
         modelBatch.end();
-        System.out.println(camera.direction);
     }
 
     @Override

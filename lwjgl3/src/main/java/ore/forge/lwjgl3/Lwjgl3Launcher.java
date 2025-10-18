@@ -26,7 +26,7 @@ public class Lwjgl3Launcher {
         config.setTitle("Ore Forge");
         config.useVsync(false);
 
-        config.setForegroundFPS(999);
+        config.setForegroundFPS(240);
         Graphics.DisplayMode mode = Lwjgl3ApplicationConfiguration.getDisplayMode();
         config.setWindowedMode(mode.width, mode.height);
         config.setResizable(true);

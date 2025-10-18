@@ -71,7 +71,7 @@
         },
         "rarity": {
           "type": "number",
-          "description": "A float representing the rarity weight of the item."
+          "description": "A float representing the rarity weight of the item between 0 and 1. -1 if not applicable"
         }
       }
     },
@@ -84,6 +84,14 @@
         "isResetter": { "type": "boolean" }
       },
       "required": ["name", "id", "maxUpgrades", "isResetter"]
+    },
+    "oreProperties" : {
+      "properties": {
+        "oreName": {"type" : "string"},
+        "oreValue": {"type" : "string"},
+        "oreTemperature": {"type" : "number"},
+        "multiOre": {"type" : "integer"}
+      }
     },
     "behaviors": {
       "type": "array",

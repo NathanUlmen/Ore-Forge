@@ -20,13 +20,20 @@ public class CameraController3D {
 
     public void update() {
         final float delta = Gdx.graphics.getDeltaTime();
-        Vector3 direction = camera.direction.cpy().nor();
+        Vector3 direction = new Vector3();
+        direction.set(camera.direction).nor();
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+            direction.set(camera.direction);
+            direction.y = 0;
+            direction.nor();
             var cross = new Vector3(0,1,0).crs(direction);
             camera.position.add(cross.cpy().scl(MOVE_SPEED * delta));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            var cross = direction.cpy().crs(0, 1f, 0);
+            direction.set(camera.direction);
+            direction.y = 0;
+            direction.nor();
+            var cross = new  Vector3(0,1,0).crs(direction).scl(-1);
             camera.position.add(cross.cpy().scl(MOVE_SPEED * delta));
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
