@@ -4,7 +4,6 @@ package ore.forge.Strategies;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.UpgraderBlueprint;
 import ore.forge.Ore;
@@ -23,6 +22,12 @@ public class UpgradeBehavior implements Behavior {
     public UpgradeBehavior(JsonValue value) {
         upgradeStrategy = ReflectionLoader.load(value.get("upgrade"), "upgradeName");
         cooldownDuration = value.getFloat("cooldownDuration", 0.5f);
+    }
+
+    public UpgradeBehavior(UpgradeTag upgradeTag, UpgradeStrategy upgradeStrategy, float cooldownDuration) {
+        this.upgradeTag = upgradeTag;
+        this.upgradeStrategy = upgradeStrategy;
+        this.cooldownDuration = cooldownDuration;
     }
 
     private UpgradeBehavior(UpgradeBehavior behavior) {

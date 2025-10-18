@@ -3,14 +3,13 @@ package ore.forge.Input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.Input.Keys.*;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 public class CameraController3D {
     private final PerspectiveCamera camera;
     private static final float MOVE_SPEED = 10;
+    private static final float SPEED_SCALAR = 2.5f;
     private final Vector2 mouseScreen;
 
     public CameraController3D(PerspectiveCamera camera) {
@@ -20,28 +19,40 @@ public class CameraController3D {
 
     public void update() {
         final float delta = Gdx.graphics.getDeltaTime();
+        float finalMoveSpeed = MOVE_SPEED;
         Vector3 direction = new Vector3();
         direction.set(camera.direction).nor();
+
+        //Sprint/move faster
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            finalMoveSpeed *= SPEED_SCALAR;
+        }
+        //Move Left
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             direction.set(camera.direction);
             direction.y = 0;
             direction.nor();
             var cross = new Vector3(0,1,0).crs(direction);
-            camera.position.add(cross.cpy().scl(MOVE_SPEED * delta));
+            camera.position.add(cross.cpy().scl(finalMoveSpeed * delta));
         }
+        //Move Right
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             direction.set(camera.direction);
             direction.y = 0;
             direction.nor();
             var cross = new  Vector3(0,1,0).crs(direction).scl(-1);
-            camera.position.add(cross.cpy().scl(MOVE_SPEED * delta));
+            camera.position.add(cross.cpy().scl(finalMoveSpeed * delta));
         }
+        //Move Forward
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            camera.position.add(direction.cpy().scl(MOVE_SPEED * delta));
+            camera.position.add(direction.cpy().scl(finalMoveSpeed * delta));
         }
+        //Move Backwards
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            camera.position.sub(direction.cpy().scl(MOVE_SPEED * delta));
+            camera.position.sub(direction.cpy().scl(finalMoveSpeed * delta));
         }
+
+        //Update camera direction
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             mouseScreen.set(Gdx.input.getX(), Gdx.input.getY());
         }

@@ -19,9 +19,14 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
+import ore.forge.Expressions.Operands.NumericOreProperties;
+import ore.forge.Expressions.Operators.NumericOperator;
 import ore.forge.Input.CameraController3D;
-import ore.forge.Items.Experimental.ItemInstance;
+import ore.forge.Strategies.Move;
+import ore.forge.Strategies.UpgradeBehavior;
+import ore.forge.Strategies.UpgradeStrategies.BasicUpgrade;
+import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
+import ore.forge.UpgradeTag;
 
 import java.util.ArrayList;
 
@@ -45,7 +50,7 @@ public class Gameplay3D implements Screen {
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1f; //Min distance can see/draw
         camera.far = 1000f; //Max distance can see/draw
-        camera.position.set(40, 20, 20);
+        camera.position.set(20, 10, 20);
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
@@ -83,12 +88,11 @@ public class Gameplay3D implements Screen {
         dispatcher = new btCollisionDispatcher(collisionConfig);
         broadphase = new btDbvtBroadphase();
         solver = new btSequentialImpulseConstraintSolver();
-
         dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig);
         dynamicsWorld.setGravity(new Vector3(0, -9.81f, 0));
 
         // Create collision shapes
-        btCollisionShape boxShape = new btBoxShape(new Vector3(1.5f/2, 1.5f/2, 1.5f/2));
+        btCollisionShape boxShape = new btBoxShape(new Vector3(1.5f / 2, 1.5f / 2, 1.5f / 2));
         btCollisionShape planeShape = new btBoxShape(new Vector3(25f, 0.01f, 25f));
 
         // Create rigid bodies
@@ -107,41 +111,7 @@ public class Gameplay3D implements Screen {
         cubeBody.setWorldTransform(t3);
         cubeBody.getMotionState().setWorldTransform(t3);
 
-        //Test
-        //Conveyor
-        ModelInstance partInstance;
-        Matrix4 transform1;
-        Model baseModel = createBox(4, 0.1f, 4, Color.GRAY);
-        partInstance = new ModelInstance(baseModel);
-        transform1 = new Matrix4();
-        transform1.translate(0, 0, 0);
-        partInstance.transform.set(transform1);
-        modelInstances.add(partInstance);
-
-        //Upgrade Beam
-        Model beamModel = createBox(0.5f, .75f, 4, Color.BLUE);
-        partInstance = new ModelInstance(beamModel);
-        transform1 = new Matrix4();
-        transform1.translate(0, .75f/2f, 0); // center y = height/2
-        partInstance.transform.set(transform1);
-        modelInstances.add(partInstance);
-
-        //Wall 1
-        Model wall1Model = createBox(4, .75f, 1, Color.RED);
-        partInstance = new ModelInstance(wall1Model);
-        transform1 = new Matrix4();
-        transform1.translate(0f, .75f/2, -2.5f); // y = height/2
-        partInstance.transform.set(transform1);
-        modelInstances.add(partInstance);
-
-        //Wall 2
-        Model wall2Model = createBox(4, 0.75f, 1, Color.RED);
-        partInstance = new ModelInstance(wall2Model);
-        transform1 = new Matrix4();
-        transform1.translate(0f, .75f/2, 2.5f);
-        partInstance.transform.set(transform1);
-        modelInstances.add(partInstance);
-
+        createTestUpgrader();
     }
 
     @Override
@@ -154,22 +124,32 @@ public class Gameplay3D implements Screen {
         // Physics and transforms
         dynamicsWorld.stepSimulation(delta, 5, 1f / 240f);
 
-        btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
-        btMotionState motionState = cubeBody.getMotionState();
-        if (motionState != null) {
-            motionState.getWorldTransform(modelInstances.get(0).transform);
+        //Apply transforms to render models.
+        for (int i = 0; i < modelInstances.size(); i++) {
+            if (dynamicsWorld.getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
+                var motionState = body.getMotionState();
+                if (motionState != null) {
+                    motionState.getWorldTransform(modelInstances.get(i).transform);
+                }
+            }
         }
 
+//        btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
+//        btMotionState motionState = cubeBody.getMotionState();
+//        if (motionState != null) {
+//            motionState.getWorldTransform(modelInstances.get(0).transform);
+//        }
+
         //Camera logic
-        btRigidBody trackedBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
-        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
-            Vector3 pos = new Vector3();
-            modelInstances.get(0).transform.getTranslation(pos);
-            Vector3 dir = pos.cpy().sub(camera.position).nor();
-            camera.direction.lerp(dir, delta * 2f).nor();
-        } else {
+//        btRigidBody trackedBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
+//        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
+//            Vector3 pos = new Vector3();
+//            modelInstances.get(0).transform.getTranslation(pos);
+//            Vector3 dir = pos.cpy().sub(camera.position).nor();
+//            camera.direction.lerp(dir, delta * 2f).nor();
+//        } else {
             cameraController3D.update();
-        }
+//        }
         camera.update();
 
         //Render
@@ -238,6 +218,86 @@ public class Gameplay3D implements Screen {
         btRigidBody body = new btRigidBody(info);
         info.dispose();
         return body;
+    }
+
+    private void createTestUpgrader() {
+        //Item Properties
+        String itemName = "Basic Upgrader";
+        String id = "abc123";
+        String description = "An upgrader that adds 2 to the value of ore it upgrades";
+        UpgradeTag upgradeTag = new UpgradeTag(itemName, id, 500, false);
+        UpgradeStrategy upgradeStrategy = new BasicUpgrade(2, NumericOperator.ADD, NumericOreProperties.ORE_VALUE);
+        UpgradeBehavior upgradeBehavior = new UpgradeBehavior(upgradeTag, upgradeStrategy, 0.5f);
+        Behavior moveBehavior = new Move(825f);
+
+        //-----Item Bodies-----
+
+        //---Create Conveyor---
+        //Create View Model and Shape
+        Model conveyorModel = createBox(4, 0.1f, 4, Color.GRAY);
+        ModelInstance conveyorModelInstance = new ModelInstance(conveyorModel);
+        Matrix4 conveyorTransform = new Matrix4();
+        conveyorTransform.translate(0, 0.1f/2f, 0);
+        conveyorModelInstance.transform = conveyorTransform;
+        modelInstances.add(conveyorModelInstance);
+        modelInstances.add(conveyorModelInstance); //add second time to account for the conveyor ghost.
+        //Create Physics Counterpart
+        btCollisionShape collisionShape = new btBoxShape(new Vector3(4f, .1f, 4f)); //for a 4x4
+        btRigidBody conveyorBody = createStaticBody(conveyorModelInstance, collisionShape);
+        btGhostObject conveyorGhost = new btGhostObject();
+        conveyorGhost.setCollisionShape(conveyorBody.getCollisionShape());
+        conveyorGhost.setWorldTransform(conveyorTransform);
+        conveyorGhost.userData = moveBehavior;
+
+
+        //Add to physics simulation
+        dynamicsWorld.addRigidBody(conveyorBody);
+        dynamicsWorld.addCollisionObject(conveyorGhost);
+
+        //---Upgrade Beam---
+        //Create View Model and Shape
+        Model beamModel = createBox(0.5f, .75f, 4, Color.BLUE);
+        ModelInstance beamModelInstance = new ModelInstance(beamModel);
+        Matrix4 beamTransform = new Matrix4();
+        beamTransform.translate(0, .75f / 2f, 0); // center y = height/2
+        beamModelInstance.transform.set(beamTransform);
+        modelInstances.add(beamModelInstance);
+        //Create Physics Counterpart
+        btCollisionShape beamShape = new btBoxShape(new Vector3(0.5f/2, 0.75f/2, 4f/2));
+        btGhostObject beamGhost = new btGhostObject();
+        beamGhost.setCollisionFlags(beamGhost.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
+        beamGhost.setCollisionShape(beamShape);
+        beamGhost.setWorldTransform(beamTransform);
+        beamGhost.userData = upgradeBehavior;
+        //Add to physics simulation
+        dynamicsWorld.addCollisionObject(beamGhost);
+
+        final float wallWidth = 4f;
+        final float wallHeight = .75f;
+        final float wallDepth = 1f;
+        btCollisionShape wallShape = new btBoxShape(new Vector3(wallWidth/2, wallHeight/2, wallDepth/2));
+
+        //Wall 1
+        Model wallModel = createBox(wallWidth, wallHeight, wallDepth, Color.RED);
+        ModelInstance wallInstance1 = new ModelInstance(wallModel);
+        Matrix4 wall1Transform = new  Matrix4();
+        wall1Transform.translate(0f, wallHeight / 2, -2.5f);
+        wallInstance1.transform = wall1Transform;
+        modelInstances.add(wallInstance1);
+        btRigidBody wall1RigidBody = createStaticBody(wallInstance1, wallShape);
+
+
+        //Wall 2
+        Matrix4 wall2Transform = new  Matrix4();
+        ModelInstance wallInstance2 = new ModelInstance(wallModel);
+        wall2Transform.translate(0f, wallHeight / 2, 2.5f);
+        wallInstance2.transform = wall2Transform;
+        modelInstances.add(wallInstance2);
+        btRigidBody wall2RigidBody = createStaticBody(wallInstance2, wallShape);
+
+        dynamicsWorld.addRigidBody(wall1RigidBody);
+        dynamicsWorld.addRigidBody(wall2RigidBody);
+
     }
 
 

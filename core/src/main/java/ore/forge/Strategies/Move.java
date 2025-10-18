@@ -16,6 +16,10 @@ public class Move implements Behavior {
         this.force = jsonValue.getFloat("force");
     }
 
+    public Move(float force) {
+        this.force = force;
+    }
+
     @Override
     public void register() {
 
