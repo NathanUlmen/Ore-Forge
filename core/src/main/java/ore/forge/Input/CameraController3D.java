@@ -51,7 +51,14 @@ public class CameraController3D {
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
             camera.position.sub(direction.cpy().scl(finalMoveSpeed * delta));
         }
-
+        //Move up
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            camera.position.y += finalMoveSpeed * delta;
+        }
+        //Move down
+        if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+            camera.position.y -= finalMoveSpeed * delta;
+        }
         //Update camera direction
         if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             mouseScreen.set(Gdx.input.getX(), Gdx.input.getY());
