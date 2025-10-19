@@ -12,16 +12,17 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
-import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operators.NumericOperator;
 import ore.forge.Input.CameraController3D;
+import ore.forge.PhysicsWorld;
+import ore.forge.Strategies.Behavior;
 import ore.forge.Strategies.Move;
 import ore.forge.Strategies.UpgradeBehavior;
 import ore.forge.Strategies.UpgradeStrategies.BasicUpgrade;
@@ -37,13 +38,7 @@ public class Gameplay3D implements Screen {
     private final Environment environment;
     private final CameraController3D cameraController3D;
     private final ArrayList<ModelInstance> modelInstances;
-
-    //Physics
-    btDiscreteDynamicsWorld dynamicsWorld;
-    btDispatcher dispatcher;
-    btBroadphaseInterface broadphase;
-    btConstraintSolver solver;
-    btCollisionConfiguration collisionConfig;
+    private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
 
     public Gameplay3D() {
         //Config camera
@@ -82,15 +77,6 @@ public class Gameplay3D implements Screen {
         instance.transform.set(t2);
         modelInstances.add(instance);
 
-        //Config Physics
-        Bullet.init();
-        collisionConfig = new btDefaultCollisionConfiguration();
-        dispatcher = new btCollisionDispatcher(collisionConfig);
-        broadphase = new btDbvtBroadphase();
-        solver = new btSequentialImpulseConstraintSolver();
-        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig);
-        dynamicsWorld.setGravity(new Vector3(0, -9.81f, 0));
-
         // Create collision shapes
         btCollisionShape boxShape = new btBoxShape(new Vector3(1.5f / 2, 1.5f / 2, 1.5f / 2));
         btCollisionShape planeShape = new btBoxShape(new Vector3(25f, 0.01f, 25f));
@@ -100,8 +86,8 @@ public class Gameplay3D implements Screen {
         btRigidBody groundBody = createStaticBody(modelInstances.get(1), planeShape);
 
         // Add to world
-        dynamicsWorld.addRigidBody(cubeBody);
-        dynamicsWorld.addRigidBody(groundBody);
+        physicsWorld.dynamicsWorld().addRigidBody(cubeBody);
+        physicsWorld.dynamicsWorld().addRigidBody(groundBody);
 
         //Transform cube to be in the air.
         Matrix4 t3 = new Matrix4();
@@ -122,17 +108,19 @@ public class Gameplay3D implements Screen {
     @Override
     public void render(float delta) {
         // Physics and transforms
-        dynamicsWorld.stepSimulation(delta, 5, 1f / 240f);
+        physicsWorld.dynamicsWorld().stepSimulation(delta, 5, 1f / 240f);
 
         //Apply transforms to render models.
         for (int i = 0; i < modelInstances.size(); i++) {
-            if (dynamicsWorld.getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
+            if (physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
                 var motionState = body.getMotionState();
                 if (motionState != null) {
                     motionState.getWorldTransform(modelInstances.get(i).transform);
                 }
             }
         }
+
+
 
 //        btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
 //        btMotionState motionState = cubeBody.getMotionState();
@@ -152,7 +140,9 @@ public class Gameplay3D implements Screen {
 //        }
         camera.update();
 
+
         //Render
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);
@@ -160,6 +150,7 @@ public class Gameplay3D implements Screen {
             modelBatch.render(instance, environment);
         }
         modelBatch.end();
+        PhysicsWorld.instance().drawDebug(camera);
     }
 
     @Override
@@ -241,8 +232,9 @@ public class Gameplay3D implements Screen {
         conveyorModelInstance.transform = conveyorTransform;
         modelInstances.add(conveyorModelInstance);
         modelInstances.add(conveyorModelInstance); //add second time to account for the conveyor ghost.
+
         //Create Physics Counterpart
-        btCollisionShape collisionShape = new btBoxShape(new Vector3(4f, .1f, 4f)); //for a 4x4
+        btCollisionShape collisionShape = new btBoxShape(new Vector3(2f, .05f, 2f)); //for a 4x4
         btRigidBody conveyorBody = createStaticBody(conveyorModelInstance, collisionShape);
         btGhostObject conveyorGhost = new btGhostObject();
         conveyorGhost.setCollisionShape(conveyorBody.getCollisionShape());
@@ -251,8 +243,8 @@ public class Gameplay3D implements Screen {
 
 
         //Add to physics simulation
-        dynamicsWorld.addRigidBody(conveyorBody);
-        dynamicsWorld.addCollisionObject(conveyorGhost);
+        physicsWorld.dynamicsWorld().addRigidBody(conveyorBody);
+        physicsWorld.dynamicsWorld().addCollisionObject(conveyorGhost);
 
         //---Upgrade Beam---
         //Create View Model and Shape
@@ -270,7 +262,7 @@ public class Gameplay3D implements Screen {
         beamGhost.setWorldTransform(beamTransform);
         beamGhost.userData = upgradeBehavior;
         //Add to physics simulation
-        dynamicsWorld.addCollisionObject(beamGhost);
+        physicsWorld.dynamicsWorld().addCollisionObject(beamGhost);
 
         final float wallWidth = 4f;
         final float wallHeight = .75f;
@@ -295,8 +287,9 @@ public class Gameplay3D implements Screen {
         modelInstances.add(wallInstance2);
         btRigidBody wall2RigidBody = createStaticBody(wallInstance2, wallShape);
 
-        dynamicsWorld.addRigidBody(wall1RigidBody);
-        dynamicsWorld.addRigidBody(wall2RigidBody);
+        physicsWorld.dynamicsWorld().addRigidBody(wall1RigidBody);
+        physicsWorld.dynamicsWorld().addRigidBody(wall2RigidBody);
+
 
     }
 
