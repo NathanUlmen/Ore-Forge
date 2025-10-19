@@ -7,7 +7,6 @@ import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.*;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
 
 public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {

@@ -7,7 +7,6 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Screens.Behavior;
 
 public class Move implements Behavior {
     private final float force;

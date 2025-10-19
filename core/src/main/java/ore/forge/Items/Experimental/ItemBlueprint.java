@@ -8,7 +8,7 @@ import ore.forge.GameWorld;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.ExtendedFixtureDef;
 import ore.forge.ReflectionLoader;
-import ore.forge.Screens.Behavior;
+import ore.forge.Strategies.Behavior;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package ore.forge.Screens;
+package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;

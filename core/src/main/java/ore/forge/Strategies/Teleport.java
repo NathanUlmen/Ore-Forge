@@ -4,9 +4,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
-import ore.forge.Items.Experimental.ItemBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Screens.Behavior;
 
 public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent> {
     private Fixture receiver;

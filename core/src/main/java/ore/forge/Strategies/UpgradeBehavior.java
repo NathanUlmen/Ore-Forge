@@ -8,7 +8,6 @@ import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.UpgraderBlueprint;
 import ore.forge.Ore;
 import ore.forge.ReflectionLoader;
-import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 import ore.forge.UpgradeCooldown;
 import ore.forge.UpgradeTag;

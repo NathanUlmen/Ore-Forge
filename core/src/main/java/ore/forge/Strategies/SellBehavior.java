@@ -3,15 +3,11 @@ package ore.forge.Strategies;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.EventSystem.EventManager;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
-import ore.forge.Items.Experimental.ItemBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderBlueprint;
 import ore.forge.Ore;
 import ore.forge.Player.Player;
 import ore.forge.ReflectionLoader;
-import ore.forge.Screens.Behavior;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
 public class SellBehavior implements Behavior {

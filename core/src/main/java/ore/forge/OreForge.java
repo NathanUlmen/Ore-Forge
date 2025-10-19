@@ -4,11 +4,7 @@
 package ore.forge;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import ore.forge.Player.Player;
@@ -29,14 +25,6 @@ public class OreForge extends Game {
 	private SpriteBatch spriteBatch;
 
 	public void create() {
-
-		BitmapFont font2 = new BitmapFont(Gdx.files.internal("UIAssets/Blazam.fnt"));
-		Label.LabelStyle fpsStyle = new Label.LabelStyle(font2, Color.WHITE);
-		memoryCounter = new Label("", fpsStyle);
-		memoryCounter.setFontScale(0.6f);
-		memoryCounter.setPosition(99, 100);
-		memoryCounter.setVisible(false);
-
         /*
 		* Things to Initialize here:
 		* AllGameItems
@@ -68,10 +56,6 @@ public class OreForge extends Game {
 
 	public void render() {
 		// Clear the screen
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		memoryCounter.setText(((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/1024/1024) + "MB");
-		// Update and render the current screen
 		super.render();
 	}
 
