@@ -9,7 +9,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import ore.forge.Player.Player;
 import ore.forge.QuestComponents.QuestManager;
-import ore.forge.Screens.*;
+import ore.forge.Screens.Gameplay3D;
+import ore.forge.Screens.MainMenu;
+import ore.forge.Screens.PauseMenu;
+import ore.forge.Screens.SettingsMenu;
 
 /**@author Nathan Ulmen*/
 public class OreForge extends Game {
@@ -44,7 +47,7 @@ public class OreForge extends Game {
         ItemMap.getSingleton().loadState(itemManager);
 		mainMenuScreen = new MainMenu(this, itemManager);
 		settingsMenu = new SettingsMenu(this, itemManager);
-		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
+//		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
 		pauseMenu = new PauseMenu(this, itemManager);
 
         Gameplay3D gameplay3D = new Gameplay3D();

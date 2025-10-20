@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
 import ore.forge.Items.Blocks.Worker;
 import ore.forge.Strategies.OreEffects.BundledOreEffect;
@@ -29,7 +30,7 @@ public class Ore {
         collisionFilter.maskBits = CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR);
     }
 
-
+    private btRigidBody rigidBody;
     private Body body;
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;

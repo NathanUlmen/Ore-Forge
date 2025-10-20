@@ -145,11 +145,11 @@ public class Gameplay3D implements Screen {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        modelBatch.begin(camera);
-        for (var instance : modelInstances) {
-            modelBatch.render(instance, environment);
-        }
-        modelBatch.end();
+//        modelBatch.begin(camera);
+//        for (var instance : modelInstances) {
+//            modelBatch.render(instance, environment);
+//        }
+//        modelBatch.end();
         PhysicsWorld.instance().drawDebug(camera);
     }
 
