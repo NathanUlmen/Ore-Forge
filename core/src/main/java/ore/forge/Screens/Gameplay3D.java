@@ -2,10 +2,12 @@ package ore.forge.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -18,16 +20,17 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import ore.forge.*;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operators.NumericOperator;
 import ore.forge.Input.CameraController3D;
-import ore.forge.PhysicsWorld;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Strategies.Behavior;
 import ore.forge.Strategies.Move;
 import ore.forge.Strategies.UpgradeBehavior;
 import ore.forge.Strategies.UpgradeStrategies.BasicUpgrade;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
-import ore.forge.UpgradeTag;
 
 import java.util.ArrayList;
 
@@ -39,13 +42,17 @@ public class Gameplay3D implements Screen {
     private final CameraController3D cameraController3D;
     private final ArrayList<ModelInstance> modelInstances;
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
+    private final CollisionManager collisionManager;
+    private final Label oreTag;
+    private Batch batch;
+    private btRigidBody cubeBody;
 
     public Gameplay3D() {
         //Config camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1f; //Min distance can see/draw
         camera.far = 1000f; //Max distance can see/draw
-        camera.position.set(20, 10, 20);
+        camera.position.set(25, 12, 20);
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
@@ -82,22 +89,49 @@ public class Gameplay3D implements Screen {
         btCollisionShape planeShape = new btBoxShape(new Vector3(25f, 0.01f, 25f));
 
         // Create rigid bodies
-        btRigidBody cubeBody = createDynamicBody(modelInstances.get(0), boxShape, 10f);
+        cubeBody = createDynamicBody(modelInstances.get(0), boxShape, 10f);
         btRigidBody groundBody = createStaticBody(modelInstances.get(1), planeShape);
+        groundBody.setFriction(1.7f);
 
+        var ore = new Ore();
+        cubeBody.userData = ore;
+        ore.rigidBody = cubeBody;
+
+        groundBody.userData = "IM DA GROUND";
         // Add to world
-        physicsWorld.dynamicsWorld().addRigidBody(cubeBody);
-        physicsWorld.dynamicsWorld().addRigidBody(groundBody);
+        physicsWorld.dynamicsWorld().addRigidBody(cubeBody, CollisionRules.combineBits(CollisionRules.ORE),
+            CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
+        physicsWorld.dynamicsWorld().addRigidBody(groundBody, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
+            CollisionRules.combineBits(CollisionRules.ORE));
+
 
         //Transform cube to be in the air.
         Matrix4 t3 = new Matrix4();
         cubeBody.getWorldTransform(t3);
-        t3.setToTranslation(0, 20f, 0);
-        t3.rotate(1, 1, 1, 70f);
+        t3.setToTranslation(-8, 1f, 0);
+        t3.rotate(1, 1, 1, 0f);
         cubeBody.setWorldTransform(t3);
         cubeBody.getMotionState().setWorldTransform(t3);
 
+        //Initialize collision Manager
+        collisionManager = new CollisionManager();
+
         createTestUpgrader();
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Fonts/ebrimabd.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        param.size = 20;
+        param.genMipMaps = true;
+        param.minFilter = Texture.TextureFilter.MipMapLinearNearest;
+        param.magFilter = Texture.TextureFilter.MipMapLinearNearest;
+
+
+        BitmapFont font2 = generator.generateFont(param);
+        batch = new SpriteBatch();
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font2, Color.BLUE);
+        oreTag = new Label("", labelStyle);
+        batch = new SpriteBatch();
+
     }
 
     @Override
@@ -121,7 +155,6 @@ public class Gameplay3D implements Screen {
         }
 
 
-
 //        btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
 //        btMotionState motionState = cubeBody.getMotionState();
 //        if (motionState != null) {
@@ -129,15 +162,14 @@ public class Gameplay3D implements Screen {
 //        }
 
         //Camera logic
-//        btRigidBody trackedBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
-//        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
-//            Vector3 pos = new Vector3();
-//            modelInstances.get(0).transform.getTranslation(pos);
-//            Vector3 dir = pos.cpy().sub(camera.position).nor();
-//            camera.direction.lerp(dir, delta * 2f).nor();
-//        } else {
+        btRigidBody trackedBody = (btRigidBody) physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(0);
+        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
+            Vector3 pos = new Vector3();
+            modelInstances.get(0).transform.getTranslation(pos);
+            cameraController3D.pointAt(pos, delta);
+        } else {
             cameraController3D.update();
-//        }
+        }
         camera.update();
 
 
@@ -145,12 +177,46 @@ public class Gameplay3D implements Screen {
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-//        modelBatch.begin(camera);
-//        for (var instance : modelInstances) {
-//            modelBatch.render(instance, environment);
+        modelBatch.begin(camera);
+        for (var instance : modelInstances) {
+            modelBatch.render(instance, environment);
+        }
+        modelBatch.end();
+
+
+        collisionManager.updateTouchingEntities();
+
+        //For illustration purposes
+//        var entities = new ArrayList<EntityInstance<?>>();
+//        for (EntityInstance<?> entity : entities) {
+//            for (ModelInstance modelInstance : entity.visualComponent.modelInstances) {
+//                for (VisualEffect visualEffect : entity.visualComponent.visualEffects) {
+//                    if (visualEffect.isActive()) {
+//                        modelBatch.render(modelInstance, visualEffect.shader);
+//                    }
+//                }
+//            }
 //        }
-//        modelBatch.end();
-        PhysicsWorld.instance().drawDebug(camera);
+
+
+//        PhysicsWorld.instance().drawDebug(camera);
+
+        //Update label text if needed
+        if (cubeBody.userData instanceof Ore ore) {
+            oreTag.setText("Ore Value: " + ore.getOreValue());
+        }
+
+        oreTag.pack();
+        Vector3 screenPos = camera.project(new Vector3(cubeBody.getCenterOfMassPosition()));
+        modelBatch.end();
+        batch.begin();
+        float labelX = screenPos.x - oreTag.getWidth() / 2f;
+        float labelY = screenPos.y + 10f; // offset above object
+        oreTag.setPosition(labelX, labelY);
+
+        oreTag.draw(batch, 1f);
+        batch.end();
+
     }
 
     @Override
@@ -219,27 +285,27 @@ public class Gameplay3D implements Screen {
         UpgradeTag upgradeTag = new UpgradeTag(itemName, id, 500, false);
         UpgradeStrategy upgradeStrategy = new BasicUpgrade(2, NumericOperator.ADD, NumericOreProperties.ORE_VALUE);
         UpgradeBehavior upgradeBehavior = new UpgradeBehavior(upgradeTag, upgradeStrategy, 0.5f);
-        Behavior moveBehavior = new Move(825f);
+        Behavior moveBehavior = new Move(.5f);
 
         //-----Item Bodies-----
 
         //---Create Conveyor---
         //Create View Model and Shape
-        Model conveyorModel = createBox(4, 0.1f, 4, Color.GRAY);
+        Model conveyorModel = createBox(20, 0.1f, 4, Color.GRAY);
         ModelInstance conveyorModelInstance = new ModelInstance(conveyorModel);
         Matrix4 conveyorTransform = new Matrix4();
-        conveyorTransform.translate(0, 0.1f/2f, 0);
+        conveyorTransform.translate(0, 0.1f / 2f, 0);
         conveyorModelInstance.transform = conveyorTransform;
         modelInstances.add(conveyorModelInstance);
         modelInstances.add(conveyorModelInstance); //add second time to account for the conveyor ghost.
 
         //Create Physics Counterpart
-        btCollisionShape collisionShape = new btBoxShape(new Vector3(2f, .05f, 2f)); //for a 4x4
+        btCollisionShape collisionShape = new btBoxShape(new Vector3(10f, .05f, 2f)); //for a 4x4
         btRigidBody conveyorBody = createStaticBody(conveyorModelInstance, collisionShape);
         btGhostObject conveyorGhost = new btGhostObject();
         conveyorGhost.setCollisionShape(conveyorBody.getCollisionShape());
         conveyorGhost.setWorldTransform(conveyorTransform);
-        conveyorGhost.userData = moveBehavior;
+        conveyorGhost.userData = new ItemUserData(new Vector3(1, 0, 0), moveBehavior, null);
 
 
         //Add to physics simulation
@@ -255,32 +321,31 @@ public class Gameplay3D implements Screen {
         beamModelInstance.transform.set(beamTransform);
         modelInstances.add(beamModelInstance);
         //Create Physics Counterpart
-        btCollisionShape beamShape = new btBoxShape(new Vector3(0.5f/2, 0.75f/2, 4f/2));
+        btCollisionShape beamShape = new btBoxShape(new Vector3(0.5f / 2, 0.75f / 2, 4f / 2));
         btGhostObject beamGhost = new btGhostObject();
         beamGhost.setCollisionFlags(beamGhost.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
         beamGhost.setCollisionShape(beamShape);
         beamGhost.setWorldTransform(beamTransform);
-        beamGhost.userData = upgradeBehavior;
+        beamGhost.userData = new ItemUserData(new Vector3(1, 0, 0), upgradeBehavior, null);
         //Add to physics simulation
         physicsWorld.dynamicsWorld().addCollisionObject(beamGhost);
 
         final float wallWidth = 4f;
         final float wallHeight = .75f;
         final float wallDepth = 1f;
-        btCollisionShape wallShape = new btBoxShape(new Vector3(wallWidth/2, wallHeight/2, wallDepth/2));
+        btCollisionShape wallShape = new btBoxShape(new Vector3(wallWidth / 2, wallHeight / 2, wallDepth / 2));
 
         //Wall 1
         Model wallModel = createBox(wallWidth, wallHeight, wallDepth, Color.RED);
         ModelInstance wallInstance1 = new ModelInstance(wallModel);
-        Matrix4 wall1Transform = new  Matrix4();
+        Matrix4 wall1Transform = new Matrix4();
         wall1Transform.translate(0f, wallHeight / 2, -2.5f);
         wallInstance1.transform = wall1Transform;
         modelInstances.add(wallInstance1);
         btRigidBody wall1RigidBody = createStaticBody(wallInstance1, wallShape);
 
-
         //Wall 2
-        Matrix4 wall2Transform = new  Matrix4();
+        Matrix4 wall2Transform = new Matrix4();
         ModelInstance wallInstance2 = new ModelInstance(wallModel);
         wall2Transform.translate(0f, wallHeight / 2, 2.5f);
         wallInstance2.transform = wall2Transform;

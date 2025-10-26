@@ -55,25 +55,25 @@ public class SellBehavior implements Behavior {
 
     //TODO: UNFINISHED, events need to be handled
     @Override
-    public void interact(Fixture contact, ItemUserData userData) {
-        if (contact.getUserData() instanceof Ore ore) {
-            upgradeStrategy.applyTo(ore);
-            var player = Player.getSingleton();
-//            var eventManager = EventManager.getSingleton();
-            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
-//            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
-
-            //Compute and Reward Special points
-            spRewardProgress += ore.getMultiOre();
-            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
-            spRewardProgress %= spRewardThreshold;
-
-            System.out.println("Ore sold for: " + ore.getOreValue() * ore.getMultiOre());
-
-            //TODO: Despawn ore
-//            GameWorld.getInstance().physicsWorld().destroyBody(contact.getBody());
-
-        }
+    public void interact(Object subjectData, ItemUserData userData) {
+//        if (contact.getUserData() instanceof Ore ore) {
+//            upgradeStrategy.applyTo(ore);
+//            var player = Player.getSingleton();
+////            var eventManager = EventManager.getSingleton();
+//            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
+////            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
+//
+//            //Compute and Reward Special points
+//            spRewardProgress += ore.getMultiOre();
+//            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
+//            spRewardProgress %= spRewardThreshold;
+//
+//            System.out.println("Ore sold for: " + ore.getOreValue() * ore.getMultiOre());
+//
+//            //TODO: Despawn ore
+////            GameWorld.getInstance().physicsWorld().destroyBody(contact.getBody());
+//
+//        }
     }
 
     @Override

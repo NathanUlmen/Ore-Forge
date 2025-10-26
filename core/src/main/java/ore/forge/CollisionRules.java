@@ -1,21 +1,22 @@
 package ore.forge;
 
 public enum CollisionRules {
-    ORE_PROCESSOR(0),
-    ORE(1);
+    ORE(0),
+    ORE_PROCESSOR(1),
+    WORLD_GEOMETRY(2);
 
-    private final short bit;
+    private final int bit;
 
     CollisionRules(int bitNum) {
-        this.bit = (short) (1 << bitNum);
+        this.bit = (1 << bitNum);
     }
 
-    public short getBit() {
+    public int getBit() {
         return bit;
     }
 
-    public static short combineBits(CollisionRules ...rules) {
-        short combined = 0;
+    public static int combineBits(CollisionRules... rules) {
+        int combined = 0;
         for (CollisionRules rule : rules) {
             combined |= rule.getBit();
         }

@@ -13,7 +13,7 @@ public interface Behavior {
 
     void update(float delta);
 
-    void interact(Fixture contact, ItemUserData userData);
+    void interact(Object subjectData, ItemUserData userData);
 
     Behavior clone(Fixture parent);
 

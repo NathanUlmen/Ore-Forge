@@ -59,9 +59,10 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public void interact(Fixture contact, ItemUserData userData) {
+    public void interact(Object subjectData, ItemUserData userData) {
+        assert subjectData instanceof Ore;
         assert upgradeTag != null && upgradeStrategy != null;
-        if (contact.getUserData() instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
+        if (subjectData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
             upgradeStrategy.applyTo(ore);
             ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
             ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();

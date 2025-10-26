@@ -23,14 +23,9 @@ public class Ore {
     //Ore can be classified by name, id, type. Ores can have multiple types.
     protected final static ItemMap itemMap = ItemMap.getSingleton();
     protected final static OreRealm oreRealm = OreRealm.getSingleton();
-    private final static Filter collisionFilter = new Filter();
 
-    static {
-        collisionFilter.categoryBits = CollisionRules.ORE.getBit();
-        collisionFilter.maskBits = CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR);
-    }
+    public btRigidBody rigidBody;
 
-    private btRigidBody rigidBody;
     private Body body;
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;
@@ -368,14 +363,6 @@ public class Ore {
 
     public void removeUpgradeCooldown(UpgradeTag tag) {
         cooldownLookup.remove(tag);
-    }
-
-    public void setBody(Body body) {
-        this.body = body;
-        body.setUserData(this);
-        for (Fixture fixture : body.getFixtureList()) {
-            fixture.setFilterData(collisionFilter);
-        }
     }
 
     public Body getBody() {

@@ -1,6 +1,5 @@
 package ore.forge.Items.Experimental;
 
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.UpgradeTag;
 

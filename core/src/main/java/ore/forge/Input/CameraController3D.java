@@ -68,6 +68,11 @@ public class CameraController3D {
         }
     }
 
+    public void pointAt(Vector3 target, float delta) {
+        Vector3 dir = target.cpy().sub(camera.position).nor();
+        camera.direction.lerp(dir, delta * 2f).nor();
+    }
+
     private void handleRotation(float delta) {
         float x = Gdx.input.getX();
         float y = Gdx.input.getY();
@@ -78,7 +83,7 @@ public class CameraController3D {
         // Yaw: rotate around world Y axis
         camera.rotateAround(camera.position, new Vector3(0,1,0), deltaX * 0.5f);
 
-        // Pitch: rotate around camera right axis
+        // Pitch: rotate around camera X axis
         Vector3 right = camera.direction.cpy().crs(camera.up).nor();
         camera.rotateAround(camera.position, right, deltaY * 0.5f);
     }

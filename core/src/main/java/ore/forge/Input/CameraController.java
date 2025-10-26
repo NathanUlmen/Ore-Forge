@@ -2,6 +2,7 @@ package ore.forge.Input;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector3;
 
 public class CameraController {
     private final static float CAMERA_SPEED = 20.0f;
@@ -26,14 +27,12 @@ public class CameraController {
         if (moveDown) {
             camera.position.y -= CAMERA_SPEED * delta;
         }
-
         if (zoomIn) {
             camera.zoom += ZOOM_SPEED * delta;
         }
         if (zoomOut) {
             camera.zoom -= ZOOM_SPEED * delta;
         }
-
     }
 
     public void setAll(boolean state) {

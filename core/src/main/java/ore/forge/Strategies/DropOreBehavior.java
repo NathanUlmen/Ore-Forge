@@ -54,26 +54,26 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
 
     @Override
     public void update(float delta) {
-        if (dropperStrategy.drop(delta)) {
-            var body = GameWorld.instance().physicsWorld().createBody(oreDef);
-            body.createFixture(blueprint.fixtureDef);
-            Ore ore = OreRealm.getSingleton().giveOre();
-            ore.applyBaseStats(blueprint.oreValue, blueprint.oreTemperature, blueprint.multiOre, blueprint.name, "TESTING", null);
-            ore.setBody(body);
-            Vector2 dropperLocation = fixture.getBody().getPosition();
-            var itemData = fixture.getUserData();
-            Vector2 finalSpawnOffset = null;
-            if (itemData instanceof ItemUserData data) {
-                finalSpawnOffset = spawnOffset.rotateDeg(fixture.getBody().getAngle() + data.relativeAngle());
-            }
-            assert finalSpawnOffset != null;
-            body.setTransform(dropperLocation.x + finalSpawnOffset.x, dropperLocation.y + finalSpawnOffset.y, fixture.getBody().getAngle());
-
-        }
+//        if (dropperStrategy.drop(delta)) {
+//            var body = GameWorld.instance().physicsWorld().createBody(oreDef);
+//            body.createFixture(blueprint.fixtureDef);
+//            Ore ore = OreRealm.getSingleton().giveOre();
+//            ore.applyBaseStats(blueprint.oreValue, blueprint.oreTemperature, blueprint.multiOre, blueprint.name, "TESTING", null);
+//            ore.setBody(body);
+//            Vector2 dropperLocation = fixture.getBody().getPosition();
+//            var itemData = fixture.getUserData();
+//            Vector2 finalSpawnOffset = null;
+//            if (itemData instanceof ItemUserData data) {
+//                finalSpawnOffset = spawnOffset.rotateDeg(fixture.getBody().getAngle() + data.direction());
+//            }
+//            assert finalSpawnOffset != null;
+//            body.setTransform(dropperLocation.x + finalSpawnOffset.x, dropperLocation.y + finalSpawnOffset.y, fixture.getBody().getAngle());
+//
+//        }
     }
 
     @Override
-    public void interact(Fixture contact, ItemUserData userData) {
+    public void interact(Object subjectData, ItemUserData userData) {
         assert false;
     }
 

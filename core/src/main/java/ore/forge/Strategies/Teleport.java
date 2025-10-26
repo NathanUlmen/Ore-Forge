@@ -31,9 +31,9 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
     }
 
     @Override
-    public void interact(Fixture contact, ItemUserData userData) {
+    public void interact(Object subjectData, ItemUserData userData) {
         //move contact to teleporter position
-        contact.getBody().setTransform(receiver.getBody().getTransform().getPosition(), contact.getBody().getAngle());
+//        contact.getBody().setTransform(receiver.getBody().getTransform().getPosition(), contact.getBody().getAngle());
     }
 
     @Override

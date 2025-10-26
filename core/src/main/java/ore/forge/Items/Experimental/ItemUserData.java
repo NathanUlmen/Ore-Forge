@@ -1,6 +1,6 @@
 package ore.forge.Items.Experimental;
 
-import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.math.Vector3;
 import ore.forge.Strategies.Behavior;
 
-public record ItemUserData(float relativeAngle, Behavior behavior, Body body) {}
+public record ItemUserData(Vector3 direction, Behavior behavior, ItemBlueprint blueprint) {}

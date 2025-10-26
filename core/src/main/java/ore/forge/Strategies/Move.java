@@ -1,12 +1,12 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Ore;
 
 public class Move implements Behavior {
     private final float force;
@@ -40,14 +40,11 @@ public class Move implements Behavior {
     }
 
     @Override
-    public void interact(Fixture fixture, ItemUserData itemUserData) {
-        float direction = (itemUserData.relativeAngle() + itemUserData.body().getAngle() * MathUtils.radiansToDegrees);
-        direction *= MathUtils.degreesToRadians;
-        float deltaTime = Gdx.graphics.getDeltaTime();
-        float xForce = MathUtils.cos(direction) * force * deltaTime;
-        float yForce = MathUtils.sin(direction) * force * deltaTime;
-
-        fixture.getBody().applyForce(new Vector2(xForce, yForce), fixture.getBody().getWorldCenter(), true);
+    public void interact(Object subjectData, ItemUserData itemUserData) {
+        assert subjectData instanceof Ore;
+        Ore ore = (Ore) subjectData;
+        btRigidBody rigidBody = ore.rigidBody;
+        rigidBody.applyCentralImpulse(itemUserData.direction().cpy().nor().scl(force));
     }
 
     @Override

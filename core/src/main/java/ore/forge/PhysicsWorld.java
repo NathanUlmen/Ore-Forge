@@ -20,7 +20,6 @@ public class PhysicsWorld implements Disposable {
     private final btConstraintSolver solver;
     private final btCollisionConfiguration collisionConfig;
     private final DebugDrawer debugDrawer;
-    private final ContactListener contactListener;
 
     private PhysicsWorld() {
         Bullet.init();
@@ -34,13 +33,6 @@ public class PhysicsWorld implements Disposable {
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_DrawWireframe);
 
-        contactListener = new ContactListener() {
-            @Override
-            public void onContactStarted(btCollisionObject btCollisionObject1, btCollisionObject btCollisionObject2) {
-                System.out.println("Testing!!!");
-            }
-        };
-        contactListener.enable();
 
         dynamicsWorld.setDebugDrawer(debugDrawer);
     }
@@ -67,6 +59,5 @@ public class PhysicsWorld implements Disposable {
         debugDrawer.dispose();
         solver.dispose();
         broadphase.dispose();
-        contactListener.dispose();
     }
 }

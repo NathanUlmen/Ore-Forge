@@ -20,16 +20,12 @@ import java.util.HashMap;
  **/
 public abstract class ItemBlueprint {
     protected final String name, id, description;
+
+    protected HashMap<String, Behavior> behaviors;
+
     protected final BodyDef bodyDef;
     protected final AcquisitionInfo acquisitionInfo;
     protected final ArrayList<ExtendedFixtureDef> fixtureDefs;
-    protected final HashMap<String, Behavior> behaviors;
-
-    protected static final Filter FILTER = new Filter();
-    static {
-        FILTER.categoryBits = CollisionRules.ORE_PROCESSOR.getBit();
-        FILTER.maskBits = CollisionRules.ORE.getBit();
-    }
 
     public ItemBlueprint(JsonValue jsonValue) {
         this.name = jsonValue.getString("name");
@@ -90,24 +86,5 @@ public abstract class ItemBlueprint {
         }
         return behaviorMap;
     }
-
-    public final ItemInstance createItem() {
-        Body body = GameWorld.instance().physicsWorld().createBody(bodyDef);
-        body.setUserData(this);
-        for (ExtendedFixtureDef customFixtureDef : fixtureDefs) {
-            var fixture = body.createFixture(customFixtureDef);
-            Behavior behavior = behaviors.get(customFixtureDef.getCollisionBehaviorKey());
-            if  (behavior != null) {
-                behavior = behavior.clone(fixture);
-                behavior.attach(body, fixture);
-            }
-            fixture.setUserData(new ItemUserData(customFixtureDef.getRelativeAngle(), behavior, body));
-            fixture.setSensor(!customFixtureDef.isCollisionEnabled());
-            fixture.setFilterData(FILTER);
-        }
-        return new ItemInstance(this, body);
-    }
-
-
 
 }

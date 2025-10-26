@@ -121,16 +121,17 @@
       "description": "Each part of the object with physics and rendering info.",
       "items": {
         "type": "object",
-        "required": ["type", "collisionEnabled", "relativePosition", "relativeRotation"],
+        "required": ["type", "bulletCollisionType", "relativePosition", "relativeRotation"],
         "properties": {
           "type": {
             "type": "string",
             "enum": ["box", "sphere", "capsule", "mesh"],
             "description": "Type of collision shape."
           },
-          "collisionEnabled": {
-            "type": "boolean",
-            "description": "Whether this part participates in physics collisions."
+          "bulletCollisionType": {
+            "type": "string",
+            "enum" : ["btRigidBody", "btGhostObject"],
+            "description": "The type of body to create and add to the bullet physics simulation."
           },
           "collisionMesh": {
             "type": "string",

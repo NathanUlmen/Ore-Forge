@@ -45,8 +45,6 @@ public class InputManager implements GameEventListener {
      * Observing Ore
      *
      * */
-
-
     public InputManager(OrthographicCamera camera, Game game, UserInterface ui, Inventory inventory) {
         this.inventory = inventory;
         controller = new CameraController();
