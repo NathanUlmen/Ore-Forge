@@ -263,7 +263,7 @@ public class BigNumber implements Comparable<BigNumber> {
     }
 
     public String toString() {
-        return mantissa + " E " + String.format("%s,3d", Long.valueOf(exponent));
+        return mantissa + " E " + String.format("%s", Long.valueOf(exponent));
     }
 
     public boolean canBeDouble() {

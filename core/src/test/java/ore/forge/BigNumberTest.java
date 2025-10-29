@@ -127,7 +127,7 @@ public class BigNumberTest {
     void testModuloBig() {
         BigNumber left = new BigNumber(BigNumber.MAX_VALUE);
         BigNumber right = new BigNumber(3);
-        assertEquals(Double.MAX_VALUE % 3, left.modulo(right));
+        assertEquals(Double.MAX_VALUE % 3, left.modulo(right).convertToDouble());
     }
 
     @Test
