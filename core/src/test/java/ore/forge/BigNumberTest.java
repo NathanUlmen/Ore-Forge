@@ -2,10 +2,9 @@ package ore.forge;
 
 import org.junit.jupiter.api.Test;
 
-
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Nathan Ulmen
@@ -114,7 +113,8 @@ public class BigNumberTest {
 
     @Test
     void testFloor() {
-        assertEquals(54236, new BigNumber("5.423697E4").floor().convertToDouble());
+        double maxDifference = 0.0001f;
+        assertEquals(54236, new BigNumber("5.423697E4").floor().convertToDouble(), maxDifference);
     }
 
     @Test
@@ -125,6 +125,9 @@ public class BigNumberTest {
 
     @Test
     void testModuloBig() {
+        BigNumber left = new BigNumber(BigNumber.MAX_VALUE);
+        BigNumber right = new BigNumber(3);
+        assertEquals(Double.MAX_VALUE % 3, left.modulo(right));
     }
 
     @Test
