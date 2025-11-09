@@ -2,12 +2,11 @@ package ore.forge.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -20,12 +19,15 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operators.NumericOperator;
 import ore.forge.Input.CameraController3D;
+import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderSpawner;
 import ore.forge.Strategies.Behavior;
 import ore.forge.Strategies.Move;
 import ore.forge.Strategies.UpgradeBehavior;
@@ -43,7 +45,6 @@ public class Gameplay3D implements Screen {
     private final ArrayList<ModelInstance> modelInstances;
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
-    private final Label oreTag;
     private Batch batch;
     private btRigidBody cubeBody;
 
@@ -116,21 +117,18 @@ public class Gameplay3D implements Screen {
         //Initialize collision Manager
         collisionManager = new CollisionManager();
 
+        JsonReader jsonReader = new JsonReader();
+        JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
+        UpgraderSpawner spawner = new UpgraderSpawner(value);
+
+        EntityInstance instance1 = spawner.createInstance();
+        System.out.println("Created an EntityInstance!!");
+//        for (int i = 0; i < instance1.entityPhysicsBodies.size(); i++) {
+//            PhysicsWorld.instance().dynamicsWorld().addCollisionObject();
+//        }
+        modelInstances.add(instance1.visualComponent.modelInstance);
+
         createTestUpgrader();
-
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("Fonts/ebrimabd.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter param = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        param.size = 20;
-        param.genMipMaps = true;
-        param.minFilter = Texture.TextureFilter.MipMapLinearNearest;
-        param.magFilter = Texture.TextureFilter.MipMapLinearNearest;
-
-
-        BitmapFont font2 = generator.generateFont(param);
-        batch = new SpriteBatch();
-        Label.LabelStyle labelStyle = new Label.LabelStyle(font2, Color.BLUE);
-        oreTag = new Label("", labelStyle);
-        batch = new SpriteBatch();
 
     }
 
@@ -202,20 +200,6 @@ public class Gameplay3D implements Screen {
 //        PhysicsWorld.instance().drawDebug(camera);
 
         //Update label text if needed
-        if (cubeBody.userData instanceof Ore ore) {
-            oreTag.setText("Ore Value: " + ore.getOreValue());
-        }
-
-        oreTag.pack();
-        Vector3 screenPos = camera.project(new Vector3(cubeBody.getCenterOfMassPosition()));
-        modelBatch.end();
-        batch.begin();
-        float labelX = screenPos.x - oreTag.getWidth() / 2f;
-        float labelY = screenPos.y + 10f; // offset above object
-        oreTag.setPosition(labelX, labelY);
-
-        oreTag.draw(batch, 1f);
-        batch.end();
 
     }
 

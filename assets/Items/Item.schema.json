@@ -130,7 +130,7 @@
           },
           "bulletCollisionType": {
             "type": "string",
-            "enum" : ["btRigidBody", "btGhostObject"],
+            "enum" : ["btRigidBody", "btGhostObject", "both"],
             "description": "The type of body to create and add to the bullet physics simulation."
           },
           "collisionMesh": {
@@ -192,6 +192,13 @@
             "minItems": 3,
             "maxItems": 3,
             "description": "Rotation relative to the parent object (degrees) around X, Y, Z axes."
+          },
+          "relativeDirection" : {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Direction Relative to parent object that behaviors will use."
           }
         }
       }

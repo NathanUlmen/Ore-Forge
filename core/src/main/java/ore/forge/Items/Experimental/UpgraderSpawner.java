@@ -6,15 +6,15 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.model.Node;
-import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.Item;
@@ -50,7 +50,7 @@ public class UpgraderSpawner {
 
         behaviors = new HashMap<>();
         for (JsonValue behavior : jsonValue.get("behaviors")) {
-            behaviors.put(behavior.getString("key"), ReflectionLoader.load(jsonValue, "behaviorName"));
+            behaviors.put(behavior.getString("key"), ReflectionLoader.load(behavior, "behaviorName"));
         }
 
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -60,7 +60,7 @@ public class UpgraderSpawner {
         for (JsonValue geometryPart : jsonValue.get("parts")) {
             String type = geometryPart.getString("type");
             String behaviorKey = geometryPart.getString("behaviorKey", "");
-            String collisionType = geometryPart.getString("collisionType", "");
+            String collisionType = geometryPart.getString("bulletCollisionType", "");
             NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType);
             nodeInfoMap.put(Integer.toString(id), nodeInfo);
 
@@ -102,17 +102,6 @@ public class UpgraderSpawner {
         }
 
         model = modelBuilder.end();
-
-        //For actual implementation
-//        ModelData modelData = new ModelData();
-//        for (JsonValue geometryPart : jsonValue.get("parts")) {
-//            //TODO:
-//            ModelMesh mesh = new ModelMesh();
-//            mesh.vertices = geometryPart.get("vertices").asFloatArray();
-//            modelData.addMesh(mesh);
-//        }
-//        this.model = new Model(modelData);
-
     }
 
     public EntityInstance createInstance() {
@@ -122,26 +111,38 @@ public class UpgraderSpawner {
         for (Node part : model.nodes) {
             String key = part.id;
             NodeInfo info = nodeInfoMap.get(key);
+            System.out.println(info);
 
             btCollisionShape nodeShape = new btCollisionShape(0, false);
             switch (info.collisionType) {
+                case "both" : {
+                    //Plays a role in physics and in behavior: EX: Conveyor, Furnace?
+                    btRigidBody rigidBody = new btRigidBody(0f, new btDefaultMotionState(), nodeShape);
+                    rigidBody.userData = new ItemUserData(null, behaviors.get(info.behaviorKey), null);
+                    collisionObjects.add(rigidBody);
+                    break;
+                }
                 case "btGhostObject" : {
+                    //Purely there for behavior no role in physics. EX: Upgrade Beam or Drop Source
                     btGhostObject ghostObject = new btGhostObject();
                     ghostObject.setCollisionShape(nodeShape);
-                    //TODO: Look into reworking direction & redefining ItemUserData's blueprint paramater
+                    //TODO: look into refining or removing blueprint paramater
                     ghostObject.userData = new ItemUserData(null, behaviors.get(info.behaviorKey), null);
                     collisionObjects.add(ghostObject);
+                    break;
                 }
                 case "btRigidBody" : {
-
+                    //Purley there for collision has no behavior. EX: walls
+                    btRigidBody rigidBody = new btRigidBody(0f, new btDefaultMotionState(), nodeShape);
+                    collisionObjects.add(rigidBody);
+                    break;
                 }
-                break;
                 default : throw new IllegalStateException("Unexpected value: " + info.collisionType);
             }
 
         }
         EntityInstance instance = new EntityInstance(this, collisionObjects, component);
-        return null;
+        return instance;
     }
 
 
