@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
@@ -38,7 +39,7 @@ public class UpgraderSpawner {
     protected HashMap<String, Behavior> behaviors;
     protected HashMap<String, NodeInfo> nodeInfoMap;
 
-    record NodeInfo(String behaviorKey, String collisionType) {}
+    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection) {}
 
     public UpgraderSpawner(JsonValue jsonValue) {
         name = jsonValue.getString("name");
@@ -50,7 +51,8 @@ public class UpgraderSpawner {
 
         behaviors = new HashMap<>();
         for (JsonValue behavior : jsonValue.get("behaviors")) {
-            behaviors.put(behavior.getString("key"), ReflectionLoader.load(behavior, "behaviorName"));
+            Behavior loadedBehavior = ReflectionLoader.load(behavior, "behaviorName");
+            behaviors.put(behavior.getString("key"), loadedBehavior);
         }
 
         ModelBuilder modelBuilder = new ModelBuilder();
@@ -61,7 +63,7 @@ public class UpgraderSpawner {
             String type = geometryPart.getString("type");
             String behaviorKey = geometryPart.getString("behaviorKey", "");
             String collisionType = geometryPart.getString("bulletCollisionType", "");
-            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType);
+            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()));
             nodeInfoMap.put(Integer.toString(id), nodeInfo);
 
 
@@ -108,17 +110,19 @@ public class UpgraderSpawner {
         VisualComponent component = new VisualComponent(new ModelInstance(this.model));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
         //Create physics objects for each part of the model
-        for (Node part : model.nodes) {
+        for (Node part : component.modelInstance.nodes) {
             String key = part.id;
             NodeInfo info = nodeInfoMap.get(key);
             System.out.println(info);
 
-            btCollisionShape nodeShape = new btCollisionShape(0, false);
+            btCollisionShape nodeShape = new btBoxShape(new Vector3(1.5f / 2, 1.5f / 2, 1.5f / 2));
             switch (info.collisionType) {
                 case "both" : {
                     //Plays a role in physics and in behavior: EX: Conveyor, Furnace?
                     btRigidBody rigidBody = new btRigidBody(0f, new btDefaultMotionState(), nodeShape);
-                    rigidBody.userData = new ItemUserData(null, behaviors.get(info.behaviorKey), null);
+                    Behavior behavior = behaviors.get(info.behaviorKey);
+                    behavior.attach(this, rigidBody);
+                    rigidBody.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
                     collisionObjects.add(rigidBody);
                     break;
                 }
@@ -127,7 +131,7 @@ public class UpgraderSpawner {
                     btGhostObject ghostObject = new btGhostObject();
                     ghostObject.setCollisionShape(nodeShape);
                     //TODO: look into refining or removing blueprint paramater
-                    ghostObject.userData = new ItemUserData(null, behaviors.get(info.behaviorKey), null);
+                    ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behaviors.get(info.behaviorKey), null);
                     collisionObjects.add(ghostObject);
                     break;
                 }
@@ -139,10 +143,14 @@ public class UpgraderSpawner {
                 }
                 default : throw new IllegalStateException("Unexpected value: " + info.collisionType);
             }
-
+            collisionObjects.getLast().setWorldTransform(part.globalTransform);
         }
         EntityInstance instance = new EntityInstance(this, collisionObjects, component);
         return instance;
+    }
+
+    public UpgradeTag getUpgradeTag() {
+        return upgradeTag;
     }
 
 

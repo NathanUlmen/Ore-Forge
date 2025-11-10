@@ -2,9 +2,11 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderSpawner;
 
 public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent> {
     private Fixture receiver;
@@ -24,6 +26,12 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
     public void attach(Body body, Fixture fixture) {
 
     }
+
+    @Override
+    public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
+
+    }
+
 
     @Override
     public void update(float delta) {

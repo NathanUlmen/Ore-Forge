@@ -1,11 +1,12 @@
 package ore.forge.Strategies;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderSpawner;
 import ore.forge.Ore;
 
 public class Move implements Behavior {
@@ -32,6 +33,11 @@ public class Move implements Behavior {
     @Override
     public void attach(Body body, Fixture fixture) {
         fixture.setUserData(this);
+    }
+
+    @Override
+    public void attach(UpgraderSpawner spawner, btCollisionObject parentObject) {
+
     }
 
     @Override

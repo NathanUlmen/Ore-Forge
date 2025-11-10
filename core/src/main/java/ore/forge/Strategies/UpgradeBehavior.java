@@ -3,9 +3,11 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.UpgraderBlueprint;
+import ore.forge.Items.Experimental.UpgraderSpawner;
 import ore.forge.Ore;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
@@ -51,6 +53,12 @@ public class UpgradeBehavior implements Behavior {
         if (body.getUserData() instanceof  UpgraderBlueprint bp) {
             this.upgradeTag = new UpgradeTag(bp.getUpgradeTag());
         }
+    }
+
+    @Override
+    public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
+        assert spawner instanceof UpgraderSpawner;
+        this.upgradeTag = new UpgradeTag(spawner.getUpgradeTag());
     }
 
     @Override

@@ -53,7 +53,7 @@ public class Gameplay3D implements Screen {
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1f; //Min distance can see/draw
         camera.far = 1000f; //Max distance can see/draw
-        camera.position.set(25, 12, 20);
+        camera.position.set(0, 10, -10);
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
@@ -122,13 +122,13 @@ public class Gameplay3D implements Screen {
         UpgraderSpawner spawner = new UpgraderSpawner(value);
 
         EntityInstance instance1 = spawner.createInstance();
+        for (btCollisionObject object : instance1.entityPhysicsBodies) {
+            physicsWorld.dynamicsWorld().addCollisionObject(object);
+        }
         System.out.println("Created an EntityInstance!!");
-//        for (int i = 0; i < instance1.entityPhysicsBodies.size(); i++) {
-//            PhysicsWorld.instance().dynamicsWorld().addCollisionObject();
-//        }
         modelInstances.add(instance1.visualComponent.modelInstance);
 
-        createTestUpgrader();
+//        createTestUpgrader();
 
     }
 
@@ -153,21 +153,8 @@ public class Gameplay3D implements Screen {
         }
 
 
-//        btRigidBody cubeBody = (btRigidBody) dynamicsWorld.getCollisionObjectArray().atConst(0);
-//        btMotionState motionState = cubeBody.getMotionState();
-//        if (motionState != null) {
-//            motionState.getWorldTransform(modelInstances.get(0).transform);
-//        }
-
         //Camera logic
-        btRigidBody trackedBody = (btRigidBody) physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(0);
-        if (trackedBody.getLinearVelocity().len2() > 0.0001f) {
-            Vector3 pos = new Vector3();
-            modelInstances.get(0).transform.getTranslation(pos);
-            cameraController3D.pointAt(pos, delta);
-        } else {
-            cameraController3D.update();
-        }
+        cameraController3D.update();
         camera.update();
 
 
@@ -184,22 +171,7 @@ public class Gameplay3D implements Screen {
 
         collisionManager.updateTouchingEntities();
 
-        //For illustration purposes
-//        var entities = new ArrayList<EntityInstance<?>>();
-//        for (EntityInstance<?> entity : entities) {
-//            for (ModelInstance modelInstance : entity.visualComponent.modelInstances) {
-//                for (VisualEffect visualEffect : entity.visualComponent.visualEffects) {
-//                    if (visualEffect.isActive()) {
-//                        modelBatch.render(modelInstance, visualEffect.shader);
-//                    }
-//                }
-//            }
-//        }
-
-
-//        PhysicsWorld.instance().drawDebug(camera);
-
-        //Update label text if needed
+        physicsWorld.drawDebug(camera);
 
     }
 

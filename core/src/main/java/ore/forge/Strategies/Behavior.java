@@ -2,7 +2,9 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderSpawner;
 
 public interface Behavior {
     void register();
@@ -10,6 +12,8 @@ public interface Behavior {
     void unregister();
 
     void attach(Body body, Fixture fixture);
+
+    void attach(UpgraderSpawner spawner, btCollisionObject collisionObject);
 
     void update(float delta);
 

@@ -2,12 +2,15 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
-import ore.forge.*;
 import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
+import ore.forge.TimerUpdater;
 
 public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
     private final Vector2 spawnOffset; //Offset from item center that Ore location is set to.
@@ -50,6 +53,11 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     @Override
     public void attach(Body body, Fixture fixture) {
         this.fixture = fixture;
+    }
+
+    @Override
+    public void attach(UpgraderSpawner spawner, btCollisionObject parent) {
+
     }
 
     @Override
