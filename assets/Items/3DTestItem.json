@@ -43,7 +43,7 @@
       "type": "box",
       "relativePosition": [0, 0, 0],
       "relativeRotation": [0, 0, 0],
-      "relativeDirection": [0, 0, 1],
+      "relativeDirection": [-1, 0, 0],
       "dimensions": [4, 0.1, 4],
       "behaviorKey": "b1",
       "bulletCollisionType": "both"

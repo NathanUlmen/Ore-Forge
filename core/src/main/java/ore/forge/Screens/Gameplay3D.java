@@ -109,7 +109,7 @@ public class Gameplay3D implements Screen {
         //Transform cube to be in the air.
         Matrix4 t3 = new Matrix4();
         cubeBody.getWorldTransform(t3);
-        t3.setToTranslation(-8, 1f, 0);
+        t3.setToTranslation(0, 2f, 0);
         t3.rotate(1, 1, 1, 0f);
         cubeBody.setWorldTransform(t3);
         cubeBody.getMotionState().setWorldTransform(t3);

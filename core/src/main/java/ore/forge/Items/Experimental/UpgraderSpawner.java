@@ -10,10 +10,8 @@ import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
+import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
@@ -58,34 +56,23 @@ public class UpgraderSpawner {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
 
-        int id = 0;
+        int nodeMapKey = 0;
         for (JsonValue geometryPart : jsonValue.get("parts")) {
             String type = geometryPart.getString("type");
             String behaviorKey = geometryPart.getString("behaviorKey", "");
             String collisionType = geometryPart.getString("bulletCollisionType", "");
             NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()));
-            nodeInfoMap.put(Integer.toString(id), nodeInfo);
+            nodeInfoMap.put(Integer.toString(nodeMapKey), nodeInfo);
 
+            Vector3 pos = new Vector3( geometryPart.get("relativePosition").asFloatArray());
 
-            Vector3 pos = new Vector3(
-                geometryPart.get("relativePosition").getFloat(0),
-                geometryPart.get("relativePosition").getFloat(1),
-                geometryPart.get("relativePosition").getFloat(2)
-            );
-            Vector3 rot = new Vector3(
-                geometryPart.get("relativeRotation").getFloat(0),
-                geometryPart.get("relativeRotation").getFloat(1),
-                geometryPart.get("relativeRotation").getFloat(2)
-            );
-            Vector3 dims = new Vector3(
-                geometryPart.get("dimensions").getFloat(0),
-                geometryPart.get("dimensions").getFloat(1),
-                geometryPart.get("dimensions").getFloat(2)
-            );
+            Vector3 rot = new Vector3( geometryPart.get("relativeRotation").asFloatArray());
+
+            Vector3 dims = new Vector3(geometryPart.get("dimensions").asFloatArray());
 
             Node node = modelBuilder.node();
-            node.id = Integer.toString(id);
-            id++;
+            node.id = Integer.toString(nodeMapKey);
+            nodeMapKey++;
 
             MeshPartBuilder meshPart = modelBuilder.part(
                 node.id,
@@ -98,14 +85,15 @@ public class UpgraderSpawner {
                 BoxShapeBuilder.build(meshPart, dims.x, dims.y, dims.z);
             }
 
-            // Apply transforms (rotation in degrees)
             node.translation.set(pos);
-            node.rotation.setEulerAngles(rot.y, rot.x, rot.z); // YXZ order is typical
+            node.rotation.setEulerAngles(rot.y, rot.x, rot.z);
         }
 
         model = modelBuilder.end();
     }
 
+    //TODO: Look into using btCompoundCollisionShape instead
+    //TODO: Add Collision Contact Rules for shapes
     public EntityInstance createInstance() {
         VisualComponent component = new VisualComponent(new ModelInstance(this.model));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
@@ -115,7 +103,8 @@ public class UpgraderSpawner {
             NodeInfo info = nodeInfoMap.get(key);
             System.out.println(info);
 
-            btCollisionShape nodeShape = new btBoxShape(new Vector3(1.5f / 2, 1.5f / 2, 1.5f / 2));
+
+            btCollisionShape nodeShape = Bullet.obtainStaticNodeShape(part, false);
             switch (info.collisionType) {
                 case "both" : {
                     //Plays a role in physics and in behavior: EX: Conveyor, Furnace?
@@ -130,8 +119,12 @@ public class UpgraderSpawner {
                     //Purely there for behavior no role in physics. EX: Upgrade Beam or Drop Source
                     btGhostObject ghostObject = new btGhostObject();
                     ghostObject.setCollisionShape(nodeShape);
-                    //TODO: look into refining or removing blueprint paramater
-                    ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behaviors.get(info.behaviorKey), null);
+                    //TODO: look into refining or removing blueprint parameter
+                    Behavior behavior = behaviors.get(info.behaviorKey);
+                    behavior.attach(this, ghostObject);
+                    ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
+                    ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
+                        | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                     collisionObjects.add(ghostObject);
                     break;
                 }
