@@ -45,7 +45,6 @@ public class Gameplay3D implements Screen {
     private final ArrayList<ModelInstance> modelInstances;
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
-    private Batch batch;
     private btRigidBody cubeBody;
 
     public Gameplay3D() {
@@ -141,6 +140,7 @@ public class Gameplay3D implements Screen {
     public void render(float delta) {
         // Physics and transforms
         physicsWorld.dynamicsWorld().stepSimulation(delta, 5, 1f / 240f);
+        System.out.println(physicsWorld.dynamicsWorld().getNumCollisionObjects());
 
         //Apply transforms to render models.
         for (int i = 0; i < modelInstances.size(); i++) {
@@ -159,7 +159,6 @@ public class Gameplay3D implements Screen {
 
 
         //Render
-
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);

@@ -11,7 +11,10 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.physics.bullet.collision.*;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
+import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
@@ -37,7 +40,9 @@ public class UpgraderSpawner {
     protected HashMap<String, Behavior> behaviors;
     protected HashMap<String, NodeInfo> nodeInfoMap;
 
-    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection) {}
+
+    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection) {
+    }
 
     public UpgraderSpawner(JsonValue jsonValue) {
         name = jsonValue.getString("name");
@@ -64,9 +69,9 @@ public class UpgraderSpawner {
             NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()));
             nodeInfoMap.put(Integer.toString(nodeMapKey), nodeInfo);
 
-            Vector3 pos = new Vector3( geometryPart.get("relativePosition").asFloatArray());
+            Vector3 pos = new Vector3(geometryPart.get("relativePosition").asFloatArray());
 
-            Vector3 rot = new Vector3( geometryPart.get("relativeRotation").asFloatArray());
+            Vector3 rot = new Vector3(geometryPart.get("relativeRotation").asFloatArray());
 
             Vector3 dims = new Vector3(geometryPart.get("dimensions").asFloatArray());
 
@@ -86,36 +91,29 @@ public class UpgraderSpawner {
             }
 
             node.translation.set(pos);
-            node.rotation.setEulerAngles(rot.y, rot.x, rot.z);
+            node.rotation.setEulerAngles(rot.x, rot.y, rot.z);
         }
 
         model = modelBuilder.end();
     }
 
-    //TODO: Look into using btCompoundCollisionShape instead
+    //TODO: OPTIMIZATION Only need to create the shapes one time
     //TODO: Add Collision Contact Rules for shapes
     public EntityInstance createInstance() {
         VisualComponent component = new VisualComponent(new ModelInstance(this.model));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
-        //Create physics objects for each part of the model
-        for (Node part : component.modelInstance.nodes) {
-            String key = part.id;
-            NodeInfo info = nodeInfoMap.get(key);
-            System.out.println(info);
 
+        btCompoundShape compoundShape = new btCompoundShape();
+        for (Node part : component.modelInstance.nodes) {
+            NodeInfo info = nodeInfoMap.get(part.id);
 
             btCollisionShape nodeShape = Bullet.obtainStaticNodeShape(part, false);
             switch (info.collisionType) {
-                case "both" : {
-                    //Plays a role in physics and in behavior: EX: Conveyor, Furnace?
-                    btRigidBody rigidBody = new btRigidBody(0f, new btDefaultMotionState(), nodeShape);
-                    Behavior behavior = behaviors.get(info.behaviorKey);
-                    behavior.attach(this, rigidBody);
-                    rigidBody.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
-                    collisionObjects.add(rigidBody);
-                    break;
+                case "both": {
+                    compoundShape.addChildShape(part.localTransform, nodeShape);
+                    //NO BREAK BECAUSE WE ALSO NEED TO CREATE A GHOST OBJECT
                 }
-                case "btGhostObject" : {
+                case "btGhostObject": {
                     //Purely there for behavior no role in physics. EX: Upgrade Beam or Drop Source
                     btGhostObject ghostObject = new btGhostObject();
                     ghostObject.setCollisionShape(nodeShape);
@@ -125,27 +123,27 @@ public class UpgraderSpawner {
                     ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
                     ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
                         | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
+                    ghostObject.setWorldTransform(part.localTransform);
                     collisionObjects.add(ghostObject);
                     break;
                 }
-                case "btRigidBody" : {
+                case "btRigidBody": {
                     //Purley there for collision has no behavior. EX: walls
-                    btRigidBody rigidBody = new btRigidBody(0f, new btDefaultMotionState(), nodeShape);
-                    collisionObjects.add(rigidBody);
+                    compoundShape.addChildShape(part.localTransform, nodeShape);
                     break;
                 }
-                default : throw new IllegalStateException("Unexpected value: " + info.collisionType);
+                default:
+                    throw new IllegalStateException("Unexpected value: " + info.collisionType);
             }
-            collisionObjects.getLast().setWorldTransform(part.globalTransform);
         }
-        EntityInstance instance = new EntityInstance(this, collisionObjects, component);
-        return instance;
+        //Create the rigid body from the compound shape and add it to our collision objects
+        collisionObjects.add(new btRigidBody(0, new btDefaultMotionState(), compoundShape));
+        return new EntityInstance(this, collisionObjects, component);
     }
 
     public UpgradeTag getUpgradeTag() {
         return upgradeTag;
     }
-
 
 
 }
