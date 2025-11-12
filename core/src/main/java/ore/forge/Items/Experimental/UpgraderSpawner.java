@@ -19,6 +19,7 @@ import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.CollisionRules;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.Item;
 import ore.forge.ReflectionLoader;
@@ -164,6 +165,7 @@ public class UpgraderSpawner {
         for (btCollisionShape collisionShape : collisionShapes) {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
+//                rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY));
                 collisionObjects.add(rigidBody);
             } else {
                 //The rest will be sensor
@@ -174,7 +176,7 @@ public class UpgraderSpawner {
                 ghostObject.setWorldTransform(nodeInfo.transform);
                 behavior.attach(this, ghostObject);
                 ghostObject.userData = new ItemUserData(nodeInfo.relativeDirection.cpy(), behavior, null);
-                ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
+                ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);
             }

@@ -1,18 +1,20 @@
 package ore.forge.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
@@ -46,6 +48,15 @@ public class Gameplay3D implements Screen {
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
+    private UpgraderSpawner spawner;
+
+
+    private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
+    private final Vector3 intersection = new Vector3();
+    private final Vector3 rayFrom = new Vector3();
+    private final Vector3 rayTo = new Vector3();
+
+    private float rotationAngle = 0;
 
     public Gameplay3D() {
         //Config camera
@@ -108,7 +119,7 @@ public class Gameplay3D implements Screen {
         //Transform cube to be in the air.
         Matrix4 t3 = new Matrix4();
         cubeBody.getWorldTransform(t3);
-        t3.setToTranslation(0, 2f, 0);
+        t3.setToTranslation(-10, 2f, 0);
         t3.rotate(1, 1, 1, 0f);
         cubeBody.setWorldTransform(t3);
         cubeBody.getMotionState().setWorldTransform(t3);
@@ -118,24 +129,13 @@ public class Gameplay3D implements Screen {
 
         JsonReader jsonReader = new JsonReader();
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
-        UpgraderSpawner spawner = new UpgraderSpawner(value);
+        this.spawner = new UpgraderSpawner(value);
 
         EntityInstance instance1 = spawner.spawnInstance();
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
-        System.out.println("Created an EntityInstance!!");
         modelInstances.add(instance1.visualComponent.modelInstance);
-
-        for (int i = 0; i < physicsWorld.dynamicsWorld().getNumCollisionObjects(); i++) {
-            btCollisionObject object = physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i);
-            System.out.println(object.userData);
-        }
-        System.out.println(physicsWorld.dynamicsWorld().getNumCollisionObjects());
-
-
-//        createTestUpgrader();
-
     }
 
     @Override
@@ -145,7 +145,30 @@ public class Gameplay3D implements Screen {
 
     @Override
     public void render(float delta) {
-        // Physics and transforms
+        //Camera logic
+        cameraController3D.update();
+        camera.update();
+
+        //Process input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {//rotate item
+            rotationAngle += 90;
+        }
+        //Place item
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            Vector3 position = getMouseGroundPosition(camera);
+            //Spawn an instance of the item and add it to the physics simulation
+            EntityInstance instance = spawner.spawnInstance();
+            Matrix4 transform = new Matrix4().setToTranslation(position);
+            transform.rotate(Vector3.Y,  rotationAngle % 360);
+            instance.setTransform(transform);
+            modelInstances.add(instance.visualComponent.modelInstance);
+            for (btCollisionObject object : instance.entityPhysicsBodies) {
+                physicsWorld.dynamicsWorld().addCollisionObject(object);
+            }
+        }
+
+
+        // Physics simulation Step
         physicsWorld.dynamicsWorld().stepSimulation(delta, 5, 1f / 240f);
 
         //Apply transforms to render models.
@@ -159,18 +182,16 @@ public class Gameplay3D implements Screen {
         }
 
 
-        //Camera logic
-        cameraController3D.update();
-        camera.update();
+
 
 
         //Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);
-        for (var instance : modelInstances) {
-            modelBatch.render(instance, environment);
-        }
+//        for (var instance : modelInstances) {
+//            modelBatch.render(instance, environment);
+//        }
         modelBatch.end();
 
 
@@ -315,9 +336,27 @@ public class Gameplay3D implements Screen {
 
         physicsWorld.dynamicsWorld().addRigidBody(wall1RigidBody);
         physicsWorld.dynamicsWorld().addRigidBody(wall2RigidBody);
-
-
     }
+
+    private Vector3 getMouseGroundPosition(Camera camera) {
+        // Get mouse position in screen coordinates
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.input.getY();
+
+        // Unproject to get the world-space ray
+        Ray ray = camera.getPickRay(mouseX, mouseY);
+
+        // Intersect the ray with the ground plane
+        if (Intersector.intersectRayPlane(ray, groundPlane, intersection)) {
+            // Clamp Y >= 0 just in case
+            if (intersection.y < 0f) intersection.y = 0f;
+            return intersection.cpy();
+        } else {
+            // No intersection (looking up at sky)
+            return new Vector3(ray.origin);
+        }
+    }
+
 
 
 }

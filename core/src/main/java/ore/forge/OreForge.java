@@ -45,10 +45,10 @@ public class OreForge extends Game {
         var prestigeManager = new PrestigeManager(itemManager);
 
         ItemMap.getSingleton().loadState(itemManager);
-		mainMenuScreen = new MainMenu(this, itemManager);
-		settingsMenu = new SettingsMenu(this, itemManager);
+//		mainMenuScreen = new MainMenu(this, itemManager);
+//		settingsMenu = new SettingsMenu(this, itemManager);
 //		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
-		pauseMenu = new PauseMenu(this, itemManager);
+//		pauseMenu = new PauseMenu(this, itemManager);
 
         Gameplay3D gameplay3D = new Gameplay3D();
 //		setScreen(mainMenuScreen); commented out so we can experiment with rework 2D

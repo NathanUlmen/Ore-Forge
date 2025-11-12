@@ -1,9 +1,13 @@
 package ore.forge.Items.Experimental;
 
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.Disposable;
 import ore.forge.GameWorld;
@@ -20,32 +24,20 @@ public class EntityInstance implements Disposable {
     //Old kept to not break project for now.
     private Body body;
 
-    public EntityInstance(Object userData, List<btCollisionObject> physicsBodies, VisualComponent visualComponent) {
+    public EntityInstance(Object userData, List<btCollisionObject> collisionObjects, VisualComponent visualComponent) {
         this.userData = userData;
-        this.entityPhysicsBodies = physicsBodies;
+        this.entityPhysicsBodies = collisionObjects;
         this.visualComponent = visualComponent;
+
 //        assert !body.isActive();
     }
 
     //TODO: Add body to render list, register all behaviors,
-    public void place(Vector2 location, float direction) {
-        transform(location, direction);
-        place();
-        //TODO: Add body to "render list"
-    }
-
-    public void place() {
-        body.setActive(true);
-        //Register behaviors to their respective systems
-        for (Fixture fixture : body.getFixtureList()) {
-            var userData = fixture.getUserData();
-            assert userData instanceof ItemUserData;
-            var itemUserData = (ItemUserData) userData;
-            if (itemUserData.behavior() != null) {
-                itemUserData.behavior().register();
-            }
-        }
-        //TODO: Add body to "render list"
+    public void place(Vector3 location, float direction) {
+        Matrix4 transform = new Matrix4();
+        transform.setTranslation(location);
+        transform.setToRotation(Vector3.Y,  direction);
+        this.setTransform(transform);
     }
 
     //Removes body from gameworld, unregisters behaviors, disposes body.
@@ -59,12 +51,14 @@ public class EntityInstance implements Disposable {
         dispose();
     }
 
-    public Vector2 getPosition() {
-        return body.getPosition();
-    }
-
-    public void transform(Vector2 position, float angleDegrees) {
-        body.setTransform(position.x, position.y, MathUtils.degreesToRadians * angleDegrees);
+    //Should only be used for the initial placement of an item
+    public void setTransform(Matrix4 transform) {
+        for (btCollisionObject object : entityPhysicsBodies) {
+            object.setWorldTransform(transform);
+        }
+        ModelInstance modelInstance = visualComponent.modelInstance;
+        modelInstance.transform.set(transform);
+        modelInstance.calculateTransforms();
     }
 
     @Override
