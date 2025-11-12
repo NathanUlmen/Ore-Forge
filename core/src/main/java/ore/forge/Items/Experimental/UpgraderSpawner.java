@@ -32,20 +32,22 @@ import java.util.List;
 
 public class UpgraderSpawner {
 
-    protected String name, id, description;
+    protected final String name, id, description;
 
     protected final UpgradeTag upgradeTag;
 
     protected final AcquisitionInfo acquisitionInfo;
-    protected Model model;
+    protected final Model model;
     private final List<btCollisionShape> collisionShapes;
-    protected HashMap<String, Behavior> behaviors;
-    protected HashMap<String, NodeInfo> nodeInfoMap;
+    protected final HashMap<String, Behavior> behaviors;
+    protected final HashMap<String, NodeInfo> nodeInfoMap;
     protected final HashMap<btCollisionShape, NodeInfo> collisionShapeMap;
 
 
-    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection, Matrix4 transform) {
-    }
+    record NodeInfo(String behaviorKey,
+                    String collisionType,
+                    Vector3 relativeDirection,
+                    Matrix4 transform) {}
 
     public UpgraderSpawner(JsonValue jsonValue) {
         name = jsonValue.getString("name");
@@ -55,12 +57,24 @@ public class UpgraderSpawner {
         acquisitionInfo = new AcquisitionInfo(jsonValue.get("acquisitionInfo"), Item.Tier.valueOf(jsonValue.getString("tier")));
         nodeInfoMap = new HashMap<>();
 
-        behaviors = new HashMap<>();
+        this.behaviors = loadBehaviors(jsonValue);
+
+        this.model = createModel(jsonValue);
+
+        collisionShapeMap = new HashMap<>();
+        collisionShapes = createShapes(model, nodeInfoMap, collisionShapeMap);
+    }
+
+    private HashMap<String, Behavior> loadBehaviors(JsonValue jsonValue) {
+        HashMap<String, Behavior> behaviors = new HashMap<>();
         for (JsonValue behavior : jsonValue.get("behaviors")) {
             Behavior loadedBehavior = ReflectionLoader.load(behavior, "behaviorName");
             behaviors.put(behavior.getString("key"), loadedBehavior);
         }
+        return behaviors;
+    }
 
+    private Model createModel(JsonValue jsonValue) {
         ModelBuilder modelBuilder = new ModelBuilder();
         modelBuilder.begin();
 
@@ -72,7 +86,7 @@ public class UpgraderSpawner {
 
             Vector3 pos = new Vector3(geometryPart.get("relativePosition").asFloatArray());
             Vector3 rot = new Vector3(geometryPart.get("relativeRotation").asFloatArray());
-
+            Vector3 dir = new  Vector3(geometryPart.get("relativeDirection").asFloatArray());
 
             Matrix4 transform = new Matrix4()
                 .setToTranslation(pos)
@@ -80,7 +94,7 @@ public class UpgraderSpawner {
                 .rotate(Vector3.Y, rot.y)
                 .rotate(Vector3.Z, rot.z);
 
-            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()), transform);
+            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, dir, transform);
             nodeInfoMap.put(Integer.toString(nodeMapKey), nodeInfo);
 
 
@@ -101,32 +115,31 @@ public class UpgraderSpawner {
                 BoxShapeBuilder.build(meshPart, dims.x, dims.y, dims.z);
             }
 
-            node.localTransform.set(transform);
-
             node.translation.set(pos);
             node.rotation.setEulerAngles(rot.x, rot.y, rot.z);
+            node.calculateLocalTransform();
+
+            assert node.localTransform.equals(transform);
         }
 
-        model = modelBuilder.end();
-
-        collisionShapeMap = new HashMap<>();
-        collisionShapes = createShapes(model, nodeInfoMap, collisionShapeMap);
+        return modelBuilder.end();
     }
 
-    private static List<btCollisionShape> createShapes(Model model, HashMap<String, NodeInfo> nodeInfoMap, HashMap<btCollisionShape, NodeInfo> trimmedNodeInfo) {
+    private List<btCollisionShape> createShapes(Model model, HashMap<String, NodeInfo> nodeInfoMap, HashMap<btCollisionShape, NodeInfo> trimmedNodeInfo) {
         ArrayList<btCollisionShape> shapeList = new ArrayList<>();
-
         btCompoundShape compoundShape = new btCompoundShape();
+
         for (Node part : model.nodes) {
             NodeInfo info = nodeInfoMap.get(part.id);
             btCollisionShape bulletShape = Bullet.obtainStaticNodeShape(part, false);
             switch (info.collisionType) {
                 case "both": {
+                    //For elements that need both a sensor and collision enabled. EX: conveyor
                     compoundShape.addChildShape(part.localTransform, bulletShape);
                     //NO BREAK
                 }
                 case "btGhostObject": {
-                    System.out.println("Added!");
+                    //Purely there to act as a sensor/drive logic. EX: Upgrade Beam
                     shapeList.add(bulletShape);
                     trimmedNodeInfo.put(bulletShape, info);
                     break;
@@ -141,21 +154,19 @@ public class UpgraderSpawner {
             }
         }
         shapeList.add(compoundShape);
-        System.out.println("Shape List Size: " + shapeList.size());
         return shapeList;
     }
 
+    //TODO: Add Collision Contact Rules for shapes
     public EntityInstance spawnInstance() {
         VisualComponent visualComponent = new VisualComponent(new ModelInstance(this.model));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
-
         for (btCollisionShape collisionShape : collisionShapes) {
-
-
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
                 collisionObjects.add(rigidBody);
             } else {
+                //The rest will be sensor
                 NodeInfo nodeInfo = collisionShapeMap.get(collisionShape);
                 Behavior behavior = behaviors.get(nodeInfo.behaviorKey);
                 btGhostObject ghostObject = new btGhostObject();
@@ -168,87 +179,11 @@ public class UpgraderSpawner {
                 collisionObjects.add(ghostObject);
             }
         }
-
-//        for (Node node : visualComponent.modelInstance.nodes) {
-//            NodeInfo info = nodeInfoMap.get(node.id);
-//            Behavior behavior = behaviors.get(info.behaviorKey);
-//            btCollisionShape collisionShape = collisionShapeMap.get(node.id);
-//
-//            switch (collisionShape) {
-//                case btCompoundShape compoundShape -> {
-//                    //If Compound Shape do nothing as they shouldn't have behaviors.
-//                    System.out.println("ADDED COMPOUND SHAPE");
-//                    btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
-//                    collisionObjects.add(rigidBody);
-//                }
-//
-//                case btCollisionShape ghostShape -> {
-//                    //If it's a collision shape that means it's a ghost object
-//                    if (behavior != null) {
-//                        btGhostObject ghostObject = new btGhostObject();
-//                        ghostObject.setCollisionShape(ghostShape);
-//                        ghostObject.setWorldTransform(node.localTransform);
-//                        behavior.attach(this, ghostObject);
-//                        ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
-//                        ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
-//                            | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
-//                        collisionObjects.add(ghostObject);
-//                    }
-//                }
-//                case null -> {}
-//            }
-//        }
-        System.out.println("Collision Object Size:" + collisionObjects.size());
         return new EntityInstance(this, collisionObjects, visualComponent);
-    }
-
-    //TODO: OPTIMIZATION Only need to create the shapes one time
-    //TODO: Add Collision Contact Rules for shapes
-    public EntityInstance createInstance() {
-        VisualComponent component = new VisualComponent(new ModelInstance(this.model));
-        List<btCollisionObject> collisionObjects = new ArrayList<>();
-
-        btCompoundShape compoundShape = new btCompoundShape();
-        for (Node part : component.modelInstance.nodes) {
-            NodeInfo info = nodeInfoMap.get(part.id);
-
-            btCollisionShape nodeShape = Bullet.obtainStaticNodeShape(part, false);
-            switch (info.collisionType) {
-                case "both": {
-                    compoundShape.addChildShape(part.localTransform, nodeShape);
-                    //NO BREAK BECAUSE WE ALSO NEED TO CREATE A GHOST OBJECT
-                }
-                case "btGhostObject": {
-                    //Purely there for behavior no role in physics. EX: Upgrade Beam or Drop Source
-                    btGhostObject ghostObject = new btGhostObject();
-                    ghostObject.setCollisionShape(nodeShape);
-                    //TODO: look into refining or removing blueprint parameter
-                    Behavior behavior = behaviors.get(info.behaviorKey);
-                    behavior.attach(this, ghostObject);
-                    ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
-                    ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
-                        | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
-                    ghostObject.setWorldTransform(part.localTransform);
-                    collisionObjects.add(ghostObject);
-                    break;
-                }
-                case "btRigidBody": {
-                    //Purley there for collision has no behavior. EX: walls
-                    compoundShape.addChildShape(part.localTransform, nodeShape);
-                    break;
-                }
-                default:
-                    throw new IllegalStateException("Unexpected value: " + info.collisionType);
-            }
-        }
-        //Create the rigid body from the compound shape and add it to our collision objects
-        collisionObjects.add(new btRigidBody(0, new btDefaultMotionState(), compoundShape));
-        return new EntityInstance(this, collisionObjects, component);
     }
 
     public UpgradeTag getUpgradeTag() {
         return upgradeTag;
     }
-
 
 }
