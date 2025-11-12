@@ -120,12 +120,19 @@ public class Gameplay3D implements Screen {
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
         UpgraderSpawner spawner = new UpgraderSpawner(value);
 
-        EntityInstance instance1 = spawner.createInstance();
+        EntityInstance instance1 = spawner.spawnInstance();
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
         System.out.println("Created an EntityInstance!!");
         modelInstances.add(instance1.visualComponent.modelInstance);
+
+        for (int i = 0; i < physicsWorld.dynamicsWorld().getNumCollisionObjects(); i++) {
+            btCollisionObject object = physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i);
+            System.out.println(object.userData);
+        }
+        System.out.println(physicsWorld.dynamicsWorld().getNumCollisionObjects());
+
 
 //        createTestUpgrader();
 
@@ -140,7 +147,6 @@ public class Gameplay3D implements Screen {
     public void render(float delta) {
         // Physics and transforms
         physicsWorld.dynamicsWorld().stepSimulation(delta, 5, 1f / 240f);
-        System.out.println(physicsWorld.dynamicsWorld().getNumCollisionObjects());
 
         //Apply transforms to render models.
         for (int i = 0; i < modelInstances.size(); i++) {

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.shapebuilders.BoxShapeBuilder;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
@@ -37,11 +38,13 @@ public class UpgraderSpawner {
 
     protected final AcquisitionInfo acquisitionInfo;
     protected Model model;
+    private final List<btCollisionShape> collisionShapes;
     protected HashMap<String, Behavior> behaviors;
     protected HashMap<String, NodeInfo> nodeInfoMap;
+    protected final HashMap<btCollisionShape, NodeInfo> collisionShapeMap;
 
 
-    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection) {
+    record NodeInfo(String behaviorKey, String collisionType, Vector3 relativeDirection, Matrix4 transform) {
     }
 
     public UpgraderSpawner(JsonValue jsonValue) {
@@ -66,12 +69,20 @@ public class UpgraderSpawner {
             String type = geometryPart.getString("type");
             String behaviorKey = geometryPart.getString("behaviorKey", "");
             String collisionType = geometryPart.getString("bulletCollisionType", "");
-            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()));
-            nodeInfoMap.put(Integer.toString(nodeMapKey), nodeInfo);
 
             Vector3 pos = new Vector3(geometryPart.get("relativePosition").asFloatArray());
-
             Vector3 rot = new Vector3(geometryPart.get("relativeRotation").asFloatArray());
+
+
+            Matrix4 transform = new Matrix4()
+                .setToTranslation(pos)
+                .rotate(Vector3.X, rot.x)
+                .rotate(Vector3.Y, rot.y)
+                .rotate(Vector3.Z, rot.z);
+
+            NodeInfo nodeInfo = new NodeInfo(behaviorKey, collisionType, new Vector3(geometryPart.get("relativeDirection").asFloatArray()), transform);
+            nodeInfoMap.put(Integer.toString(nodeMapKey), nodeInfo);
+
 
             Vector3 dims = new Vector3(geometryPart.get("dimensions").asFloatArray());
 
@@ -90,11 +101,105 @@ public class UpgraderSpawner {
                 BoxShapeBuilder.build(meshPart, dims.x, dims.y, dims.z);
             }
 
+            node.localTransform.set(transform);
+
             node.translation.set(pos);
             node.rotation.setEulerAngles(rot.x, rot.y, rot.z);
         }
 
         model = modelBuilder.end();
+
+        collisionShapeMap = new HashMap<>();
+        collisionShapes = createShapes(model, nodeInfoMap, collisionShapeMap);
+    }
+
+    private static List<btCollisionShape> createShapes(Model model, HashMap<String, NodeInfo> nodeInfoMap, HashMap<btCollisionShape, NodeInfo> trimmedNodeInfo) {
+        ArrayList<btCollisionShape> shapeList = new ArrayList<>();
+
+        btCompoundShape compoundShape = new btCompoundShape();
+        for (Node part : model.nodes) {
+            NodeInfo info = nodeInfoMap.get(part.id);
+            btCollisionShape bulletShape = Bullet.obtainStaticNodeShape(part, false);
+            switch (info.collisionType) {
+                case "both": {
+                    compoundShape.addChildShape(part.localTransform, bulletShape);
+                    //NO BREAK
+                }
+                case "btGhostObject": {
+                    System.out.println("Added!");
+                    shapeList.add(bulletShape);
+                    trimmedNodeInfo.put(bulletShape, info);
+                    break;
+                }
+                case "btRigidBody": {
+                    //Purley there for collision has no behavior. EX: walls
+                    compoundShape.addChildShape(part.localTransform, bulletShape);
+                    break;
+                }
+                default:
+                    throw new IllegalStateException("Unexpected value: " + info.collisionType);
+            }
+        }
+        shapeList.add(compoundShape);
+        System.out.println("Shape List Size: " + shapeList.size());
+        return shapeList;
+    }
+
+    public EntityInstance spawnInstance() {
+        VisualComponent visualComponent = new VisualComponent(new ModelInstance(this.model));
+        List<btCollisionObject> collisionObjects = new ArrayList<>();
+
+        for (btCollisionShape collisionShape : collisionShapes) {
+
+
+            if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
+                btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
+                collisionObjects.add(rigidBody);
+            } else {
+                NodeInfo nodeInfo = collisionShapeMap.get(collisionShape);
+                Behavior behavior = behaviors.get(nodeInfo.behaviorKey);
+                btGhostObject ghostObject = new btGhostObject();
+                ghostObject.setCollisionShape(collisionShape);
+                ghostObject.setWorldTransform(nodeInfo.transform);
+                behavior.attach(this, ghostObject);
+                ghostObject.userData = new ItemUserData(nodeInfo.relativeDirection.cpy(), behavior, null);
+                ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
+                    | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
+                collisionObjects.add(ghostObject);
+            }
+        }
+
+//        for (Node node : visualComponent.modelInstance.nodes) {
+//            NodeInfo info = nodeInfoMap.get(node.id);
+//            Behavior behavior = behaviors.get(info.behaviorKey);
+//            btCollisionShape collisionShape = collisionShapeMap.get(node.id);
+//
+//            switch (collisionShape) {
+//                case btCompoundShape compoundShape -> {
+//                    //If Compound Shape do nothing as they shouldn't have behaviors.
+//                    System.out.println("ADDED COMPOUND SHAPE");
+//                    btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
+//                    collisionObjects.add(rigidBody);
+//                }
+//
+//                case btCollisionShape ghostShape -> {
+//                    //If it's a collision shape that means it's a ghost object
+//                    if (behavior != null) {
+//                        btGhostObject ghostObject = new btGhostObject();
+//                        ghostObject.setCollisionShape(ghostShape);
+//                        ghostObject.setWorldTransform(node.localTransform);
+//                        behavior.attach(this, ghostObject);
+//                        ghostObject.userData = new ItemUserData(info.relativeDirection.cpy(), behavior, null);
+//                        ghostObject.setCollisionFlags(ghostObject.getCollisionFlags()
+//                            | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
+//                        collisionObjects.add(ghostObject);
+//                    }
+//                }
+//                case null -> {}
+//            }
+//        }
+        System.out.println("Collision Object Size:" + collisionObjects.size());
+        return new EntityInstance(this, collisionObjects, visualComponent);
     }
 
     //TODO: OPTIMIZATION Only need to create the shapes one time
