@@ -39,7 +39,6 @@ public class SellBehavior implements Behavior {
 
     }
 
-    @Override
     public void attach(Body body, Fixture fixture) {
         assert body.getUserData() instanceof FurnaceBlueprint;
         if (body.getUserData() instanceof FurnaceBlueprint bp) {
@@ -58,9 +57,14 @@ public class SellBehavior implements Behavior {
         assert false;
     }
 
+    @Override
+    public void onContactStart(Object subjectData, ItemUserData userData) {
+
+    }
+
     //TODO: UNFINISHED, events need to be handled
     @Override
-    public void interact(Object subjectData, ItemUserData userData) {
+    public void colliding(Object subjectData, ItemUserData userData) {
 //        if (contact.getUserData() instanceof Ore ore) {
 //            upgradeStrategy.applyTo(ore);
 //            var player = Player.getSingleton();
@@ -82,7 +86,12 @@ public class SellBehavior implements Behavior {
     }
 
     @Override
-    public Behavior clone(Fixture parent) {
+    public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public Behavior clone() {
         return new SellBehavior(this);
     }
 

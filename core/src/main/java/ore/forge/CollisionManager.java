@@ -34,9 +34,9 @@ public class CollisionManager extends ContactListener {
     public void updateTouchingEntities() {
         for (var pair : touchingEntities) {
             if (pair.second() instanceof ItemUserData itemData) {
-                itemData.behavior().interact(pair.first(), itemData);
+                itemData.behavior().colliding(pair.first(), itemData);
             } else if (pair.first() instanceof ItemUserData itemData) {
-                itemData.behavior().interact(pair.second(), itemData);
+                itemData.behavior().colliding(pair.second(), itemData);
             }
         }
     }

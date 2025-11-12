@@ -51,11 +51,6 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     }
 
     @Override
-    public void attach(Body body, Fixture fixture) {
-        this.fixture = fixture;
-    }
-
-    @Override
     public void attach(UpgraderSpawner spawner, btCollisionObject parent) {
 
     }
@@ -81,12 +76,22 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     }
 
     @Override
-    public void interact(Object subjectData, ItemUserData userData) {
+    public void onContactStart(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void colliding(Object subjectData, ItemUserData userData) {
         assert false;
     }
 
     @Override
-    public Behavior clone(Fixture parent) {
+    public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public Behavior clone() {
         return null;
     }
 

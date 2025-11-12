@@ -23,7 +23,7 @@
   "behaviors": [
     {
       "behaviorName": "ore.forge.Strategies.Move",
-      "force": 10,
+      "force": 200,
       "key": "b1"
     },
     {
@@ -56,24 +56,6 @@
       "dimensions": [0.5, 2, 4],
       "behaviorKey": "b2",
       "bulletCollisionType": "btGhostObject"
-    },
-    {
-      "type" : "box",
-      "relativePosition": [0, 0, -2.5],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection" : [0, 0, 0],
-      "dimensions": [4, 0.75, 1],
-      "behaviorKey": "",
-      "bulletCollisionType": "btRigidBody"
-    },
-    {
-      "type" : "box",
-      "relativePosition": [0, 0, 2.5],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection" : [0, 0, 0],
-      "dimensions": [4, 0.75, 1],
-      "behaviorKey": "",
-      "bulletCollisionType": "btRigidBody"
     }
   ]
 }

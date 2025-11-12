@@ -4,37 +4,26 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Plane;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.*;
-import ore.forge.Expressions.Operands.NumericOreProperties;
-import ore.forge.Expressions.Operators.NumericOperator;
+import ore.forge.CollisionManager;
+import ore.forge.CollisionRules;
 import ore.forge.Input.CameraController3D;
 import ore.forge.Items.Experimental.EntityInstance;
-import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.UpgraderSpawner;
-import ore.forge.Strategies.Behavior;
-import ore.forge.Strategies.Move;
-import ore.forge.Strategies.UpgradeBehavior;
-import ore.forge.Strategies.UpgradeStrategies.BasicUpgrade;
-import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
+import ore.forge.Ore;
+import ore.forge.PhysicsWorld;
 
 import java.util.ArrayList;
 
@@ -101,6 +90,7 @@ public class Gameplay3D implements Screen {
 
         // Create rigid bodies
         cubeBody = createDynamicBody(modelInstances.get(0), boxShape, 10f);
+        cubeBody.setSleepingThresholds(0, 0);
         btRigidBody groundBody = createStaticBody(modelInstances.get(1), planeShape);
         groundBody.setFriction(1.7f);
 
@@ -159,11 +149,12 @@ public class Gameplay3D implements Screen {
             //Spawn an instance of the item and add it to the physics simulation
             EntityInstance instance = spawner.spawnInstance();
             Matrix4 transform = new Matrix4().setToTranslation(position);
-            transform.rotate(Vector3.Y,  rotationAngle % 360);
+            transform.rotate(Vector3.Y, rotationAngle % 360);
             instance.setTransform(transform);
             modelInstances.add(instance.visualComponent.modelInstance);
             for (btCollisionObject object : instance.entityPhysicsBodies) {
-                physicsWorld.dynamicsWorld().addCollisionObject(object);
+                physicsWorld.dynamicsWorld().addCollisionObject(object,
+                    object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY) : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
             }
         }
 
@@ -180,9 +171,6 @@ public class Gameplay3D implements Screen {
                 }
             }
         }
-
-
-
 
 
         //Render
@@ -259,85 +247,6 @@ public class Gameplay3D implements Screen {
         return body;
     }
 
-    private void createTestUpgrader() {
-        //Item Properties
-        String itemName = "Basic Upgrader";
-        String id = "abc123";
-        String description = "An upgrader that adds 2 to the value of ore it upgrades";
-        UpgradeTag upgradeTag = new UpgradeTag(itemName, id, 500, false);
-        UpgradeStrategy upgradeStrategy = new BasicUpgrade(2, NumericOperator.ADD, NumericOreProperties.ORE_VALUE);
-        UpgradeBehavior upgradeBehavior = new UpgradeBehavior(upgradeTag, upgradeStrategy, 0.5f);
-        Behavior moveBehavior = new Move(.5f);
-
-        //-----Item Bodies-----
-
-        //---Create Conveyor---
-        //Create View Model and Shape
-        Model conveyorModel = createBox(20, 0.1f, 4, Color.GRAY);
-        ModelInstance conveyorModelInstance = new ModelInstance(conveyorModel);
-        Matrix4 conveyorTransform = new Matrix4();
-        conveyorTransform.translate(0, 0.1f / 2f, 0);
-        conveyorModelInstance.transform = conveyorTransform;
-        modelInstances.add(conveyorModelInstance);
-        modelInstances.add(conveyorModelInstance); //add second time to account for the conveyor ghost.
-
-        //Create Physics Counterpart
-        btCollisionShape collisionShape = new btBoxShape(new Vector3(10f, .05f, 2f)); //for a 4x4
-        btRigidBody conveyorBody = createStaticBody(conveyorModelInstance, collisionShape);
-        btGhostObject conveyorGhost = new btGhostObject();
-        conveyorGhost.setCollisionShape(conveyorBody.getCollisionShape());
-        conveyorGhost.setWorldTransform(conveyorTransform);
-        conveyorGhost.userData = new ItemUserData(new Vector3(1, 0, 0), moveBehavior, null);
-
-
-        //Add to physics simulation
-        physicsWorld.dynamicsWorld().addRigidBody(conveyorBody);
-        physicsWorld.dynamicsWorld().addCollisionObject(conveyorGhost);
-
-        //---Upgrade Beam---
-        //Create View Model and Shape
-        Model beamModel = createBox(0.5f, .75f, 4, Color.BLUE);
-        ModelInstance beamModelInstance = new ModelInstance(beamModel);
-        Matrix4 beamTransform = new Matrix4();
-        beamTransform.translate(0, .75f / 2f, 0); // center y = height/2
-        beamModelInstance.transform.set(beamTransform);
-        modelInstances.add(beamModelInstance);
-        //Create Physics Counterpart
-        btCollisionShape beamShape = new btBoxShape(new Vector3(0.5f / 2, 0.75f / 2, 4f / 2));
-        btGhostObject beamGhost = new btGhostObject();
-        beamGhost.setCollisionFlags(beamGhost.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
-        beamGhost.setCollisionShape(beamShape);
-        beamGhost.setWorldTransform(beamTransform);
-        beamGhost.userData = new ItemUserData(new Vector3(1, 0, 0), upgradeBehavior, null);
-        //Add to physics simulation
-        physicsWorld.dynamicsWorld().addCollisionObject(beamGhost);
-
-        final float wallWidth = 4f;
-        final float wallHeight = .75f;
-        final float wallDepth = 1f;
-        btCollisionShape wallShape = new btBoxShape(new Vector3(wallWidth / 2, wallHeight / 2, wallDepth / 2));
-
-        //Wall 1
-        Model wallModel = createBox(wallWidth, wallHeight, wallDepth, Color.RED);
-        ModelInstance wallInstance1 = new ModelInstance(wallModel);
-        Matrix4 wall1Transform = new Matrix4();
-        wall1Transform.translate(0f, wallHeight / 2, -2.5f);
-        wallInstance1.transform = wall1Transform;
-        modelInstances.add(wallInstance1);
-        btRigidBody wall1RigidBody = createStaticBody(wallInstance1, wallShape);
-
-        //Wall 2
-        Matrix4 wall2Transform = new Matrix4();
-        ModelInstance wallInstance2 = new ModelInstance(wallModel);
-        wall2Transform.translate(0f, wallHeight / 2, 2.5f);
-        wallInstance2.transform = wall2Transform;
-        modelInstances.add(wallInstance2);
-        btRigidBody wall2RigidBody = createStaticBody(wallInstance2, wallShape);
-
-        physicsWorld.dynamicsWorld().addRigidBody(wall1RigidBody);
-        physicsWorld.dynamicsWorld().addRigidBody(wall2RigidBody);
-    }
-
     private Vector3 getMouseGroundPosition(Camera camera) {
         // Get mouse position in screen coordinates
         float mouseX = Gdx.input.getX();
@@ -350,13 +259,12 @@ public class Gameplay3D implements Screen {
         if (Intersector.intersectRayPlane(ray, groundPlane, intersection)) {
             // Clamp Y >= 0 just in case
             if (intersection.y < 0f) intersection.y = 0f;
-            return intersection.cpy();
+            return new Vector3(MathUtils.floor(intersection.x), MathUtils.floor(intersection.y), MathUtils.floor(intersection.z));
         } else {
             // No intersection (looking up at sky)
             return new Vector3(ray.origin);
         }
     }
-
 
 
 }

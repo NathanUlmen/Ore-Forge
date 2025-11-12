@@ -170,18 +170,22 @@ public class UpgraderSpawner {
             } else {
                 //The rest will be sensor
                 NodeInfo nodeInfo = collisionShapeMap.get(collisionShape);
-                Behavior behavior = behaviors.get(nodeInfo.behaviorKey);
+                Behavior behavior = behaviors.get(nodeInfo.behaviorKey).clone();
                 btGhostObject ghostObject = new btGhostObject();
                 ghostObject.setCollisionShape(collisionShape);
                 ghostObject.setWorldTransform(nodeInfo.transform);
                 behavior.attach(this, ghostObject);
-                ghostObject.userData = new ItemUserData(nodeInfo.relativeDirection.cpy(), behavior, null);
+                ghostObject.userData = new ItemUserData(nodeInfo.relativeDirection.cpy(), behavior, this, nodeInfo.transform.cpy());
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);
             }
         }
         return new EntityInstance(this, collisionObjects, visualComponent);
+    }
+
+    public NodeInfo getNodeInfo(btCollisionShape collisionShape) {
+        return nodeInfoMap.get(collisionShape);
     }
 
     public UpgradeTag getUpgradeTag() {

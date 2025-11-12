@@ -22,10 +22,6 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
 
     }
 
-    @Override
-    public void attach(Body body, Fixture fixture) {
-
-    }
 
     @Override
     public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
@@ -39,13 +35,23 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
     }
 
     @Override
-    public void interact(Object subjectData, ItemUserData userData) {
+    public void onContactStart(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void colliding(Object subjectData, ItemUserData userData) {
         //move contact to teleporter position
 //        contact.getBody().setTransform(receiver.getBody().getTransform().getPosition(), contact.getBody().getAngle());
     }
 
     @Override
-    public Behavior clone(Fixture parent) {
+    public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public Behavior clone() {
         return null;
     }
 

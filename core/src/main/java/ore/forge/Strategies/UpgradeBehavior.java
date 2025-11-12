@@ -48,14 +48,6 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public void attach(Body body, Fixture fixture) {
-        assert body.getUserData() instanceof UpgraderBlueprint bp;
-        if (body.getUserData() instanceof  UpgraderBlueprint bp) {
-            this.upgradeTag = new UpgradeTag(bp.getUpgradeTag());
-        }
-    }
-
-    @Override
     public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
         assert spawner instanceof UpgraderSpawner;
         this.upgradeTag = new UpgradeTag(spawner.getUpgradeTag());
@@ -67,7 +59,12 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public void interact(Object subjectData, ItemUserData userData) {
+    public void onContactStart(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void colliding(Object subjectData, ItemUserData userData) {
         assert subjectData instanceof Ore;
         assert upgradeTag != null && upgradeStrategy != null;
         if (subjectData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
@@ -79,7 +76,12 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public Behavior clone(Fixture parent) {
+    public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public Behavior clone() {
         return new UpgradeBehavior(this);
     }
 

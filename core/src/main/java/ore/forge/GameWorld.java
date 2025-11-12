@@ -46,13 +46,13 @@ public class GameWorld {
             if (userB instanceof ItemUserData conveyor) {
                 var trigger = conveyor.behavior();
                 if (trigger != null) {
-                    trigger.interact(fixtureA, conveyor);
+                    trigger.colliding(fixtureA, conveyor);
                 }
             }
             if (userA instanceof ItemUserData conveyor) {
                 var trigger = conveyor.behavior();
                 if (trigger != null) {
-                    trigger.interact(fixtureB, conveyor);
+                    trigger.colliding(fixtureB, conveyor);
                 }
             }
         }
@@ -97,11 +97,11 @@ public class GameWorld {
 
                 if (userB instanceof ItemUserData item && !(userA instanceof ItemUserData)) {
                     if (item.behavior() != null) {
-                        item.behavior().interact(fixtureA, item);
+                        item.behavior().colliding(fixtureA, item);
                     }
                 } else if (userA instanceof ItemUserData item && !(userB instanceof ItemUserData)) {
                     if (item.behavior() != null) {
-                        item.behavior().interact(fixtureB, item);
+                        item.behavior().colliding(fixtureB, item);
                     }
                 }
             }
