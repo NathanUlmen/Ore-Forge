@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
@@ -17,13 +18,12 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.CollisionManager;
-import ore.forge.CollisionRules;
+import ore.forge.*;
 import ore.forge.Input.CameraController3D;
+import ore.forge.Items.Experimental.DropperSpawner;
 import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.Items.Experimental.UpgraderSpawner;
-import ore.forge.Ore;
-import ore.forge.PhysicsWorld;
 
 import java.util.ArrayList;
 
@@ -37,7 +37,7 @@ public class Gameplay3D implements Screen {
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
-    private UpgraderSpawner spawner;
+    private ItemSpawner spawner;
 
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
@@ -121,7 +121,10 @@ public class Gameplay3D implements Screen {
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
         this.spawner = new UpgraderSpawner(value);
 
-        EntityInstance instance1 = spawner.spawnInstance();
+        value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
+        var dropperSpawner = new DropperSpawner(value);
+        EntityInstance instance1 = dropperSpawner.spawnInstance();
+        instance1.place(transform.cpy());
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
@@ -150,7 +153,7 @@ public class Gameplay3D implements Screen {
             EntityInstance instance = spawner.spawnInstance();
             Matrix4 transform = new Matrix4().setToTranslation(position);
             transform.rotate(Vector3.Y, rotationAngle % 360);
-            instance.setTransform(transform);
+            instance.place(transform);
             modelInstances.add(instance.visualComponent.modelInstance);
             for (btCollisionObject object : instance.entityPhysicsBodies) {
                 physicsWorld.dynamicsWorld().addCollisionObject(object,
@@ -184,6 +187,7 @@ public class Gameplay3D implements Screen {
 
 
         collisionManager.updateTouchingEntities();
+        TimerUpdater.update(delta);
 
         physicsWorld.drawDebug(camera);
 

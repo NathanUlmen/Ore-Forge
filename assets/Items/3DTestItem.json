@@ -23,12 +23,12 @@
   "behaviors": [
     {
       "behaviorName": "ore.forge.Strategies.Move",
-      "force": 200,
+      "force": 100,
       "key": "b1"
     },
     {
       "behaviorName": "ore.forge.Strategies.UpgradeBehavior",
-      "upgradeCooldown": 0.5,
+      "upgradeCooldown": 0.1,
       "upgrade": {
         "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
         "valueToModify": "ORE_VALUE",

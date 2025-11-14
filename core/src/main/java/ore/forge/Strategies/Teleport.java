@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.Items.Experimental.ItemSpawner;
 
 public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent> {
     private Fixture receiver;
@@ -24,7 +24,7 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
 
 
     @Override
-    public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
+    public void attach(ItemSpawner spawner, btCollisionObject collisionObject) {
 
     }
 

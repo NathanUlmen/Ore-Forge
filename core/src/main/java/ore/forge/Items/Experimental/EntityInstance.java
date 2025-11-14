@@ -24,11 +24,13 @@ public class EntityInstance implements Disposable {
     }
 
     //TODO: Add body to render list, register all behaviors,
-    public void place(Vector3 location, float direction) {
-        Matrix4 transform = new Matrix4();
-        transform.setToTranslation(location);
-        transform.setToRotation(Vector3.Y, direction);
+    public void place(Matrix4 transform) {
         this.setTransform(transform);
+        for (var collisionObject : entityPhysicsBodies) {
+            if (collisionObject.userData instanceof ItemUserData data) {
+                data.behavior().register();
+            }
+        }
     }
 
     //Removes body from gameworld, unregisters behaviors, disposes body.
@@ -47,18 +49,15 @@ public class EntityInstance implements Disposable {
 //    }
 
     public void setTransform(Matrix4 transform) {
-        // Update main physics objects
         for (btCollisionObject object : entityPhysicsBodies) {
             if (object instanceof btRigidBody) {
                 object.setWorldTransform(transform);
             }
         }
 
-        // Update visual
         visualComponent.modelInstance.transform.set(transform);
         visualComponent.modelInstance.calculateTransforms();
 
-        // Update sensors/ghosts based on relative transform
         for (btCollisionObject object : entityPhysicsBodies) {
             if (object instanceof btGhostObject) {
                 var userData = (ItemUserData) object.userData;

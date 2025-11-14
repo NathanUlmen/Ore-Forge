@@ -2,7 +2,7 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.Items.Experimental.ItemSpawner;
 
 public interface Behavior {
     /**
@@ -20,7 +20,7 @@ public interface Behavior {
      * Attaches the behavior to the specified objects
      *
      */
-    void attach(UpgraderSpawner spawner, btCollisionObject collisionObject);
+    void attach(ItemSpawner spawner, btCollisionObject collisionObject);
 
     /**
      * Called when updating time sensitive information

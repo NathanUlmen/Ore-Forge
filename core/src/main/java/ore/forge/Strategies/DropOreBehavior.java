@@ -1,48 +1,46 @@
 package ore.forge.Strategies;
 
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
+import ore.forge.Items.Experimental.DropperSpawner;
+import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderSpawner;
-import ore.forge.ReflectionLoader;
+import ore.forge.*;
+import ore.forge.Strategies.DropperStrategies.BurstDrop;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
-import ore.forge.TimerUpdater;
+
+import java.util.ArrayList;
 
 public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
-    private final Vector2 spawnOffset; //Offset from item center that Ore location is set to.
     private final DropStrategy dropperStrategy;
-    private Fixture fixture;
-    private final OreBlueprint blueprint;
-    private final static BodyDef oreDef = new BodyDef();
-
-    static {
-        oreDef.type = BodyDef.BodyType.DynamicBody;
-    }
+    private DropperSpawner dropperSpawner;
+    private btCollisionObject parent;
 
     public DropOreBehavior(JsonValue value) {
         dropperStrategy = ReflectionLoader.load(value.get("dropBehavior"), "dropBehaviorName"); //TODO: field name
-        spawnOffset = ReflectionLoader.loadVector2(value.get("spawnOffset"));
 
-        value = value.parent.parent.get("oreProperties");
-        System.out.println(value);
-        String oreName = value.getString("oreName");
-        double oreValue = value.getDouble("oreValue");
-        float oreTemperature = value.getFloat("oreTemperature");
-        int multiOre = value.getInt("multiOre");
-        FixtureDef fixtureDef = new FixtureDef();
-        PolygonShape shape = new PolygonShape();
-        shape.set(value.get("vertices").asFloatArray());
-        fixtureDef.shape = shape;
-        blueprint = new OreBlueprint(oreName, oreValue, oreTemperature, multiOre, fixtureDef);
+//        value = value.parent.parent.get("oreProperties");
+//        String oreName = value.getString("oreName");
+//        double oreValue = value.getDouble("oreValue");
+//        float oreTemperature = value.getFloat("oreTemperature");
+//        int multiOre = value.getInt("multiOre");
+    }
+
+    private DropOreBehavior(DropOreBehavior toClone) {
+        this.dropperStrategy = new BurstDrop((BurstDrop) toClone.dropperStrategy);
     }
 
     @Override
     public void register() {
-
+        TimerUpdater.register(this);
     }
 
     @Override
@@ -51,8 +49,11 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     }
 
     @Override
-    public void attach(UpgraderSpawner spawner, btCollisionObject parent) {
-
+    public void attach(ItemSpawner spawner, btCollisionObject parent) {
+        this.dropperSpawner = (DropperSpawner) spawner;
+        this.parent = parent;
+        System.out.println("Transform in attach!");
+        System.out.println(parent.getWorldTransform());
     }
 
     @Override
@@ -73,6 +74,36 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
 //            body.setTransform(dropperLocation.x + finalSpawnOffset.x, dropperLocation.y + finalSpawnOffset.y, fixture.getBody().getAngle());
 //
 //        }
+
+        //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
+        //This info will be taken from the DropperSpawner that this thing holds
+        if (dropperStrategy.drop(delta)) {
+
+            //Add ore to the world
+            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperSpawner.oreModel));
+            Ore oreInfo = new Ore();
+
+            Vector3 inertia = new Vector3();
+            dropperSpawner.oreShape.calculateLocalInertia(10, inertia);
+            var oreBody = new btRigidBody(10f, new btDefaultMotionState(), dropperSpawner.oreShape, inertia);
+            oreBody.setSleepingThresholds(0, 0);
+            oreBody.userData = oreInfo;
+            oreInfo.rigidBody = oreBody;
+
+            var collisionObjects = new ArrayList<btCollisionObject>();
+            collisionObjects.add(oreBody);
+
+            var oreInstance = new EntityInstance(oreInfo, collisionObjects, visualComponent);
+            oreInstance.place(parent.getWorldTransform().cpy());
+            for (var object : oreInstance.entityPhysicsBodies) {
+                PhysicsWorld.instance().dynamicsWorld().addRigidBody((btRigidBody) object,
+                    CollisionRules.combineBits(CollisionRules.ORE),
+                    CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
+            }
+
+        }
+
+
     }
 
     @Override
@@ -92,7 +123,7 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
 
     @Override
     public Behavior clone() {
-        return null;
+        return new DropOreBehavior(this);
     }
 
     @Override
@@ -102,10 +133,7 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
 
     @Override
     public void handle(ItemRemovedGameEvent event) {
-        //TODO: Might not work this way in the future once system is more concrete
-        if (event.getSubject() == fixture.getBody().getUserData()) {
-            TimerUpdater.unregister(this);
-        }
+
     }
 
     @Override

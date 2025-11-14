@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
@@ -48,7 +48,7 @@ public class SellBehavior implements Behavior {
     }
 
     @Override
-    public void attach(UpgraderSpawner spawner, btCollisionObject parent) {
+    public void attach(ItemSpawner spawner, btCollisionObject parent) {
 
     }
 

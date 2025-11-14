@@ -1,12 +1,10 @@
 package ore.forge.Strategies;
 
 
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.Items.Experimental.UpgraderBlueprint;
+import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.Items.Experimental.UpgraderSpawner;
 import ore.forge.Ore;
 import ore.forge.ReflectionLoader;
@@ -48,9 +46,10 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public void attach(UpgraderSpawner spawner, btCollisionObject collisionObject) {
+    public void attach(ItemSpawner spawner, btCollisionObject collisionObject) {
         assert spawner instanceof UpgraderSpawner;
-        this.upgradeTag = new UpgradeTag(spawner.getUpgradeTag());
+        var upgraderSpawner = (UpgraderSpawner) spawner;
+        this.upgradeTag = new UpgradeTag(upgraderSpawner.getUpgradeTag());
     }
 
     @Override
@@ -58,26 +57,30 @@ public class UpgradeBehavior implements Behavior {
         assert false;
     }
 
+    //Upgrade the ore
     @Override
     public void onContactStart(Object subjectData, ItemUserData userData) {
-
-    }
-
-    @Override
-    public void colliding(Object subjectData, ItemUserData userData) {
         assert subjectData instanceof Ore;
         assert upgradeTag != null && upgradeStrategy != null;
-        if (subjectData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
+        Ore ore = (Ore) subjectData;
+        if (ore.isUpgradable(upgradeTag)) {
             upgradeStrategy.applyTo(ore);
-            ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
-            ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();
-            System.out.println("Upgrade Complete");
+            System.out.println("Ore Upgraded!");
         }
     }
 
     @Override
-    public void onContactEnd(Object subjectData, ItemUserData userData) {
+    public void colliding(Object subjectData, ItemUserData userData) {
+        //Upgrade ore if its upgradable (EX: UpgradeCooldown runs out while still touching)
+    }
 
+    @Override
+    public void onContactEnd(Object subjectData, ItemUserData userData) {
+        //Start cooldown if not already in progress
+        if (subjectData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
+            ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
+            ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();
+        }
     }
 
     @Override

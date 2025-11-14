@@ -1,0 +1,54 @@
+{
+  "name": "Basic Dropper",
+  "description": "Drops ore worth $2.",
+  "id": "droop",
+  "tier": "COMMON",
+  "oreProperties": {
+    "oreName": "Iron Ore",
+    "oreValue": 2,
+    "multiOre": 1,
+    "oreTemperature": 3
+  },
+  "acquisitionInfo": {
+    "unlockMethod": "NONE",
+    "unlockRequirement": 0,
+    "isUnlocked": false,
+    "canBeSold": true,
+    "isPrestigeProof": false,
+    "currency": "CASH",
+    "itemValue": 50,
+    "sellPrice": 30,
+    "rarity": -1
+  },
+  "behaviors": [
+    {
+      "behaviorName": "ore.forge.Strategies.DropOreBehavior",
+      "dropBehavior": {
+        "dropBehaviorName": "ore.forge.Strategies.DropperStrategies.BurstDrop",
+        "orePerMinute": 30,
+        "burstCount": 1
+      },
+      "key": "b1"
+    }
+  ],
+  "parts": [
+    {
+      "type": "box",
+      "relativePosition": [0, 2, 0],
+      "relativeRotation": [0, 0, 0],
+      "relativeDirection": [-1, 0, 0],
+      "dimensions": [4, 4, 4],
+      "behaviorKey": "",
+      "bulletCollisionType": "btRigidBody"
+    },
+    {
+     "type" : "box",
+      "relativePosition": [0, 2, 2.5],
+      "relativeRotation": [0, 0, 0],
+      "relativeDirection": [0,0,0],
+      "dimensions": [1, 1, 1],
+      "behaviorKey": "b1",
+      "bulletCollisionType": "btGhostObject"
+    }
+  ]
+}

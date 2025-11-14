@@ -10,9 +10,9 @@
 
 ## Gameplay
 
-* [ ] Create a test item in code.
-* [ ] Create loading system for test items
-* [ ] Test items and their behaviors in the physics system
+* [X] Create a test item in code.
+* [X] Create loading system for test items
+* [X] Test items and their behaviors in the physics system
 * [ ] Develop controls for placing and rotating items
 * [ ] Implement UI
 * [ ] Implement basic debug tools (item spawning menu, physics visualizer, etc.)
