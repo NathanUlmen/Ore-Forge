@@ -1,34 +1,32 @@
 package ore.forge.Items.Experimental;
 
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
+import ore.forge.PhysicsBodyData;
 import ore.forge.VisualComponent;
 
 import java.util.List;
 
 public class EntityInstance implements Disposable {
-    //    private final E blueprint; //Data used to construct instance of this entity
-    public Object userData; //Data that this item holds
     public List<btCollisionObject> entityPhysicsBodies; //All bodies in this object that relate to physics
     public VisualComponent visualComponent; //Visual components for this item
+    private Matrix4 worldTransform;
 
-    public EntityInstance(Object userData, List<btCollisionObject> collisionObjects, VisualComponent visualComponent) {
-        this.userData = userData;
+    public EntityInstance(List<btCollisionObject> collisionObjects, VisualComponent visualComponent) {
         this.entityPhysicsBodies = collisionObjects;
         this.visualComponent = visualComponent;
-
     }
 
     //TODO: Add body to render list, register all behaviors,
     public void place(Matrix4 transform) {
         this.setTransform(transform);
         for (var collisionObject : entityPhysicsBodies) {
-            if (collisionObject.userData instanceof ItemUserData data) {
-                data.behavior().register();
+            assert collisionObject != null;
+            if (collisionObject.userData instanceof PhysicsBodyData data) {
+                data.bodyLogic.register();
             }
         }
     }
@@ -60,10 +58,10 @@ public class EntityInstance implements Disposable {
 
         for (btCollisionObject object : entityPhysicsBodies) {
             if (object instanceof btGhostObject) {
-                var userData = (ItemUserData) object.userData;
+                var userData = (PhysicsBodyData) object.userData;
                 if (userData != null) {
                     Matrix4 world = new Matrix4(transform);
-                    world.mul(userData.localTransform());
+                    world.mul(userData.localTransform);
                     object.setWorldTransform(world);
                 }
             }

@@ -3,12 +3,10 @@ package ore.forge.Items.Experimental;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.CollisionRules;
-import ore.forge.GameWorld;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.ExtendedFixtureDef;
 import ore.forge.ReflectionLoader;
-import ore.forge.Strategies.Behavior;
+import ore.forge.Strategies.BodyLogic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +19,7 @@ import java.util.HashMap;
 public abstract class ItemBlueprint {
     protected final String name, id, description;
 
-    protected HashMap<String, Behavior> behaviors;
+    protected HashMap<String, BodyLogic> behaviors;
 
     protected final BodyDef bodyDef;
     protected final AcquisitionInfo acquisitionInfo;
@@ -79,8 +77,8 @@ public abstract class ItemBlueprint {
         return fixtureDefs;
     }
 
-    private static HashMap<String, Behavior> loadBehaviors(JsonValue behaviors) {
-        HashMap<String, Behavior> behaviorMap = new HashMap<>();
+    private static HashMap<String, BodyLogic> loadBehaviors(JsonValue behaviors) {
+        HashMap<String, BodyLogic> behaviorMap = new HashMap<>();
         for (JsonValue behaviorData : behaviors) {
             behaviorMap.put(behaviorData.getString("key"), ReflectionLoader.load(behaviorData, "behaviorName"));
         }

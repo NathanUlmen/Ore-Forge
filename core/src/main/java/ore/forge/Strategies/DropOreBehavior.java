@@ -19,7 +19,8 @@ import ore.forge.Strategies.DropperStrategies.DropStrategy;
 
 import java.util.ArrayList;
 
-public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
+@SuppressWarnings("unused")
+public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
     private final DropStrategy dropperStrategy;
     private DropperSpawner dropperSpawner;
     private btCollisionObject parent;
@@ -52,29 +53,10 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     public void attach(ItemSpawner spawner, btCollisionObject parent) {
         this.dropperSpawner = (DropperSpawner) spawner;
         this.parent = parent;
-        System.out.println("Transform in attach!");
-        System.out.println(parent.getWorldTransform());
     }
 
     @Override
     public void update(float delta) {
-//        if (dropperStrategy.drop(delta)) {
-//            var body = GameWorld.instance().physicsWorld().createBody(oreDef);
-//            body.createFixture(blueprint.fixtureDef);
-//            Ore ore = OreRealm.getSingleton().giveOre();
-//            ore.applyBaseStats(blueprint.oreValue, blueprint.oreTemperature, blueprint.multiOre, blueprint.name, "TESTING", null);
-//            ore.setBody(body);
-//            Vector2 dropperLocation = fixture.getBody().getPosition();
-//            var itemData = fixture.getUserData();
-//            Vector2 finalSpawnOffset = null;
-//            if (itemData instanceof ItemUserData data) {
-//                finalSpawnOffset = spawnOffset.rotateDeg(fixture.getBody().getAngle() + data.direction());
-//            }
-//            assert finalSpawnOffset != null;
-//            body.setTransform(dropperLocation.x + finalSpawnOffset.x, dropperLocation.y + finalSpawnOffset.y, fixture.getBody().getAngle());
-//
-//        }
-
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
         if (dropperStrategy.drop(delta)) {
@@ -86,24 +68,24 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
             Vector3 inertia = new Vector3();
             dropperSpawner.oreShape.calculateLocalInertia(10, inertia);
             var oreBody = new btRigidBody(10f, new btDefaultMotionState(), dropperSpawner.oreShape, inertia);
-            oreBody.setSleepingThresholds(0, 0);
+//            oreBody.setSleepingThresholds(1, 0);
             oreBody.userData = oreInfo;
             oreInfo.rigidBody = oreBody;
 
             var collisionObjects = new ArrayList<btCollisionObject>();
             collisionObjects.add(oreBody);
+            oreBody.setSleepingThresholds(1, 1);
+            oreBody.setCcdMotionThreshold(0);
+            oreBody.setCcdMotionThreshold(0);
 
-            var oreInstance = new EntityInstance(oreInfo, collisionObjects, visualComponent);
+            var oreInstance = new EntityInstance(collisionObjects, visualComponent);
             oreInstance.place(parent.getWorldTransform().cpy());
             for (var object : oreInstance.entityPhysicsBodies) {
                 PhysicsWorld.instance().dynamicsWorld().addRigidBody((btRigidBody) object,
                     CollisionRules.combineBits(CollisionRules.ORE),
                     CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
             }
-
         }
-
-
     }
 
     @Override
@@ -122,13 +104,8 @@ public class DropOreBehavior implements Behavior, TimeUpdatable, GameEventListen
     }
 
     @Override
-    public Behavior clone() {
+    public BodyLogic clone() {
         return new DropOreBehavior(this);
-    }
-
-    @Override
-    public boolean isCollisionBehavior() {
-        return false;
     }
 
     @Override

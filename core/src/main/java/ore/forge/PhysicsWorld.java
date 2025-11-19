@@ -5,10 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
-import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -24,10 +21,10 @@ public class PhysicsWorld implements Disposable {
     private PhysicsWorld() {
         Bullet.init();
         collisionConfig = new btDefaultCollisionConfiguration();
-        dispatcher = new btCollisionDispatcher(collisionConfig);
+        dispatcher = new btCollisionDispatcherMt(collisionConfig);
         broadphase = new btDbvtBroadphase();
-        solver = new btSequentialImpulseConstraintSolver();
-        dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfig);
+        solver = new btConstraintSolverPoolMt(Runtime.getRuntime().availableProcessors());
+        dynamicsWorld = new btDiscreteDynamicsWorldMt(dispatcher, broadphase, (btConstraintSolverPoolMt) solver, collisionConfig);
         dynamicsWorld.setGravity(new Vector3(0, -9.81f, 0));
 
         debugDrawer = new DebugDrawer();

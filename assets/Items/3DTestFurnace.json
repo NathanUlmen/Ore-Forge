@@ -1,0 +1,42 @@
+{
+  "name": "Basic Furnace",
+  "description" : "Adds $1 to Ore's value then sells it.",
+  "id": "sell",
+  "tier": "COMMON",
+  "acquisitionInfo": {
+    "unlockMethod": "NONE",
+    "unlockRequirement": 0,
+    "isUnlocked": false,
+    "canBeSold": true,
+    "isPrestigeProof": false,
+    "currency": "CASH",
+    "itemValue": 50,
+    "sellPrice": 30,
+    "rarity": -1
+  },
+  "behaviors": [
+    {
+      "behaviorName" : "ore.forge.Strategies.SellOreBehavior",
+      "sellUpgrade" : {
+        "upgradeName" : "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
+        "modifier": 1,
+        "valueToModify" : "ORE_VALUE",
+        "operator" : "ADD"
+      },
+      "spRewardThreshold" :  10,
+      "spRewardAmount" : 2,
+      "key": "b1"
+    }
+  ],
+  "parts": [
+    {
+      "type": "box",
+      "bulletCollisionType": "both",
+      "dimensions": [2, 0.1, 2],
+      "relativePosition": [0, 0 , 0],
+      "relativeRotation": [0, 0, 0],
+      "relativeDirection": [0, 0, 0],
+      "behaviorKey": "b1"
+    }
+  ]
+}

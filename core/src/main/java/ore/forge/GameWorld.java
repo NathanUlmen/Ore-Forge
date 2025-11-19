@@ -44,13 +44,13 @@ public class GameWorld {
             var userB = fixtureB.getUserData();
 
             if (userB instanceof ItemUserData conveyor) {
-                var trigger = conveyor.behavior();
+                var trigger = conveyor.bodyLogic();
                 if (trigger != null) {
                     trigger.colliding(fixtureA, conveyor);
                 }
             }
             if (userA instanceof ItemUserData conveyor) {
-                var trigger = conveyor.behavior();
+                var trigger = conveyor.bodyLogic();
                 if (trigger != null) {
                     trigger.colliding(fixtureB, conveyor);
                 }
@@ -86,22 +86,22 @@ public class GameWorld {
 
                 //only add item to list if it moves.
                 if (userB instanceof ItemUserData item) {
-                    if (item.behavior() instanceof Move) {
+                    if (item.bodyLogic() instanceof Move) {
                         updateList.add(new UpdatePair(fixtureA, fixtureB));
                     }
                 } else if (userA instanceof ItemUserData item) {
-                    if (item.behavior() instanceof Move) {
+                    if (item.bodyLogic() instanceof Move) {
                         updateList.add(new UpdatePair(fixtureA, fixtureB));
                     }
                 }
 
                 if (userB instanceof ItemUserData item && !(userA instanceof ItemUserData)) {
-                    if (item.behavior() != null) {
-                        item.behavior().colliding(fixtureA, item);
+                    if (item.bodyLogic() != null) {
+                        item.bodyLogic().colliding(fixtureA, item);
                     }
                 } else if (userA instanceof ItemUserData item && !(userB instanceof ItemUserData)) {
-                    if (item.behavior() != null) {
-                        item.behavior().colliding(fixtureB, item);
+                    if (item.bodyLogic() != null) {
+                        item.bodyLogic().colliding(fixtureB, item);
                     }
                 }
             }

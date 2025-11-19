@@ -27,7 +27,7 @@
       "key": "b1"
     },
     {
-      "behaviorName": "ore.forge.Strategies.UpgradeBehavior",
+      "behaviorName": "ore.forge.Strategies.UpgradeOreBehavior",
       "upgradeCooldown": 0.1,
       "upgrade": {
         "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",

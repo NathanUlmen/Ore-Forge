@@ -9,7 +9,7 @@ import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.Ore;
 
-public class Move implements Behavior {
+public class Move implements BodyLogic {
     private final float force;
     private btCollisionObject sensor;
 
@@ -48,7 +48,7 @@ public class Move implements Behavior {
 
     @Override
     public void onContactStart(Object subjectData, ItemUserData userData) {
-        System.out.println("Move Contact Started");
+//        System.out.println("Move Contact Started");
     }
 
     @Override
@@ -57,24 +57,19 @@ public class Move implements Behavior {
         Ore ore = (Ore) subjectData;
         btRigidBody rigidBody = ore.rigidBody;
 
-        // 1. Get sensor rotation (for force direction)
         Quaternion sensorRotation = new Quaternion();
         sensor.getWorldTransform().getRotation(sensorRotation);
 
-        // 2. Rotate direction into world space
         Vector3 worldDirection = itemUserData.direction().cpy();
         sensorRotation.transform(worldDirection);
 
         Vector3 forceVec = worldDirection.nor().scl(force);
 
-        // 3. Local-space offset where the force is applied
         Vector3 localOffset = new Vector3(0.5f, 0f, 0f);  // example: right side of the ore
 
-        // 4. Convert local offset → world offset (relative to the rigidbody)
         Vector3 worldOffset = localOffset.cpy();
         rigidBody.getWorldTransform().getRotation(new Quaternion()).transform(worldOffset);
 
-        // 5. Apply force at that relative world-space offset
         rigidBody.applyForce(forceVec, worldOffset);
     }
 
@@ -86,13 +81,8 @@ public class Move implements Behavior {
     }
 
     @Override
-    public Behavior clone() {
+    public BodyLogic clone() {
         return new Move(this);
-    }
-
-    @Override
-    public boolean isCollisionBehavior() {
-        return true;
     }
 
 }

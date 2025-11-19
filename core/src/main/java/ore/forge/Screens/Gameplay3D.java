@@ -20,10 +20,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.Input.CameraController3D;
-import ore.forge.Items.Experimental.DropperSpawner;
-import ore.forge.Items.Experimental.EntityInstance;
-import ore.forge.Items.Experimental.ItemSpawner;
-import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.Items.Experimental.*;
 
 import java.util.ArrayList;
 
@@ -38,6 +35,7 @@ public class Gameplay3D implements Screen {
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
     private ItemSpawner spawner;
+    private FurnaceSpawner furnaceSpawner;
 
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
@@ -129,6 +127,19 @@ public class Gameplay3D implements Screen {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
         modelInstances.add(instance1.visualComponent.modelInstance);
+
+        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
+        furnaceSpawner = new  FurnaceSpawner(value);
+        EntityInstance instance2 = furnaceSpawner.spawnInstance();
+        Matrix4 transform2 = new Matrix4();
+        transform2.translate(-10, 0, 3);
+        instance2.place(transform2.cpy());
+        for (btCollisionObject object : instance2.entityPhysicsBodies) {
+            physicsWorld.dynamicsWorld().addCollisionObject(object);
+        }
+        modelInstances.add(instance2.visualComponent.modelInstance);
+
+        System.out.println("made it here");
     }
 
     @Override
@@ -152,7 +163,7 @@ public class Gameplay3D implements Screen {
             //Spawn an instance of the item and add it to the physics simulation
             EntityInstance instance = spawner.spawnInstance();
             Matrix4 transform = new Matrix4().setToTranslation(position);
-            transform.rotate(Vector3.Y, rotationAngle % 360);
+            transform.rotate(Vector3.Y, rotationAngle % 360); //Bound it to 360
             instance.place(transform);
             modelInstances.add(instance.visualComponent.modelInstance);
             for (btCollisionObject object : instance.entityPhysicsBodies) {
@@ -163,17 +174,17 @@ public class Gameplay3D implements Screen {
 
 
         // Physics simulation Step
-        physicsWorld.dynamicsWorld().stepSimulation(delta, 5, 1f / 240f);
+        physicsWorld.dynamicsWorld().stepSimulation(delta,  0);
 
         //Apply transforms to render models.
-        for (int i = 0; i < modelInstances.size(); i++) {
-            if (physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
-                var motionState = body.getMotionState();
-                if (motionState != null) {
-                    motionState.getWorldTransform(modelInstances.get(i).transform);
-                }
-            }
-        }
+//        for (int i = 0; i < modelInstances.size(); i++) {
+//            if (physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
+//                var motionState = body.getMotionState();
+//                if (motionState != null) {
+//                    motionState.getWorldTransform(modelInstances.get(i).transform);
+//                }
+//            }
+//        }
 
 
         //Render
@@ -189,7 +200,11 @@ public class Gameplay3D implements Screen {
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
 
+
         physicsWorld.drawDebug(camera);
+//        System.out.println("Num Objects: " + physicsWorld.dynamicsWorld().getNumCollisionObjects());
+//        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
+
 
     }
 

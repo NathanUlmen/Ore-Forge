@@ -4,7 +4,7 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
 
-public interface Behavior {
+public interface BodyLogic {
     /**
      * Used to register to specific event systems
      *
@@ -26,7 +26,7 @@ public interface Behavior {
      * Called when updating time sensitive information
      *
      */
-    void update(float delta);
+    void update(float delta); //Optional
 
 
     /**
@@ -49,8 +49,6 @@ public interface Behavior {
     /**
      * Used to return a new instance of this behavior, replicating things that aren't state
      */
-    Behavior clone();
-
-    boolean isCollisionBehavior();
+    BodyLogic clone();
 
 }

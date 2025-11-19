@@ -8,7 +8,7 @@ import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
 
-public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent> {
+public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEvent> {
     private Fixture receiver;
     private String type;
 
@@ -51,13 +51,8 @@ public class Teleport implements Behavior, GameEventListener<ItemPlacedGameEvent
     }
 
     @Override
-    public Behavior clone() {
+    public BodyLogic clone() {
         return null;
-    }
-
-    @Override
-    public boolean isCollisionBehavior() {
-        return true;
     }
 
 

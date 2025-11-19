@@ -33,4 +33,8 @@ public class TimerUpdater {
         removalQueue.add(updatable);
     }
 
+    public static int count() {
+        return  updatables.size();
+    }
+
 }

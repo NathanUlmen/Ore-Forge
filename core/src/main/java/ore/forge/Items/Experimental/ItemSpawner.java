@@ -22,8 +22,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.CollisionRules;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.Item;
+import ore.forge.PhysicsBodyData;
 import ore.forge.ReflectionLoader;
-import ore.forge.Strategies.Behavior;
+import ore.forge.Strategies.BodyLogic;
 import ore.forge.VisualComponent;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class ItemSpawner {
     protected final AcquisitionInfo acquisitionInfo;
     protected final Model model;
     protected final List<btCollisionShape> collisionShapes;
-    protected final HashMap<String, Behavior> behaviors;
+    protected final HashMap<String, BodyLogic> behaviors;
     protected final HashMap<btCollisionShape, NodeInfo> collisionShapeMap;
 
     public ItemSpawner(JsonValue jsonValue) {
@@ -59,11 +60,11 @@ public class ItemSpawner {
         collisionShapes = createShapes(model, nodeInfoMap, collisionShapeMap);
     }
 
-    private HashMap<String, Behavior> loadBehaviors(JsonValue jsonValue) {
-        HashMap<String, Behavior> behaviors = new HashMap<>();
+    private HashMap<String, BodyLogic> loadBehaviors(JsonValue jsonValue) {
+        HashMap<String, BodyLogic> behaviors = new HashMap<>();
         for (JsonValue behavior : jsonValue.get("behaviors")) {
-            Behavior loadedBehavior = ReflectionLoader.load(behavior, "behaviorName");
-            behaviors.put(behavior.getString("key"), loadedBehavior);
+            BodyLogic loadedBodyLogic = ReflectionLoader.load(behavior, "behaviorName");
+            behaviors.put(behavior.getString("key"), loadedBodyLogic);
         }
         return behaviors;
     }
@@ -155,6 +156,7 @@ public class ItemSpawner {
     public EntityInstance spawnInstance() {
         VisualComponent visualComponent = new VisualComponent(new ModelInstance(this.model));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
+        EntityInstance instance = new EntityInstance(collisionObjects, visualComponent);
         for (btCollisionShape collisionShape : collisionShapes) {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
@@ -163,20 +165,18 @@ public class ItemSpawner {
             } else {
                 //The rest will be sensor
                 NodeInfo nodeInfo = collisionShapeMap.get(collisionShape);
-                Behavior behavior = behaviors.get(nodeInfo.behaviorKey).clone();
+                BodyLogic bodyLogic = behaviors.get(nodeInfo.behaviorKey).clone();
                 btGhostObject ghostObject = new btGhostObject();
                 ghostObject.setCollisionShape(collisionShape);
                 ghostObject.setWorldTransform(nodeInfo.transform);
-                behavior.attach(this, ghostObject);
-                System.out.println("Ghost object Transform");
-                System.out.println(ghostObject.getWorldTransform());
-                ghostObject.userData = new ItemUserData(nodeInfo.relativeDirection.cpy(), behavior, this, nodeInfo.transform.cpy());
+                bodyLogic.attach(this, ghostObject);
+                ghostObject.userData = new PhysicsBodyData(instance, nodeInfo.relativeDirection.cpy(), bodyLogic, nodeInfo.transform);
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);
             }
         }
-        return new EntityInstance(this, collisionObjects, visualComponent);
+        return instance;
     }
 
 

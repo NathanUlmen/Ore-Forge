@@ -13,23 +13,23 @@ import ore.forge.UpgradeCooldown;
 import ore.forge.UpgradeTag;
 
 @SuppressWarnings("unused")
-public class UpgradeBehavior implements Behavior {
+public class UpgradeOreBehavior implements BodyLogic {
     private UpgradeTag upgradeTag;
     private final UpgradeStrategy upgradeStrategy;
     private final float cooldownDuration; //time before it can be upgraded in seconds.
 
-    public UpgradeBehavior(JsonValue value) {
+    public UpgradeOreBehavior(JsonValue value) {
         upgradeStrategy = ReflectionLoader.load(value.get("upgrade"), "upgradeName");
         cooldownDuration = value.getFloat("cooldownDuration", 0.5f);
     }
 
-    public UpgradeBehavior(UpgradeTag upgradeTag, UpgradeStrategy upgradeStrategy, float cooldownDuration) {
+    public UpgradeOreBehavior(UpgradeTag upgradeTag, UpgradeStrategy upgradeStrategy, float cooldownDuration) {
         this.upgradeTag = upgradeTag;
         this.upgradeStrategy = upgradeStrategy;
         this.cooldownDuration = cooldownDuration;
     }
 
-    private UpgradeBehavior(UpgradeBehavior behavior) {
+    private UpgradeOreBehavior(UpgradeOreBehavior behavior) {
         this.upgradeTag = behavior.upgradeTag;
         this.upgradeStrategy = behavior.upgradeStrategy.cloneUpgradeStrategy();
         this.cooldownDuration = behavior.cooldownDuration;
@@ -65,7 +65,7 @@ public class UpgradeBehavior implements Behavior {
         Ore ore = (Ore) subjectData;
         if (ore.isUpgradable(upgradeTag)) {
             upgradeStrategy.applyTo(ore);
-            System.out.println("Ore Upgraded!");
+//            System.out.println("Ore Upgraded!");
         }
     }
 
@@ -84,13 +84,8 @@ public class UpgradeBehavior implements Behavior {
     }
 
     @Override
-    public Behavior clone() {
-        return new UpgradeBehavior(this);
-    }
-
-    @Override
-    public boolean isCollisionBehavior() {
-        return true;
+    public BodyLogic clone() {
+        return new UpgradeOreBehavior(this);
     }
 
 }

@@ -2,7 +2,6 @@ package ore.forge;
 
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.ItemUserData;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,40 +16,37 @@ public class CollisionManager extends ContactListener {
 
     @Override
     public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
-        if (!(o1.userData instanceof ItemUserData && o2.userData instanceof ItemUserData)) {
-            var pair = new  Pair<>(o1.userData, o2.userData);
-            if (pair.second() instanceof ItemUserData itemData) {
-                itemData.behavior().onContactStart(pair.first(), itemData);
-            } else if (pair.first() instanceof ItemUserData itemData) {
-                itemData.behavior().onContactStart(pair.second(), itemData);
-            }
+        if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
+//            o1Data.bodyLogic.onContactStart(o2Data);
+//            o2Data.bodyLogic.onContactStart(o1Data);
+            var pair = new Pair<>(o2Data, o1Data);
             touchingEntities.add(pair);
         }
+
     }
 
     @Override
     public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
-        var pair = new Pair<>(o1.userData, o2.userData);
-        if (pair.second() instanceof ItemUserData itemData) {
-            itemData.behavior().onContactEnd(pair.first(), itemData);
-        } else if (pair.first() instanceof ItemUserData itemData) {
-            itemData.behavior().onContactEnd(pair.second(), itemData);
+        if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
+//            o1Data.bodyLogic.onContactEnd(o2Data);
+//            o2Data.bodyLogic.onContactEnd(o1Data);
         }
-        touchingEntities.remove(pair);
+        touchingEntities.remove(new Pair<>(o1, o2));
+    }
+
+    public void updateTouchingEntities() {
+        for (var pair : touchingEntities) {
+            if (pair.first() instanceof PhysicsBodyData first &&  pair.second() instanceof PhysicsBodyData second) {
+//                first.bodyLogic.colliding(second);
+//                second.bodyLogic.colliding(first);
+            }
+        }
     }
 
     public int getNumTouchingEntities() {
         return touchingEntities.size();
     }
 
-    public void updateTouchingEntities() {
-        for (var pair : touchingEntities) {
-            if (pair.second() instanceof ItemUserData itemData) {
-                itemData.behavior().colliding(pair.first(), itemData);
-            } else if (pair.first() instanceof ItemUserData itemData) {
-                itemData.behavior().colliding(pair.second(), itemData);
-            }
-        }
-    }
+
 
 }

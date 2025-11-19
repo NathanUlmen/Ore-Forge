@@ -7,22 +7,24 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Ore;
+import ore.forge.Player.Player;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
-public class SellBehavior implements Behavior {
+public class SellOreBehavior implements BodyLogic {
     private final UpgradeStrategy upgradeStrategy;
     private int spRewardProgress;
     private int spRewardThreshold, spRewardAmount;
 
-    public SellBehavior(JsonValue value) {
+    public SellOreBehavior(JsonValue value) {
         upgradeStrategy = ReflectionLoader.load(value.get("sellUpgrade"), "upgradeName");
         spRewardProgress = 0;
         spRewardThreshold = value.getInt("spRewardThreshold");
         spRewardAmount = value.getInt("spRewardAmount");
     }
 
-    private SellBehavior(SellBehavior toClone) {
+    private SellOreBehavior(SellOreBehavior toClone) {
         this.upgradeStrategy = toClone.upgradeStrategy.cloneUpgradeStrategy();
         this.spRewardProgress = 0;
         this.spRewardThreshold = toClone.spRewardThreshold;
@@ -65,24 +67,29 @@ public class SellBehavior implements Behavior {
     //TODO: UNFINISHED, events need to be handled
     @Override
     public void colliding(Object subjectData, ItemUserData userData) {
-//        if (contact.getUserData() instanceof Ore ore) {
-//            upgradeStrategy.applyTo(ore);
-//            var player = Player.getSingleton();
-////            var eventManager = EventManager.getSingleton();
-//            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
-////            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
-//
-//            //Compute and Reward Special points
-//            spRewardProgress += ore.getMultiOre();
-//            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
-//            spRewardProgress %= spRewardThreshold;
-//
-//            System.out.println("Ore sold for: " + ore.getOreValue() * ore.getMultiOre());
-//
-//            //TODO: Despawn ore
-////            GameWorld.getInstance().physicsWorld().destroyBody(contact.getBody());
-//
-//        }
+        if (subjectData instanceof Ore ore) {
+            upgradeStrategy.applyTo(ore);
+            var player = Player.getSingleton();
+//            var eventManager = EventManager.getSingleton();
+            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
+//            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
+
+            //Compute and Reward Special points
+            spRewardProgress += ore.getMultiOre();
+            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
+            spRewardProgress %= spRewardThreshold;
+
+
+            /*
+             * TODO: Despawn Ore
+             * Remove from touching objects safely
+             * Remove form physics Simulation
+             * Remove from render list
+             *
+             * */
+//            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
+
+        }
     }
 
     @Override
@@ -91,13 +98,8 @@ public class SellBehavior implements Behavior {
     }
 
     @Override
-    public Behavior clone() {
-        return new SellBehavior(this);
-    }
-
-    @Override
-    public boolean isCollisionBehavior() {
-        return true;
+    public BodyLogic clone() {
+        return new SellOreBehavior(this);
     }
 
 }
