@@ -7,8 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CollisionManager extends ContactListener {
-    private final Set<Pair<?>> touchingEntities;
+    private final Set<Pair<PhysicsBodyData>> touchingEntities;
 
+    //Potential Optimization: Pool pairs.
     public CollisionManager() {
         super();
         touchingEntities = new HashSet<>();

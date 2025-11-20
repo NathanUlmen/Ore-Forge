@@ -17,6 +17,7 @@ import ore.forge.*;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
 
+import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 
 @SuppressWarnings("unused")
@@ -85,6 +86,7 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
                     CollisionRules.combineBits(CollisionRules.ORE),
                     CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
             }
+            System.out.println("Dropped Ore");
         }
     }
 

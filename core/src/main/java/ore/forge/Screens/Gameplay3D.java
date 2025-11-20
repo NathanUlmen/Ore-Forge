@@ -202,10 +202,6 @@ public class Gameplay3D implements Screen {
 
 
         physicsWorld.drawDebug(camera);
-//        System.out.println("Num Objects: " + physicsWorld.dynamicsWorld().getNumCollisionObjects());
-//        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
-
-
     }
 
     @Override

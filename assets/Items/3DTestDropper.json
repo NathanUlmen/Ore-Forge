@@ -25,7 +25,7 @@
       "behaviorName": "ore.forge.Strategies.DropOreBehavior",
       "dropBehavior": {
         "dropBehaviorName": "ore.forge.Strategies.DropperStrategies.BurstDrop",
-        "orePerMinute": 30,
+        "orePerMinute": 1000,
         "burstCount": 1
       },
       "key": "b1"
