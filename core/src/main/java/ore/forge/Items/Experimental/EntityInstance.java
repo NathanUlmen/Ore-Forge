@@ -68,6 +68,9 @@ public class EntityInstance implements Disposable {
         }
     }
 
+    public Matrix4 transform() {
+        return worldTransform;
+    }
 
     @Override
     public void dispose() {

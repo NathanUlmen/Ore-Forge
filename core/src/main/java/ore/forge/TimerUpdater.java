@@ -34,7 +34,7 @@ public class TimerUpdater {
     }
 
     public static int count() {
-        return  updatables.size();
+        return updatables.size();
     }
 
 }

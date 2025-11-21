@@ -1,4 +1,4 @@
-package ore.forge.Input;
+package ore.forge.Input3D;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -17,8 +17,7 @@ public class CameraController3D {
         mouseScreen = new Vector2();
     }
 
-    public void update() {
-        final float delta = Gdx.graphics.getDeltaTime();
+    public void update(float delta) {
         float finalMoveSpeed = MOVE_SPEED;
         Vector3 direction = new Vector3();
         direction.set(camera.direction).nor();
@@ -79,13 +78,15 @@ public class CameraController3D {
         var deltaX = mouseScreen.x - x;
         var deltaY =  mouseScreen.y - y;
         mouseScreen.set(x, y);
-
         // Yaw: rotate around world Y axis
         camera.rotateAround(camera.position, new Vector3(0,1,0), deltaX * 0.5f);
-
         // Pitch: rotate around camera X axis
         Vector3 right = camera.direction.cpy().crs(camera.up).nor();
         camera.rotateAround(camera.position, right, deltaY * 0.5f);
+    }
+
+    public PerspectiveCamera getCamera() {
+        return camera;
     }
 
 }

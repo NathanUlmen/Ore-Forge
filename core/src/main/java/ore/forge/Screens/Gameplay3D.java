@@ -19,7 +19,7 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
-import ore.forge.Input.CameraController3D;
+import ore.forge.Input3D.CameraController3D;
 import ore.forge.Items.Experimental.*;
 
 import java.util.ArrayList;
