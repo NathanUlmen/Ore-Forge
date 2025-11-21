@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.Input3D.CameraController3D;
+import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
 
 import java.util.ArrayList;
@@ -30,13 +31,14 @@ public class Gameplay3D implements Screen {
     private final ModelBatch modelBatch;
     private final Environment environment;
     private final CameraController3D cameraController3D;
-    private final ArrayList<ModelInstance> modelInstances;
+    public static final ArrayList<ModelInstance> modelInstances = new ArrayList<>();
+    public static final ArrayList<EntityInstance> entityInstances = new ArrayList<>();
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
     private ItemSpawner spawner;
     private FurnaceSpawner furnaceSpawner;
-
+    private InputHandler inputHandler;
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
@@ -56,11 +58,13 @@ public class Gameplay3D implements Screen {
         //Config cameraController;
         cameraController3D = new CameraController3D(camera);
 
+        //Configure Input Handler
+        inputHandler = new InputHandler(cameraController3D);
+
         //Config ModelBatch
         modelBatch = new ModelBatch();
 
         //Config Model Instance list
-        modelInstances = new ArrayList<>();
 
         //Config Environment
         environment = new Environment();
@@ -122,6 +126,7 @@ public class Gameplay3D implements Screen {
         value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
         var dropperSpawner = new DropperSpawner(value);
         EntityInstance instance1 = dropperSpawner.spawnInstance();
+        transform.setTranslation(0, 8, 0);
         instance1.place(transform.cpy());
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
@@ -149,8 +154,8 @@ public class Gameplay3D implements Screen {
 
     @Override
     public void render(float delta) {
-        //Camera logic
-        cameraController3D.update();
+        //Process Input
+        inputHandler.update(delta);
         camera.update();
 
         //Process input
@@ -176,6 +181,12 @@ public class Gameplay3D implements Screen {
         // Physics simulation Step
         physicsWorld.dynamicsWorld().stepSimulation(delta,  0);
 
+        for(var instance : entityInstances) {
+            var modelInstance = instance.visualComponent.modelInstance;
+            btRigidBody rigidBody = (btRigidBody) instance.entityPhysicsBodies.getFirst();
+            rigidBody.getMotionState().getWorldTransform(modelInstance.transform);
+        }
+
         //Apply transforms to render models.
 //        for (int i = 0; i < modelInstances.size(); i++) {
 //            if (physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
@@ -191,17 +202,17 @@ public class Gameplay3D implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);
-//        for (var instance : modelInstances) {
-//            modelBatch.render(instance, environment);
-//        }
+        for (var instance : modelInstances) {
+            modelBatch.render(instance, environment);
+        }
         modelBatch.end();
-
 
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
 
 
         physicsWorld.drawDebug(camera);
+        System.out.println(collisionManager.getNumTouchingEntities());
     }
 
     @Override

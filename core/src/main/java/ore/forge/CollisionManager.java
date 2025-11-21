@@ -18,8 +18,13 @@ public class CollisionManager extends ContactListener {
     @Override
     public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-//            o1Data.bodyLogic.onContactStart(o2Data);
-//            o2Data.bodyLogic.onContactStart(o1Data);
+            if (o1Data.bodyLogic != null) {
+                o1Data.bodyLogic.onContactStart(o2Data, o1Data);
+            }
+            if (o2Data.bodyLogic != null) {
+                o2Data.bodyLogic.onContactStart(o1Data, o2Data);
+            }
+
             var pair = new Pair<>(o2Data, o1Data);
             touchingEntities.add(pair);
         }
@@ -29,17 +34,26 @@ public class CollisionManager extends ContactListener {
     @Override
     public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-//            o1Data.bodyLogic.onContactEnd(o2Data);
-//            o2Data.bodyLogic.onContactEnd(o1Data);
+            if (o1Data.bodyLogic != null) {
+                o1Data.bodyLogic.onContactEnd(o2Data, o1Data);
+            }
+            if (o2Data.bodyLogic != null) {
+                o2Data.bodyLogic.onContactEnd(o1Data, o2Data);
+            }
+            var pair = new Pair<>(o2Data, o1Data);
+            touchingEntities.remove(pair);
         }
-        touchingEntities.remove(new Pair<>(o1, o2));
     }
 
     public void updateTouchingEntities() {
         for (var pair : touchingEntities) {
-            if (pair.first() instanceof PhysicsBodyData first &&  pair.second() instanceof PhysicsBodyData second) {
-//                first.bodyLogic.colliding(second);
-//                second.bodyLogic.colliding(first);
+            if (pair.first() instanceof PhysicsBodyData first && pair.second() instanceof PhysicsBodyData second) {
+                if (first.bodyLogic != null) {
+                    first.bodyLogic.colliding(second, first);
+                }
+                if (second.bodyLogic != null) {
+                    second.bodyLogic.colliding(first, second);
+                }
             }
         }
     }
@@ -47,7 +61,6 @@ public class CollisionManager extends ContactListener {
     public int getNumTouchingEntities() {
         return touchingEntities.size();
     }
-
 
 
 }

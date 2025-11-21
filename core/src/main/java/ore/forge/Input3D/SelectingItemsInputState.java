@@ -17,16 +17,17 @@ import java.util.List;
  * */
 public class SelectingItemsInputState extends InputState {
     private final List<EntityInstance> selectedItems;
-    private DefaultState defaultState;
     private BuildingInputState buildingState;
 
     public SelectingItemsInputState(InputHandler inputHandler) {
         super(inputHandler);
         selectedItems = new ArrayList<>();
+
     }
 
     @Override
     public void update(float delta) {
+        var defaultState = inputHandler.defaultInput();
         cameraController.update(delta);
         //Transition to Building State with selected Items
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
@@ -48,7 +49,7 @@ public class SelectingItemsInputState extends InputState {
         }
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             RayResultCallback rayCallback = rayCastForItem();
-            if (rayCallback.hasHit()) { //If Ray-Cast returns an item add to selectedItem
+            if (rayCallback.hasHit() && rayCallback.getCollisionObject() != null) { //If Ray-Cast returns an item add to selectedItem
                 var collisionObject = rayCallback.getCollisionObject();
                 PhysicsBodyData hitBodyData = (PhysicsBodyData) collisionObject.userData;
                 addToSelectedItems(hitBodyData.parentEntityInstance);

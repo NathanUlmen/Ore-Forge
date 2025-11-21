@@ -3,14 +3,11 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.UpgraderSpawner;
-import ore.forge.Ore;
-import ore.forge.ReflectionLoader;
+import ore.forge.*;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
-import ore.forge.UpgradeCooldown;
-import ore.forge.UpgradeTag;
 
 @SuppressWarnings("unused")
 public class UpgradeOreBehavior implements BodyLogic {
@@ -70,14 +67,38 @@ public class UpgradeOreBehavior implements BodyLogic {
     }
 
     @Override
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+        assert subject.specificData instanceof Ore;
+        assert upgradeTag != null && upgradeStrategy != null;
+        Ore ore = (Ore) subject.specificData;
+        if (ore.isUpgradable(upgradeTag)) {
+            upgradeStrategy.applyTo(ore);
+//            System.out.println("Ore Upgraded!");
+        }
+    }
+
+    @Override
     public void colliding(Object subjectData, ItemUserData userData) {
         //Upgrade ore if its upgradable (EX: UpgradeCooldown runs out while still touching)
+    }
+
+    @Override
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+
     }
 
     @Override
     public void onContactEnd(Object subjectData, ItemUserData userData) {
         //Start cooldown if not already in progress
         if (subjectData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
+            ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
+            ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();
+        }
+    }
+
+    @Override
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
+        if (subject.specificData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
             ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
             ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();
         }

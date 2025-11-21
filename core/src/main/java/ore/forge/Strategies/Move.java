@@ -5,9 +5,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Ore;
+import ore.forge.PhysicsBodyData;
 
 public class Move implements BodyLogic {
     private final float force;
@@ -52,6 +53,11 @@ public class Move implements BodyLogic {
     }
 
     @Override
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+
+    }
+
+    @Override
     public void colliding(Object subjectData, ItemUserData itemUserData) {
         assert subjectData instanceof Ore;
         Ore ore = (Ore) subjectData;
@@ -73,10 +79,45 @@ public class Move implements BodyLogic {
         rigidBody.applyForce(forceVec, worldOffset);
     }
 
+    @Override
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+        // Ensure the subject is an Ore
+        assert subject.specificData instanceof Ore;
+        Ore ore = (Ore) subject.specificData;
+        btRigidBody rigidBody = ore.rigidBody;
+
+        // Get conveyor direction in world space
+        ItemUserData itemUserData = (ItemUserData) source.specificData;
+        Vector3 localDirection = itemUserData.direction().cpy().nor();
+
+        Quaternion sensorRotation = new Quaternion();
+        sensor.getWorldTransform().getRotation(sensorRotation);
+        sensorRotation.transform(localDirection);
+        Vector3 conveyorDir = localDirection.nor(); // normalized world direction
+
+        float maxSpeed = force;          // units per second
+        float responsiveness = 10f;
+
+        Vector3 currentVel = rigidBody.getLinearVelocity().cpy();
+
+        float velAlongDir = currentVel.cpy().dot(conveyorDir);
+
+        float deltaV = maxSpeed - velAlongDir;
+
+        Vector3 forceVec = conveyorDir.scl(deltaV * 10 * responsiveness);
+
+        rigidBody.applyCentralForce(forceVec);
+    }
+
 
 
     @Override
     public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
 
     }
 

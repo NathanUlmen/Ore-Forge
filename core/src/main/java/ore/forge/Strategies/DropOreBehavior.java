@@ -7,17 +7,17 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.*;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.DropperSpawner;
 import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.Items.Experimental.ItemSpawner;
 import ore.forge.Items.Experimental.ItemUserData;
-import ore.forge.*;
+import ore.forge.Screens.Gameplay3D;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
 
-import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 
 @SuppressWarnings("unused")
@@ -66,12 +66,14 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
             VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperSpawner.oreModel));
             Ore oreInfo = new Ore();
 
+
             Vector3 inertia = new Vector3();
             dropperSpawner.oreShape.calculateLocalInertia(10, inertia);
             var oreBody = new btRigidBody(10f, new btDefaultMotionState(), dropperSpawner.oreShape, inertia);
 //            oreBody.setSleepingThresholds(1, 0);
-            oreBody.userData = oreInfo;
+
             oreInfo.rigidBody = oreBody;
+            oreBody.applyCentralImpulse(new Vector3(0, -150f, 0)); //Make it look like its "spitting" the ore out
 
             var collisionObjects = new ArrayList<btCollisionObject>();
             collisionObjects.add(oreBody);
@@ -80,13 +82,16 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
             oreBody.setCcdMotionThreshold(0);
 
             var oreInstance = new EntityInstance(collisionObjects, visualComponent);
+            oreBody.userData = new PhysicsBodyData(oreInstance, oreInfo, null, oreBody.getWorldTransform());
+
             oreInstance.place(parent.getWorldTransform().cpy());
+            Gameplay3D.modelInstances.add(oreInstance.visualComponent.modelInstance);
+            Gameplay3D.entityInstances.add(oreInstance);
             for (var object : oreInstance.entityPhysicsBodies) {
                 PhysicsWorld.instance().dynamicsWorld().addRigidBody((btRigidBody) object,
                     CollisionRules.combineBits(CollisionRules.ORE),
                     CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
             }
-            System.out.println("Dropped Ore");
         }
     }
 
@@ -96,12 +101,27 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+
+    }
+
+    @Override
     public void colliding(Object subjectData, ItemUserData userData) {
         assert false;
     }
 
     @Override
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+
+    }
+
+    @Override
     public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
 
     }
 

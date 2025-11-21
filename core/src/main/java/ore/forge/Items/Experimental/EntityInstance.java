@@ -11,59 +11,55 @@ import ore.forge.VisualComponent;
 import java.util.List;
 
 public class EntityInstance implements Disposable {
-    public List<btCollisionObject> entityPhysicsBodies; //All bodies in this object that relate to physics
-    public VisualComponent visualComponent; //Visual components for this item
-    private Matrix4 worldTransform;
+    public List<btCollisionObject> entityPhysicsBodies;
+    public VisualComponent visualComponent;
+
+    // Single authoritative transform
+    private final Matrix4 worldTransform = new Matrix4();
 
     public EntityInstance(List<btCollisionObject> collisionObjects, VisualComponent visualComponent) {
         this.entityPhysicsBodies = collisionObjects;
         this.visualComponent = visualComponent;
     }
 
-    //TODO: Add body to render list, register all behaviors,
     public void place(Matrix4 transform) {
-        this.setTransform(transform);
-        for (var collisionObject : entityPhysicsBodies) {
-            assert collisionObject != null;
-            if (collisionObject.userData instanceof PhysicsBodyData data) {
+        setTransform(transform);
+
+        for (btCollisionObject body : entityPhysicsBodies) {
+            if (body.userData instanceof PhysicsBodyData data && data.bodyLogic != null) {
                 data.bodyLogic.register();
             }
         }
     }
 
-    //Removes body from gameworld, unregisters behaviors, disposes body.
-    public void remove() {
+    /**
+     * Sets the ENTIRE entity's transform.
+     * Keeps physics bodies + visuals perfectly in sync.
+     */
+    private void setTransform(Matrix4 transform) {
+        // Copy into authoritative transform
+        worldTransform.set(transform);
 
-    }
-
-    //Should only be used for the initial placement of an item
-//    public void setTransform(Matrix4 transform) {
-//        for (btCollisionObject object : entityPhysicsBodies) {
-//            object.setWorldTransform(transform);
-//        }
-//        ModelInstance modelInstance = visualComponent.modelInstance;
-//        modelInstance.transform.set(transform);
-//        modelInstance.calculateTransforms();
-//    }
-
-    public void setTransform(Matrix4 transform) {
-        for (btCollisionObject object : entityPhysicsBodies) {
-            if (object instanceof btRigidBody) {
-                object.setWorldTransform(transform);
+        // 1. Update Rigid Bodies directly
+        for (btCollisionObject body : entityPhysicsBodies) {
+            if (body instanceof btRigidBody) {
+                body.setWorldTransform(worldTransform);
             }
         }
 
-        visualComponent.modelInstance.transform.set(transform);
+        // 2. Update Visual
+        visualComponent.modelInstance.transform.set(worldTransform);
         visualComponent.modelInstance.calculateTransforms();
 
-        for (btCollisionObject object : entityPhysicsBodies) {
-            if (object instanceof btGhostObject) {
-                var userData = (PhysicsBodyData) object.userData;
-                if (userData != null) {
-                    Matrix4 world = new Matrix4(transform);
-                    world.mul(userData.localTransform);
-                    object.setWorldTransform(world);
-                }
+        // 3. Update Ghost Objects relative to their local offsets
+        for (btCollisionObject body : entityPhysicsBodies) {
+            if (body instanceof btGhostObject && body.userData instanceof PhysicsBodyData data) {
+                Matrix4 ghostWorld = new Matrix4(worldTransform).mul(data.localTransform);
+                body.setWorldTransform(ghostWorld);
+            }
+            if (body instanceof btRigidBody rigid) {
+                rigid.setWorldTransform(worldTransform);
+                rigid.getMotionState().setWorldTransform(worldTransform);
             }
         }
     }
@@ -74,9 +70,8 @@ public class EntityInstance implements Disposable {
 
     @Override
     public void dispose() {
-        for (btCollisionObject collisionObject : entityPhysicsBodies) {
-            collisionObject.dispose();
+        for (btCollisionObject body : entityPhysicsBodies) {
+            body.dispose();
         }
     }
-
 }

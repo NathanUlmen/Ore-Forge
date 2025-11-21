@@ -5,9 +5,10 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
-import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Ore;
+import ore.forge.PhysicsBodyData;
 import ore.forge.Player.Player;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
@@ -64,6 +65,11 @@ public class SellOreBehavior implements BodyLogic {
 
     }
 
+    @Override
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+
+    }
+
     //TODO: UNFINISHED, events need to be handled
     @Override
     public void colliding(Object subjectData, ItemUserData userData) {
@@ -93,7 +99,39 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+        if (subject.specificData instanceof Ore ore) {
+            upgradeStrategy.applyTo(ore);
+            var player = Player.getSingleton();
+//            var eventManager = EventManager.getSingleton();
+            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
+//            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
+
+            //Compute and Reward Special points
+            spRewardProgress += ore.getMultiOre();
+            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
+            spRewardProgress %= spRewardThreshold;
+
+
+            /*
+             * TODO: Despawn Ore
+             * Remove from touching objects safely
+             * Remove form physics Simulation
+             * Remove from render list
+             *
+             * */
+//            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
+
+        }
+    }
+
+    @Override
     public void onContactEnd(Object subjectData, ItemUserData userData) {
+
+    }
+
+    @Override
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
 
     }
 

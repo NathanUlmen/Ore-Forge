@@ -161,6 +161,7 @@ public class ItemSpawner {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
                 //rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY));
+//                rigidBody.userData = new PhysicsBodyData(instance, null, null, rigidBody.getWorldTransform());
                 collisionObjects.add(rigidBody);
             } else {
                 //The rest will be sensor
@@ -170,7 +171,8 @@ public class ItemSpawner {
                 ghostObject.setCollisionShape(collisionShape);
                 ghostObject.setWorldTransform(nodeInfo.transform);
                 bodyLogic.attach(this, ghostObject);
-                ghostObject.userData = new PhysicsBodyData(instance, nodeInfo.relativeDirection.cpy(), bodyLogic, nodeInfo.transform);
+                ItemUserData itemUserData = new ItemUserData(nodeInfo.relativeDirection, this);
+                ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform);
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);

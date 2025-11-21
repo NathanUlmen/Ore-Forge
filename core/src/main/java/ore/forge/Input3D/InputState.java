@@ -15,6 +15,7 @@ public abstract class InputState {
 
     public InputState(InputHandler inputHandler) {
         this.inputHandler = inputHandler;
+        System.out.println(inputHandler.cameraController());
         this.cameraController = inputHandler.cameraController();
     }
 

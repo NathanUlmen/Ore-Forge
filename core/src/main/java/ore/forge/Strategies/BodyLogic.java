@@ -1,8 +1,8 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.PhysicsBodyData;
 
 public interface BodyLogic {
@@ -33,22 +33,25 @@ public interface BodyLogic {
     /**
      * Called when the two bodies begin contact
      */
+    @Deprecated
     void onContactStart(Object subjectData, ItemUserData userData);
-//    void onContactStart(PhysicsBodyData subject, PhysicsBodyData source);
+    void onContactStart(PhysicsBodyData subject, PhysicsBodyData source);
 
     /**
      * Called when resolving collision based interactions
      *
      */
+    @Deprecated
     void colliding(Object subjectData, ItemUserData userData);
-//    void colliding(PhysicsBodyData subject, PhysicsBodyData source);
+    void colliding(PhysicsBodyData subject, PhysicsBodyData source);
 
     /**
      * Called when the two dies end contact
      *
      */
+    @Deprecated
     void onContactEnd(Object subjectData, ItemUserData userData);
-//    void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source);
+    void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source);
 
     /**
      * Used to return a new instance of this behavior, replicating things that aren't state

@@ -1,16 +1,19 @@
 package ore.forge.Input3D;
 
 
-import ore.forge.Input.CameraController;
-
 import java.util.Deque;
 
 public class InputHandler {
-    private CameraController3D cameraController;
+    protected CameraController3D cameraController;
     private InputState inputState;
     private Deque<InputState> previousState;
+    private final DefaultInputState defaultInput;
 
     public InputHandler(CameraController3D controller3D) {
+        cameraController = controller3D;
+        defaultInput = new DefaultInputState(this);
+        setInputState(defaultInput);
+
     }
 
     public void update(float delta) {
@@ -23,6 +26,10 @@ public class InputHandler {
 
     public void setInputState(InputState inputState) {
         this.inputState = inputState;
+    }
+
+    public DefaultInputState defaultInput() {
+        return defaultInput;
     }
 
 }

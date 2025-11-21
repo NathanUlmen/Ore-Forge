@@ -6,7 +6,10 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.Items.Experimental.EntityInstance;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 
 /*
  * Will transition to the following states:
@@ -17,7 +20,7 @@ public class BuildingInputState extends InputState {
     private final List<EntityInstance> selectedItems;
     private final List<Vector3> offsets;
     private final Deque<List<EntityInstance>> undoActions;
-    private DefaultState defaultState;
+    private DefaultInputState defaultState;
 
     public BuildingInputState(InputHandler inputHandler) {
         super(inputHandler);
