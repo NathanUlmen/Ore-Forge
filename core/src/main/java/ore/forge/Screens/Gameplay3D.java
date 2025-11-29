@@ -212,7 +212,6 @@ public class Gameplay3D implements Screen {
 
 
         physicsWorld.drawDebug(camera);
-        System.out.println(collisionManager.getNumTouchingEntities());
     }
 
     @Override

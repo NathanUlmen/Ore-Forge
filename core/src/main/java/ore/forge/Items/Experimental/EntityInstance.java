@@ -25,12 +25,12 @@ public class EntityInstance implements Disposable {
 
     public void place(Matrix4 transform) {
         setTransform(transform);
-
         for (btCollisionObject body : entityPhysicsBodies) {
             if (body.userData instanceof PhysicsBodyData data && data.bodyLogic != null) {
                 data.bodyLogic.register();
             }
         }
+
     }
 
     public void remove() {
@@ -46,11 +46,7 @@ public class EntityInstance implements Disposable {
         }
     }
 
-    /**
-     * Sets the ENTIRE entity's transform.
-     * Keeps physics bodies + visuals perfectly in sync.
-     */
-    private void setTransform(Matrix4 transform) {
+    public void setTransform(Matrix4 transform) {
         // Copy into authoritative transform
         worldTransform.set(transform);
 
@@ -61,11 +57,10 @@ public class EntityInstance implements Disposable {
             }
         }
 
-        // 2. Update Visual
         visualComponent.modelInstance.transform.set(worldTransform);
         visualComponent.modelInstance.calculateTransforms();
 
-        // 3. Update Ghost Objects relative to their local offsets
+        //Update Ghost Objects relative to their local offsets
         for (btCollisionObject body : entityPhysicsBodies) {
             if (body instanceof btGhostObject && body.userData instanceof PhysicsBodyData data) {
                 Matrix4 ghostWorld = new Matrix4(worldTransform).mul(data.localTransform);
@@ -77,8 +72,6 @@ public class EntityInstance implements Disposable {
             }
         }
     }
-
-
 
     public Matrix4 transform() {
         return worldTransform;

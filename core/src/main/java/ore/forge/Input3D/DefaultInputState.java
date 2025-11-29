@@ -29,7 +29,6 @@ public class DefaultInputState extends InputState {
     @Override
     public void update(float delta) {
         cameraController.update(delta);
-
         var camera = cameraController.getCamera();
 
         //Shoot ray to see if it collides with an object
@@ -44,7 +43,6 @@ public class DefaultInputState extends InputState {
                     selecting.addToSelectedItems(entityInstance);
                 }
             }
-
             rayCallback.dispose();
         }
 

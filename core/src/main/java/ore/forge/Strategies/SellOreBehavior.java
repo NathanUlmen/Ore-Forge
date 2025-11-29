@@ -66,7 +66,7 @@ public class SellOreBehavior implements BodyLogic {
 
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
-        if (subject.specificData instanceof Ore ore) {
+        if (subject.specificData instanceof Ore ore && timeTouching > 0.5f) {
             upgradeStrategy.applyTo(ore);
             var player = Player.getSingleton();
 //            var eventManager = EventManager.getSingleton();
@@ -86,8 +86,8 @@ public class SellOreBehavior implements BodyLogic {
              * Remove from render list
              *
              * */
+            ore.rigidBody.setWorldTransform(ore.rigidBody.getWorldTransform().translate(0, 10000, 0));
 //            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
-
         }
     }
 

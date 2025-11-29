@@ -65,4 +65,8 @@ public class CollisionManager extends ContactListener {
         return touchingEntities.size();
     }
 
+    public void removePhysicsBody() {
+
+    }
+
 }
