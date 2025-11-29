@@ -1,5 +1,6 @@
 package ore.forge;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 
@@ -7,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CollisionManager extends ContactListener {
-    private final Set<Pair<PhysicsBodyData>> touchingEntities;
+    private final Set<CollisionPair> touchingEntities;
 
-    //Potential Optimization: Pool pairs.
+    //Potential Optimization: Pool CollisionPairs.
     public CollisionManager() {
         super();
         touchingEntities = new HashSet<>();
@@ -25,7 +26,7 @@ public class CollisionManager extends ContactListener {
                 o2Data.bodyLogic.onContactStart(o1Data, o2Data);
             }
 
-            var pair = new Pair<>(o2Data, o1Data);
+            var pair = new CollisionPair(o2Data, o1Data);
             touchingEntities.add(pair);
         }
 
@@ -40,19 +41,21 @@ public class CollisionManager extends ContactListener {
             if (o2Data.bodyLogic != null) {
                 o2Data.bodyLogic.onContactEnd(o1Data, o2Data);
             }
-            var pair = new Pair<>(o2Data, o1Data);
+            var pair = new CollisionPair(o2Data, o1Data);
             touchingEntities.remove(pair);
         }
     }
 
     public void updateTouchingEntities() {
+        final float deltaTime = Gdx.graphics.getDeltaTime();
         for (var pair : touchingEntities) {
-            if (pair.first() instanceof PhysicsBodyData first && pair.second() instanceof PhysicsBodyData second) {
+            pair.updateTouchingTime(deltaTime);
+            if (pair.a() instanceof PhysicsBodyData first && pair.b() instanceof PhysicsBodyData second) {
                 if (first.bodyLogic != null) {
-                    first.bodyLogic.colliding(second, first, );
+                    first.bodyLogic.colliding(second, first, pair.getTimeTouching());
                 }
                 if (second.bodyLogic != null) {
-                    second.bodyLogic.colliding(first, second, );
+                    second.bodyLogic.colliding(first, second, pair.getTimeTouching());
                 }
             }
         }
@@ -61,6 +64,5 @@ public class CollisionManager extends ContactListener {
     public int getNumTouchingEntities() {
         return touchingEntities.size();
     }
-
 
 }

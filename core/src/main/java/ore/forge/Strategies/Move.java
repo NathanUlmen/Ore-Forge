@@ -48,35 +48,8 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void onContactStart(Object subjectData, ItemUserData userData) {
-//        System.out.println("Move Contact Started");
-    }
-
-    @Override
     public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
 
-    }
-
-    @Override
-    public void colliding(Object subjectData, ItemUserData itemUserData) {
-        assert subjectData instanceof Ore;
-        Ore ore = (Ore) subjectData;
-        btRigidBody rigidBody = ore.rigidBody;
-
-        Quaternion sensorRotation = new Quaternion();
-        sensor.getWorldTransform().getRotation(sensorRotation);
-
-        Vector3 worldDirection = itemUserData.direction().cpy();
-        sensorRotation.transform(worldDirection);
-
-        Vector3 forceVec = worldDirection.nor().scl(force);
-
-        Vector3 localOffset = new Vector3(0.5f, 0f, 0f);  // example: right side of the ore
-
-        Vector3 worldOffset = localOffset.cpy();
-        rigidBody.getWorldTransform().getRotation(new Quaternion()).transform(worldOffset);
-
-        rigidBody.applyForce(forceVec, worldOffset);
     }
 
     @Override
@@ -109,12 +82,6 @@ public class Move implements BodyLogic {
         rigidBody.applyCentralForce(forceVec);
     }
 
-
-
-    @Override
-    public void onContactEnd(Object subjectData, ItemUserData userData) {
-
-    }
 
     @Override
     public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {

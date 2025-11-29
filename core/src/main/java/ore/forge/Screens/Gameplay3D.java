@@ -163,7 +163,7 @@ public class Gameplay3D implements Screen {
             rotationAngle += 90;
         }
         //Place item
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
             Vector3 position = getMouseGroundPosition(camera);
             //Spawn an instance of the item and add it to the physics simulation
             EntityInstance instance = spawner.spawnInstance();
@@ -211,7 +211,7 @@ public class Gameplay3D implements Screen {
         TimerUpdater.update(delta);
 
 
-//        physicsWorld.drawDebug(camera);
+        physicsWorld.drawDebug(camera);
         System.out.println(collisionManager.getNumTouchingEntities());
     }
 

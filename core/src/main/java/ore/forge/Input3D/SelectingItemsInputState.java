@@ -18,16 +18,17 @@ import java.util.List;
 public class SelectingItemsInputState extends InputState {
     private final List<EntityInstance> selectedItems;
     private BuildingInputState buildingState;
+    private DefaultInputState defaultState;
+    private boolean isHeld;
 
     public SelectingItemsInputState(InputHandler inputHandler) {
         super(inputHandler);
         selectedItems = new ArrayList<>();
-
+        isHeld = false;
     }
 
     @Override
     public void update(float delta) {
-        var defaultState = inputHandler.defaultInput();
         cameraController.update(delta);
         //Transition to Building State with selected Items
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
@@ -36,11 +37,23 @@ public class SelectingItemsInputState extends InputState {
             cleanUpSelectedItems();
             return;
         }
+
         //sell selected items
         if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {
 
 
         }
+
+        //remove selected items
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
+            for (EntityInstance item : selectedItems) {
+                item.remove();
+            }
+            selectedItems.clear();
+            inputHandler.setInputState(defaultState);
+            return;
+        }
+
         //Exit build selecting mode
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             inputHandler.setInputState(defaultState);
@@ -48,17 +61,25 @@ public class SelectingItemsInputState extends InputState {
             return;
         }
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            if (!isHeld) {
+                cleanUpSelectedItems();
+            }
+            isHeld = true;
             RayResultCallback rayCallback = rayCastForItem();
             if (rayCallback.hasHit() && rayCallback.getCollisionObject() != null) { //If Ray-Cast returns an item add to selectedItem
                 var collisionObject = rayCallback.getCollisionObject();
                 PhysicsBodyData hitBodyData = (PhysicsBodyData) collisionObject.userData;
                 addToSelectedItems(hitBodyData.parentEntityInstance);
-            } else { //if Ray-Cast returns no item exit
-                inputHandler.setInputState(defaultState);
-                cleanUpSelectedItems();
-                return;
+//            } else { //if Ray-Cast returns no item exit
+//                inputHandler.setInputState(defaultState);
+//                cleanUpSelectedItems();
+//                rayCallback.dispose();
+//                return;
             }
             rayCallback.dispose();
+            return;
+        } else {
+            isHeld = false;
         }
 
     }
@@ -78,4 +99,11 @@ public class SelectingItemsInputState extends InputState {
         selectedItems.clear();
     }
 
+    public void setDefaultState(DefaultInputState defaultState) {
+        this.defaultState = defaultState;
+    }
+
+    public void setBuildingState(BuildingInputState buildingState) {
+        this.buildingState = buildingState;
+    }
 }

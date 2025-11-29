@@ -110,4 +110,8 @@ public class BuildingInputState extends InputState {
         offsets.clear();
     }
 
+    public void setDefaultState(DefaultInputState defaultState) {
+        this.defaultState = defaultState;
+    }
+
 }

@@ -7,6 +7,10 @@ import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.PhysicsBodyData;
 
 public class DefaultInputState extends InputState {
+    private OpenedInventoryState openedInventoryState;
+    private SelectingItemsInputState selecting;
+
+
     /*
      * From Default state we can go to the following States:
      * Opened Inventory State(I(inventory, F(Shop), ESC(Pause)) - Will open Userinterface
@@ -14,16 +18,13 @@ public class DefaultInputState extends InputState {
      * Observing Ore (On UN-KNOWN SYMBOL)
      *
      * */
-    private OpenedInventoryState openedInventoryState;
-    private final SelectingItemsInputState selecting;
+
 
 
     public DefaultInputState(InputHandler inputHandler) {
-        super (inputHandler);
-        selecting =  new SelectingItemsInputState(inputHandler);
+        super(inputHandler);
 
     }
-
 
     @Override
     public void update(float delta) {
@@ -34,8 +35,6 @@ public class DefaultInputState extends InputState {
         //Shoot ray to see if it collides with an object
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             var rayCallback = rayCastForItem();
-
-
             if (rayCallback.hasHit()) {
                 btCollisionObject hitObject = rayCallback.getCollisionObject();
                 PhysicsBodyData hitBodyData = (PhysicsBodyData) hitObject.userData;
@@ -49,6 +48,14 @@ public class DefaultInputState extends InputState {
             rayCallback.dispose();
         }
 
+    }
+
+    public void setSelecting(SelectingItemsInputState selecting) {
+        this.selecting = selecting;
+    }
+
+    public void setOpenedInventoryState(OpenedInventoryState openedInventoryState) {
+        this.openedInventoryState = openedInventoryState;
     }
 
 }

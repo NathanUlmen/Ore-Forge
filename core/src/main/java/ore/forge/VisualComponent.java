@@ -1,10 +1,11 @@
 package ore.forge;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.utils.Disposable;
 
 import java.util.List;
 
-public class VisualComponent {
+public class VisualComponent implements Disposable {
     public ModelInstance modelInstance;
     public List<VisualEffect> visualEffects;
 
@@ -36,4 +37,8 @@ public class VisualComponent {
     }
 
 
+    @Override
+    public void dispose() {
+        //TODO
+    }
 }

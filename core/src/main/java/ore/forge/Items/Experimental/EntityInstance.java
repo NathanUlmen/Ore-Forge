@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
 import ore.forge.PhysicsBodyData;
+import ore.forge.PhysicsWorld;
 import ore.forge.VisualComponent;
 
 import java.util.List;
@@ -29,6 +30,19 @@ public class EntityInstance implements Disposable {
             if (body.userData instanceof PhysicsBodyData data && data.bodyLogic != null) {
                 data.bodyLogic.register();
             }
+        }
+    }
+
+    public void remove() {
+        //TODO: update collision Manager too.
+        visualComponent.dispose();
+        var world = PhysicsWorld.instance().dynamicsWorld();
+        for (btCollisionObject body : entityPhysicsBodies) {
+            if (body.userData instanceof PhysicsBodyData data && data.bodyLogic != null) {
+                data.bodyLogic.unregister();
+            }
+            world.removeCollisionObject(body);
+            body.dispose();
         }
     }
 
@@ -63,6 +77,8 @@ public class EntityInstance implements Disposable {
             }
         }
     }
+
+
 
     public Matrix4 transform() {
         return worldTransform;
