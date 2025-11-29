@@ -49,10 +49,10 @@ public class CollisionManager extends ContactListener {
         for (var pair : touchingEntities) {
             if (pair.first() instanceof PhysicsBodyData first && pair.second() instanceof PhysicsBodyData second) {
                 if (first.bodyLogic != null) {
-                    first.bodyLogic.colliding(second, first);
+                    first.bodyLogic.colliding(second, first, );
                 }
                 if (second.bodyLogic != null) {
-                    second.bodyLogic.colliding(first, second);
+                    second.bodyLogic.colliding(first, second, );
                 }
             }
         }

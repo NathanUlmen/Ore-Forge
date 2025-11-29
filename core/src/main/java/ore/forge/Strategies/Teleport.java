@@ -52,7 +52,7 @@ public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEven
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
 
     }
 

@@ -111,7 +111,7 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
 
     }
 

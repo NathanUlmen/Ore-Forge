@@ -80,7 +80,7 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
         // Ensure the subject is an Ore
         assert subject.specificData instanceof Ore;
         Ore ore = (Ore) subject.specificData;

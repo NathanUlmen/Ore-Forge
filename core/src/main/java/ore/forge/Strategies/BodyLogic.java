@@ -43,7 +43,7 @@ public interface BodyLogic {
      */
     @Deprecated
     void colliding(Object subjectData, ItemUserData userData);
-    void colliding(PhysicsBodyData subject, PhysicsBodyData source);
+    void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching);
 
     /**
      * Called when the two dies end contact

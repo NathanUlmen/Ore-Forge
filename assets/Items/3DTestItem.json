@@ -23,7 +23,7 @@
   "behaviors": [
     {
       "behaviorName": "ore.forge.Strategies.Move",
-      "force": 50,
+      "force": 5,
       "key": "b1"
     },
     {

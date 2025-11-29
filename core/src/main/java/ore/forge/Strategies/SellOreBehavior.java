@@ -99,7 +99,7 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
         if (subject.specificData instanceof Ore ore) {
             upgradeStrategy.applyTo(ore);
             var player = Player.getSingleton();

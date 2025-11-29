@@ -52,7 +52,7 @@ public class Gameplay3D implements Screen {
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1f; //Min distance can see/draw
         camera.far = 1000f; //Max distance can see/draw
-        camera.position.set(0, 10, -10);
+        camera.position.set(0, 10, 10);
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
@@ -211,7 +211,7 @@ public class Gameplay3D implements Screen {
         TimerUpdater.update(delta);
 
 
-        physicsWorld.drawDebug(camera);
+//        physicsWorld.drawDebug(camera);
         System.out.println(collisionManager.getNumTouchingEntities());
     }
 
