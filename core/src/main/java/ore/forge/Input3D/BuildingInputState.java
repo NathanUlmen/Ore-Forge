@@ -50,7 +50,6 @@ public class BuildingInputState extends InputState {
         }
 //        }
 
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             //Rotate all items 90 degrees around center point and rotate around their relative direction too.
             for (int i = 0; i < selectedItems.size(); i++) {
@@ -66,7 +65,6 @@ public class BuildingInputState extends InputState {
             }
         }
 
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {// leave build mode
             inputHandler.setInputState(defaultState);
             this.cleanUp();
@@ -75,6 +73,7 @@ public class BuildingInputState extends InputState {
 
 
     public void setActive(List<EntityInstance> items) {
+
         setSelectedItems(items);
         List<Matrix4> transforms = new ArrayList<>(items.size());
         for (EntityInstance item : items) {

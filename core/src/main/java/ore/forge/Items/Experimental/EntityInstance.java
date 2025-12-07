@@ -47,10 +47,8 @@ public class EntityInstance implements Disposable {
     }
 
     public void setTransform(Matrix4 transform) {
-        // Copy into authoritative transform
         worldTransform.set(transform);
 
-        // 1. Update Rigid Bodies directly
         for (btCollisionObject body : entityPhysicsBodies) {
             if (body instanceof btRigidBody) {
                 body.setWorldTransform(worldTransform);
@@ -60,7 +58,6 @@ public class EntityInstance implements Disposable {
         visualComponent.modelInstance.transform.set(worldTransform);
         visualComponent.modelInstance.calculateTransforms();
 
-        //Update Ghost Objects relative to their local offsets
         for (btCollisionObject body : entityPhysicsBodies) {
             if (body instanceof btGhostObject && body.userData instanceof PhysicsBodyData data) {
                 Matrix4 ghostWorld = new Matrix4(worldTransform).mul(data.localTransform);

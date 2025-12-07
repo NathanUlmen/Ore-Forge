@@ -22,6 +22,8 @@ import ore.forge.*;
 import ore.forge.Input3D.CameraController3D;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
+import ore.forge.Shaders.CustomShaderProvider;
+import ore.forge.Shaders.GridAttribute;
 
 import java.util.ArrayList;
 
@@ -62,7 +64,7 @@ public class Gameplay3D implements Screen {
         inputHandler = new InputHandler(cameraController3D);
 
         //Config ModelBatch
-        modelBatch = new ModelBatch();
+        modelBatch = new ModelBatch(new CustomShaderProvider());
 
         //Config Model Instance list
 
@@ -71,58 +73,35 @@ public class Gameplay3D implements Screen {
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, .8f, .8f, .8f, 1f));
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
 
-        //create cube and apply transform
-        Matrix4 transform = new Matrix4();
-        Model model = createBox(1.5f, 1.5f, 1.5f, Color.PINK);
-        var instance = new ModelInstance(model);
-        transform.translate(0, .75f, 0);
-        instance.transform.set(transform);
-        modelInstances.add(instance);
-
-        //create plane and apply transform
-        instance = new ModelInstance(createBox(50, 0.01f, 50));
-        var t2 = new Matrix4();
-        t2.translate(0, 0, 0);
-        instance.transform.set(t2);
-        modelInstances.add(instance);
-
-        // Create collision shapes
-        btCollisionShape boxShape = new btBoxShape(new Vector3(1.5f / 2, 1.5f / 2, 1.5f / 2));
-        btCollisionShape planeShape = new btBoxShape(new Vector3(25f, 0.01f, 25f));
-
-        // Create rigid bodies
-        cubeBody = createDynamicBody(modelInstances.get(0), boxShape, 10f);
-        cubeBody.setSleepingThresholds(0, 0);
-        btRigidBody groundBody = createStaticBody(modelInstances.get(1), planeShape);
-        groundBody.setFriction(1.7f);
-
-        var ore = new Ore();
-        cubeBody.userData = ore;
-        ore.rigidBody = cubeBody;
-
-        groundBody.userData = "IM DA GROUND";
-        // Add to world
-        physicsWorld.dynamicsWorld().addRigidBody(cubeBody, CollisionRules.combineBits(CollisionRules.ORE),
-            CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
-        physicsWorld.dynamicsWorld().addRigidBody(groundBody, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
-            CollisionRules.combineBits(CollisionRules.ORE));
-
-
-        //Transform cube to be in the air.
-        Matrix4 t3 = new Matrix4();
-        cubeBody.getWorldTransform(t3);
-        t3.setToTranslation(-10, 2f, 0);
-        t3.rotate(1, 1, 1, 0f);
-        cubeBody.setWorldTransform(t3);
-        cubeBody.getMotionState().setWorldTransform(t3);
-
         //Initialize collision Manager
         collisionManager = new CollisionManager();
 
+
+        //Create Plane:
+        Matrix4 planeTransform = new Matrix4();
+        planeTransform.setTranslation(0, -1, 0);
+        Model model = createBox(100, 1f, 100);
+        ModelInstance groundModelInstance = new ModelInstance(model);
+        btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 0.5f, 50f));
+        btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
+        VisualComponent visualComponent = new VisualComponent(groundModelInstance);
+        visualComponent.attributes = new GridAttribute(GridAttribute.ID);
+        System.out.println(visualComponent.attributes instanceof GridAttribute);
+        var rigidBodies = new ArrayList<btCollisionObject>();
+        rigidBodies.add(groundRigidBody);
+        EntityInstance instance = new EntityInstance(rigidBodies, visualComponent);
+        instance.setTransform(planeTransform);
+        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
+            CollisionRules.combineBits(CollisionRules.ORE));
+        entityInstances.add(instance);
+
+
+        //Create Static test items from JSON
         JsonReader jsonReader = new JsonReader();
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
         this.spawner = new UpgraderSpawner(value);
 
+        Matrix4 transform = new Matrix4();
         value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
         var dropperSpawner = new DropperSpawner(value);
         EntityInstance instance1 = dropperSpawner.spawnInstance();
@@ -131,20 +110,21 @@ public class Gameplay3D implements Screen {
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
-        modelInstances.add(instance1.visualComponent.modelInstance);
+//        modelInstances.add(instance1.visualComponent.modelInstance);
+        entityInstances.add(instance1);
 
-        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
-        furnaceSpawner = new  FurnaceSpawner(value);
-        EntityInstance instance2 = furnaceSpawner.spawnInstance();
-        Matrix4 transform2 = new Matrix4();
-        transform2.translate(-10, 0, 3);
-        instance2.place(transform2.cpy());
-        for (btCollisionObject object : instance2.entityPhysicsBodies) {
-            physicsWorld.dynamicsWorld().addCollisionObject(object);
-        }
-        modelInstances.add(instance2.visualComponent.modelInstance);
+//        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
+//        furnaceSpawner = new  FurnaceSpawner(value);
+//        EntityInstance instance2 = furnaceSpawner.spawnInstance();
+//        Matrix4 transform2 = new Matrix4();
+//        transform2.translate(-10, 0, 3);
+//        instance2.place(transform2.cpy());
+//        for (btCollisionObject object : instance2.entityPhysicsBodies) {
+//            physicsWorld.dynamicsWorld().addCollisionObject(object);
+//        }
+//        entityInstances.add(instance2);
+//        modelInstances.add(instance2.visualComponent.modelInstance);
 
-        System.out.println("made it here");
     }
 
     @Override
@@ -163,55 +143,49 @@ public class Gameplay3D implements Screen {
             rotationAngle += 90;
         }
         //Place item
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             Vector3 position = getMouseGroundPosition(camera);
             //Spawn an instance of the item and add it to the physics simulation
             EntityInstance instance = spawner.spawnInstance();
             Matrix4 transform = new Matrix4().setToTranslation(position);
             transform.rotate(Vector3.Y, rotationAngle % 360); //Bound it to 360
             instance.place(transform);
-            modelInstances.add(instance.visualComponent.modelInstance);
+//            modelInstances.add(instance.visualComponent.modelInstance);
             for (btCollisionObject object : instance.entityPhysicsBodies) {
                 physicsWorld.dynamicsWorld().addCollisionObject(object,
                     object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY) : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
             }
+            entityInstances.add(instance);
         }
 
 
         // Physics simulation Step
-        physicsWorld.dynamicsWorld().stepSimulation(delta,  0);
+        physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
 
         for(var instance : entityInstances) {
             var modelInstance = instance.visualComponent.modelInstance;
-            btRigidBody rigidBody = (btRigidBody) instance.entityPhysicsBodies.getFirst();
-            rigidBody.getMotionState().getWorldTransform(modelInstance.transform);
+            for (int i = 0; i < instance.entityPhysicsBodies.size(); i++) {
+                if (instance.entityPhysicsBodies.get(i) instanceof btRigidBody rb) {
+                    rb.getMotionState().getWorldTransform(modelInstance.transform);
+                }
+            }
         }
-
-        //Apply transforms to render models.
-//        for (int i = 0; i < modelInstances.size(); i++) {
-//            if (physicsWorld.dynamicsWorld().getCollisionObjectArray().atConst(i) instanceof btRigidBody body) {
-//                var motionState = body.getMotionState();
-//                if (motionState != null) {
-//                    motionState.getWorldTransform(modelInstances.get(i).transform);
-//                }
-//            }
-//        }
-
 
         //Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         modelBatch.begin(camera);
-        for (var instance : modelInstances) {
-            modelBatch.render(instance, environment);
+        for (var instance : entityInstances) {
+            var modelInstance = instance.visualComponent.modelInstance;
+            modelBatch.render(modelInstance, environment);
         }
         modelBatch.end();
-
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
 
 
-        physicsWorld.drawDebug(camera);
+//        physicsWorld.drawDebug(camera);
+        System.out.println(collisionManager.getNumTouchingEntities());
     }
 
     @Override

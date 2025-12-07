@@ -8,12 +8,14 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import ore.forge.Items.Experimental.EntityInstance;
 
 public class InputHandler {
     protected CameraController3D cameraController;
     private InputState inputState;
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
+    public EntityInstance entityInstance;
 
     public InputHandler(CameraController3D controller3D) {
         cameraController = controller3D;

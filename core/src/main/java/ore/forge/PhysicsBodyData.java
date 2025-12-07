@@ -22,4 +22,8 @@ public class PhysicsBodyData {
         this.localTransform =  localTransform;
     }
 
+    @Override
+    public String toString() {
+        return bodyLogic.toString();
+    }
 }

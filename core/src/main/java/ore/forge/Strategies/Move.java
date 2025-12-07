@@ -52,9 +52,13 @@ public class Move implements BodyLogic {
 
     }
 
+    /*
+    * NOTE: If custom Item creator ever becomes a thing move direction should be computed
+    * by taking the cross product of the surface normal of the conveyors move shape.
+    * This allows for conveyors to be at an incline
+    *   */
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
-        // Ensure the subject is an Ore
         assert subject.specificData instanceof Ore;
         Ore ore = (Ore) subject.specificData;
         btRigidBody rigidBody = ore.rigidBody;

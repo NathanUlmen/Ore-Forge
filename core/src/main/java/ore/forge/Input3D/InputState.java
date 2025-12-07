@@ -27,15 +27,12 @@ public abstract class InputState {
         Vector3 rayFrom = new Vector3(cameraController.getCamera().position);
         Vector3 rayTo = cameraController.getCamera().getPickRay(Gdx.input.getX(), Gdx.input.getY()).direction.cpy().scl(1000).add(rayFrom);
 
-        // Prepare ray callback
         RayResultCallback rayCallback = new ClosestRayResultCallback(rayFrom, rayTo) {
             @Override
             public boolean needsCollision(btBroadphaseProxy proxy) {
-                // Filter based on collision groups
                 return (proxy.getCollisionFilterGroup() & CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)) != 0;
             }
         };
-
 
         // Perform the ray test
         dynamicsWorld.rayTest(rayFrom, rayTo, rayCallback);
