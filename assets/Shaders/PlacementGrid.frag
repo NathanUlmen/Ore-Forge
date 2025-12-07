@@ -10,7 +10,7 @@ void main() {
     vec3 baseColor = vec3(0.0);           // background (black)
 
     // Get the fractional part of world coords
-    vec2 f = abs(fract(v_worldPos.xz) - 0.5);
+    vec2 f = abs(fract(v_worldPos.xz));
 
     // Distance to nearest grid line
     float line = min(f.x, f.y);

@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.Screens.Gameplay3D;
+import ore.forge.Shaders.GridAttribute;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -73,7 +75,8 @@ public class BuildingInputState extends InputState {
 
 
     public void setActive(List<EntityInstance> items) {
-
+        Gameplay3D.entityInstances.getFirst().visualComponent.attributes = new GridAttribute(GridAttribute.ID);
+        System.out.println(Gameplay3D.entityInstances.getFirst());
         setSelectedItems(items);
         List<Matrix4> transforms = new ArrayList<>(items.size());
         for (EntityInstance item : items) {
@@ -106,6 +109,7 @@ public class BuildingInputState extends InputState {
     }
 
     public void cleanUp() {
+        Gameplay3D.entityInstances.getFirst().visualComponent.attributes = null;
         for (EntityInstance item : selectedItems) {
             //TODO: Remove building Shader
         }

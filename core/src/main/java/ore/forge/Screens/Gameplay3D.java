@@ -23,7 +23,6 @@ import ore.forge.Input3D.CameraController3D;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
 import ore.forge.Shaders.CustomShaderProvider;
-import ore.forge.Shaders.GridAttribute;
 
 import java.util.ArrayList;
 
@@ -79,22 +78,20 @@ public class Gameplay3D implements Screen {
 
         //Create Plane:
         Matrix4 planeTransform = new Matrix4();
-        planeTransform.setTranslation(0, -1, 0);
+        planeTransform.setTranslation(0, -0.5f, 0);
         Model model = createBox(100, 1f, 100);
         ModelInstance groundModelInstance = new ModelInstance(model);
         btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 0.5f, 50f));
         btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
         VisualComponent visualComponent = new VisualComponent(groundModelInstance);
-        visualComponent.attributes = new GridAttribute(GridAttribute.ID);
-        System.out.println(visualComponent.attributes instanceof GridAttribute);
+//        visualComponent.attributes = new GridAttribute(GridAttribute.ID);
         var rigidBodies = new ArrayList<btCollisionObject>();
         rigidBodies.add(groundRigidBody);
-        EntityInstance instance = new EntityInstance(rigidBodies, visualComponent);
-        instance.setTransform(planeTransform);
+        EntityInstance planeInstance = new EntityInstance(rigidBodies, visualComponent);
+        planeInstance.setTransform(planeTransform);
         physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
             CollisionRules.combineBits(CollisionRules.ORE));
-        entityInstances.add(instance);
-
+        entityInstances.add(planeInstance);
 
         //Create Static test items from JSON
         JsonReader jsonReader = new JsonReader();

@@ -23,7 +23,20 @@ public class CustomShaderProvider extends DefaultShaderProvider {
                 return gridShader;
             }
         }
-        defaultShader = new DefaultShader(renderable, new DefaultShader.Config());
+        defaultShader = new DefaultShader(renderable, new DefaultShader.Config()) {
+            @Override
+            public boolean canRender(Renderable renderable) {
+                var result = super.canRender(renderable);
+                if (result) {
+                    if (renderable.userData instanceof VisualComponent vc) {
+                        return !(vc.attributes instanceof GridAttribute);
+                    }
+                }
+
+                return result;
+            }
+        };
+
         return defaultShader;
     }
 }
