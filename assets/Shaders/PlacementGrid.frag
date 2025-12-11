@@ -5,9 +5,9 @@ precision mediump float;
 varying vec3 v_worldPos;
 
 void main() {
-    float thickness = 0.03;    // line thickness
+    float thickness = 0.08;    // line thickness
     vec3 gridColor = vec3(0.2, 0.4, 1.0);  // blue grid
-    vec3 baseColor = vec3(0.0);           // background (black)
+    vec3 baseColor = vec3(0., 1., 0.);           // background (green)
 
     // Get the fractional part of world coords
     vec2 f = abs(fract(v_worldPos.xz));

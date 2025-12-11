@@ -298,3 +298,17 @@ Terra, Geo,
 - **Ultimate Conveyor**
     - 9 Speed.
  
+    
+At the beginning of the semester I decided to port my game from 2D to 3D. 
+This required the of existing systems(physics, rendering, controls, camera, etc.) and the addition of new
+ones (Loading 3D models). The most difficult of these to adapt to/learn was rendering.
+In computer graphics if you want to add visual effects to you scene beyond displaying the base model
+you will need to use these things called shader programs. Shaders are little programs that 
+run on the GPU. There are two main types of shaders, vertex shaders and fragment shaders.
+Vertex shaders are responsible from applying transformations and other effects to the vertices of a 3D model.
+Fragment shaders are responsible have one job and that's determining the color of a pixel. Through these two
+Through these two shaders you get many of effects that are cornerstones of modern day graphics, such as lighting, shadows,
+reflections, textures, etc. You can also use them to achieve more novel effects like fire, or EXPAND.
+I also applied alot of what I learned in my Linear algebra class.
+
+So in summary I learned more about the 3D rendering pipeline, shaders, 3D transformations.
