@@ -17,9 +17,11 @@ public class IconRenderer {
     private final Environment environment;
     private final PerspectiveCamera camera;
     private final int renderResolution;
+    private final int saveResolution;
 
     public IconRenderer() {
-        renderResolution = 512;
+        renderResolution = 8192;
+        saveResolution = 1024;
 
         modelBatch = new ModelBatch();
 
@@ -47,7 +49,7 @@ public class IconRenderer {
 
         //Center our model
         Vector3 center = bb.getCenter(new Vector3());
-        modelInstance.transform.setTranslation(center.scl(-1));
+        modelInstance.transform.setTranslation(center.scl(-1)); //Shift by offsets to be centered
 
         Vector3 dimensions = bb.getDimensions(new Vector3());
         float maxDim = Math.max(dimensions.x,
@@ -73,26 +75,33 @@ public class IconRenderer {
 //        Gdx.gl.glClearColor(1f, 1f, 0.8f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        // --- Render model ---
         ModelInstance instance = visualComponent.modelInstance;
 
+        //Render model in our scene
         modelBatch.begin(camera);
         modelBatch.render(instance, environment);
         modelBatch.end();
 
-        // --- Extract Pixmap ---
+        //Get pixmap from our buffer
         Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, renderResolution, renderResolution);
+        Pixmap downscaled = new Pixmap(saveResolution, saveResolution, pixmap.getFormat());
+        pixmap.setFilter(Pixmap.Filter.BiLinear);
+        downscaled.setFilter(Pixmap.Filter.BiLinear);
+        downscaled.drawPixmap(pixmap,
+            0, 0, pixmap.getWidth(), pixmap.getHeight(),
+            0, 0, downscaled.getWidth(), downscaled.getHeight());
 
-        toFile(pixmap, "test.png");
+        toFile(downscaled, "test.png");
 
         fbo.end();
         fbo.dispose();
 
-        // Convert to LibGDX Image if required:
-        Texture texture = new Texture(pixmap);
+        //Convert to image
+        Texture texture = new Texture(downscaled);
         Image image = new Image(texture);
 
         pixmap.dispose();
+        downscaled.dispose();
 
         return image;
     }

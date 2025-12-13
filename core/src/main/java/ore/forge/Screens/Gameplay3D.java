@@ -16,13 +16,17 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import ore.forge.*;
 import ore.forge.Input3D.CameraController3D;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
+import ore.forge.Screens.Widgets.ItemIcon;
 import ore.forge.Shaders.CustomShaderProvider;
+import ore.forge.UI.Icon;
 
 import java.util.ArrayList;
 
@@ -40,6 +44,9 @@ public class Gameplay3D implements Screen {
     private ItemSpawner spawner;
     private FurnaceSpawner furnaceSpawner;
     private InputHandler inputHandler;
+
+    private Stage stage;
+    private final Icon itemIcon;
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
@@ -111,7 +118,14 @@ public class Gameplay3D implements Screen {
         entityInstances.add(instance1);
 
         IconRenderer creator = new IconRenderer();
-        creator.renderIcon(instance1.visualComponent);
+        itemIcon = new Icon(creator.renderIcon(instance1.visualComponent));
+
+        itemIcon.setPosition(300, 300);
+        int size = 1024;
+        itemIcon.setSize(size, size);
+        stage = new Stage(new ScreenViewport());
+        stage.addActor(itemIcon);
+        itemIcon.invalidateHierarchy();
 
 //        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
 //        furnaceSpawner = new  FurnaceSpawner(value);
@@ -180,6 +194,12 @@ public class Gameplay3D implements Screen {
             modelBatch.render(modelInstance, environment);
         }
         modelBatch.end();
+
+
+        stage.act();
+        stage.getViewport().apply();
+        stage.draw();
+
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
 
