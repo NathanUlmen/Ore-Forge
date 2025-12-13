@@ -110,6 +110,9 @@ public class Gameplay3D implements Screen {
 //        modelInstances.add(instance1.visualComponent.modelInstance);
         entityInstances.add(instance1);
 
+        IconRenderer creator = new IconRenderer();
+        creator.renderIcon(instance1.visualComponent);
+
 //        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
 //        furnaceSpawner = new  FurnaceSpawner(value);
 //        EntityInstance instance2 = furnaceSpawner.spawnInstance();
