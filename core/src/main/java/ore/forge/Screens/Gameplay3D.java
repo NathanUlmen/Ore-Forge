@@ -26,8 +26,11 @@ import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.Icon;
+import ore.forge.UI.IconGrid;
+import ore.forge.UI.IconRenderer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Gameplay3D implements Screen {
     //Rendering
@@ -118,12 +121,20 @@ public class Gameplay3D implements Screen {
 
         IconRenderer creator = new IconRenderer();
         itemIcon = new Icon(creator.renderIcon(instance1.visualComponent));
-
         itemIcon.setPosition(512, 512);
-//        int size = 1024;
-//        itemIcon.setSize(size, size);
         stage = new Stage(new ScreenViewport());
-        stage.addActor(itemIcon);
+        Gdx.input.setInputProcessor(stage);
+        List<Icon> icons = new ArrayList<>();
+
+        for (int i = 0; i < 12; i++) {
+            icons.add(itemIcon);
+        }
+        System.out.println(icons.size());
+        IconGrid iconGrid = new IconGrid(icons);
+        iconGrid.setPosition(2024, 512);
+//        itemIcon.setSize(256, 256);
+        stage.addActor(iconGrid);
+//        stage.addActor(itemIcon);
 
 //        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
 //        furnaceSpawner = new  FurnaceSpawner(value);
@@ -204,7 +215,6 @@ public class Gameplay3D implements Screen {
 
 
 //        physicsWorld.drawDebug(camera);
-        System.out.println(collisionManager.getNumTouchingEntities());
     }
 
     @Override

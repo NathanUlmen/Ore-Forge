@@ -1,4 +1,4 @@
-package ore.forge;
+package ore.forge.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import ore.forge.VisualComponent;
 
 public class IconRenderer {
     private final ModelBatch modelBatch;
@@ -19,6 +19,7 @@ public class IconRenderer {
     private final int renderResolution;
     private final int saveResolution;
 
+    //TODO: make this things a texture atlas instead of returning individual textures each time
     public IconRenderer() {
         renderResolution = 8192;
         saveResolution = 512;
@@ -43,7 +44,7 @@ public class IconRenderer {
         camera.update();
     }
 
-    public Image renderIcon(VisualComponent visualComponent) {
+    public Texture renderIcon(VisualComponent visualComponent) {
         ModelInstance modelInstance = visualComponent.modelInstance;
         BoundingBox bb = modelInstance.calculateBoundingBox(new BoundingBox());
 
@@ -72,7 +73,7 @@ public class IconRenderer {
 
         // Clear background (white / soft yellow)
         Gdx.gl.glViewport(0, 0, renderResolution, renderResolution);
-        Gdx.gl.glClearColor(.11f, .41f, 1f, 1f);
+        Gdx.gl.glClearColor(.11f, .41f, 1f, 0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         ModelInstance instance = visualComponent.modelInstance;
@@ -99,12 +100,11 @@ public class IconRenderer {
 
         //Convert to image
         Texture texture = new Texture(downscaled);
-        Image image = new Image(texture);
 
         pixmap.dispose();
         downscaled.dispose();
 
-        return image;
+        return texture;
     }
 
     private static void toFile(Pixmap pixmap, String fileName) {
@@ -129,7 +129,6 @@ public class IconRenderer {
 
         return flipped;
     }
-
 
 
 }
