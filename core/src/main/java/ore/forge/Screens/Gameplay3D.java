@@ -24,7 +24,6 @@ import ore.forge.*;
 import ore.forge.Input3D.CameraController3D;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
-import ore.forge.Screens.Widgets.ItemIcon;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.Icon;
 
@@ -120,12 +119,11 @@ public class Gameplay3D implements Screen {
         IconRenderer creator = new IconRenderer();
         itemIcon = new Icon(creator.renderIcon(instance1.visualComponent));
 
-        itemIcon.setPosition(300, 300);
-        int size = 1024;
-        itemIcon.setSize(size, size);
+        itemIcon.setPosition(512, 512);
+//        int size = 1024;
+//        itemIcon.setSize(size, size);
         stage = new Stage(new ScreenViewport());
         stage.addActor(itemIcon);
-        itemIcon.invalidateHierarchy();
 
 //        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
 //        furnaceSpawner = new  FurnaceSpawner(value);
@@ -176,7 +174,7 @@ public class Gameplay3D implements Screen {
         // Physics simulation Step
         physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
 
-        for(var instance : entityInstances) {
+        for (var instance : entityInstances) {
             var modelInstance = instance.visualComponent.modelInstance;
             for (int i = 0; i < instance.entityPhysicsBodies.size(); i++) {
                 if (instance.entityPhysicsBodies.get(i) instanceof btRigidBody rb) {
@@ -187,6 +185,7 @@ public class Gameplay3D implements Screen {
 
         //Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
 
         modelBatch.begin(camera);
         for (var instance : entityInstances) {

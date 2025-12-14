@@ -21,7 +21,7 @@ public class IconRenderer {
 
     public IconRenderer() {
         renderResolution = 8192;
-        saveResolution = 1024;
+        saveResolution = 512;
 
         modelBatch = new ModelBatch();
 
@@ -72,7 +72,7 @@ public class IconRenderer {
 
         // Clear background (white / soft yellow)
         Gdx.gl.glViewport(0, 0, renderResolution, renderResolution);
-//        Gdx.gl.glClearColor(1f, 1f, 0.8f, 1f);
+        Gdx.gl.glClearColor(.11f, .41f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         ModelInstance instance = visualComponent.modelInstance;
@@ -91,6 +91,7 @@ public class IconRenderer {
             0, 0, pixmap.getWidth(), pixmap.getHeight(),
             0, 0, downscaled.getWidth(), downscaled.getHeight());
 
+        downscaled = flipPixmapVertically(downscaled);
         toFile(downscaled, "test.png");
 
         fbo.end();
@@ -107,22 +108,28 @@ public class IconRenderer {
     }
 
     private static void toFile(Pixmap pixmap, String fileName) {
-        int w = pixmap.getWidth();
-        int h = pixmap.getHeight();
+        PixmapIO.writePNG(Gdx.files.local(fileName), pixmap);
+    }
 
-        //Flip vertically
-        Pixmap flipped = new Pixmap(w, h, pixmap.getFormat());
+    /**
+     * Returns a new Pixmap that is vertically flipped.
+     */
+    private static Pixmap flipPixmapVertically(Pixmap src) {
+        int w = src.getWidth();
+        int h = src.getHeight();
+        Pixmap flipped = new Pixmap(w, h, src.getFormat());
+
         for (int y = 0; y < h; y++) {
             flipped.drawPixmap(
-                pixmap,
-                0, y, w, 1,
-                0, h - y - 1, w, 1
+                src,
+                0, y, w, 1,        // Source: x, y, width, height
+                0, h - y - 1, w, 1 // Dest: x, y flipped vertically
             );
         }
 
-        PixmapIO.writePNG(Gdx.files.local(fileName), flipped);
-        flipped.dispose();
+        return flipped;
     }
+
 
 
 }
