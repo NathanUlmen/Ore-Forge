@@ -1,37 +1,37 @@
 package ore.forge.UI;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import java.util.List;
 
-public class IconGrid<E> extends ScrollPane {
-    private List<Icon<E>> icons;
+public class WidgetGrid extends ScrollPane {
     private IconGridConfigData configData;
     private final Table table; //holds all our icons
 
-    public IconGrid(List<Icon<E>> icons) {
+    public WidgetGrid() {
+        this(null);
+    }
+
+
+    public WidgetGrid(List<? extends Actor> icons) {
         super(new Table());
         table = (Table) this.getActor();
-        this.icons = icons;
+        table.top().left(); //Set so it builds from top left
         this.configData = new IconGridConfigData();
         setScrollingDisabled(true, false);
         setSize(configData.width, configData.height);
-        buildLayout();
         this.setDebug(true, true);
     }
 
-    public void setIcons(List<Icon<E>> icons) {
-        this.icons = icons;
-        buildLayout();
-    }
-
-    public void buildLayout() {
+    public void setElements(List<? extends Actor> icons) {
         table.clear();
         int count = 0;
-        for (Icon<E> icon : icons) {
+        for (Actor icon : icons) {
             icon.setSize(configData.iconWidth, configData.iconHeight);
-            if (count != 0 & count % configData.numColumns == 0) {
+            if (count != 0 && count % configData.numColumns == 0) {
                 table.row();
             }
             table.add(icon).size(configData.iconWidth, configData.iconHeight)
@@ -48,11 +48,11 @@ public class IconGrid<E> extends ScrollPane {
         public final float iconWidth, iconHeight;
 
         public IconGridConfigData() {
-            this.numColumns = 4;
+            this.numColumns = 6;
             this.iconPadding = 10f;
             this.borderPadding = 20f;
-            this.width = 1024;
-            this.height = 1024;
+            this.width = Gdx.graphics.getWidth() * .4f;
+            this.height = Gdx.graphics.getHeight() * .8f;
             int totalPadding = (int) ((iconPadding * numColumns * 2) + (borderPadding * 2));
             iconWidth = (width - totalPadding) / numColumns;
             iconHeight = iconWidth;

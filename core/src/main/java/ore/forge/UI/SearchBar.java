@@ -8,8 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import ore.forge.ButtonType;
 import ore.forge.UIHelper;
 
-import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Nathan Ulmen
@@ -17,31 +16,23 @@ import java.util.function.BiConsumer;
  * It provides callbacks so you can do things like: Update UI elements, etc
  *
  */
-public class SearchBar<E> extends Table {
+public class SearchBar extends Table {
     private TextField searchField;
-    private List<E> searchItems;
     private SearchBarConfigData config;
 
     private Runnable onSelectedCallback;
     private Runnable onClickOffCallback;
-    private BiConsumer<SearchBar<E>, String> textChangedCallback;
+    private Consumer<String> textChangedCallback;
 
-    public SearchBar(List<E> searchItems) {
-        this.searchItems = searchItems;
+    public SearchBar() {
         config = new SearchBarConfigData();
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
 
         textFieldStyle.background = UIHelper.getRoundFull().tint(Color.BLACK);
         textFieldStyle.cursor = UIHelper.getButton(ButtonType.ROUND_FULL_128).tint(Color.BLACK);
         textFieldStyle.font = UIHelper.generateFont(config.fontSize);
+        textFieldStyle.fontColor = Color.WHITE;
         searchField = new TextField("Search...", textFieldStyle);
-
-        //Text Typed Callback
-        searchField.setTextFieldListener((textField, c) -> {
-            if (textChangedCallback != null) {
-                textChangedCallback.accept(this, textField.getText());
-            }
-        });
 
         //focus listeners
         searchField.addListener(new InputListener() {
@@ -58,16 +49,13 @@ public class SearchBar<E> extends Table {
                 }
             }
         });
-    }
-
-    public void setSearchItems(List<E> searchItems) {
-        this.searchItems = searchItems;
+        this.add(searchField).grow();
     }
 
     /**
      * Called when the search field is clicked on
      */
-    public void onSelected(Runnable callback) {
+    public void onSearchFocused(Runnable callback) {
         this.onSelectedCallback = callback;
     }
 
@@ -75,15 +63,24 @@ public class SearchBar<E> extends Table {
      * Called when the search bar is no longer in "focus"
      *
      */
-    public void onClickOff(Runnable callback) {
+    public void onFocusLost(Runnable callback) {
         this.onClickOffCallback = callback;
     }
 
     /**
      * Called when the text of the searchbar is mutated.
      */
-    public void onKeyTyped(BiConsumer<SearchBar<E>, String> callback) {
+    public void onKeyTyped(Consumer<String> callback) {
         this.textChangedCallback = callback;
+        searchField.setTextFieldListener((textField, c) -> {
+            if (textChangedCallback != null) {
+                textChangedCallback.accept(textField.getText());
+            }
+        });
+    }
+
+    public String getText() {
+        return searchField.getText();
     }
 
     public static class SearchBarConfigData {

@@ -22,7 +22,7 @@ public class IconRenderer {
     //TODO: make this things a texture atlas instead of returning individual textures each time
     public IconRenderer() {
         renderResolution = 8192;
-        saveResolution = 512;
+        saveResolution = 1024;
 
         modelBatch = new ModelBatch();
 

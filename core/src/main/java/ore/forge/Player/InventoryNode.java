@@ -2,10 +2,9 @@ package ore.forge.Player;
 
 
 import ore.forge.EventSystem.EventManager;
-import ore.forge.EventSystem.Events.NodeGameEvent;
+import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
 import ore.forge.Items.*;
 
-//@author Nathan Ulmen
 public class InventoryNode {
     private final String nodeName;
     private int totalOwned;//Accounts for the number placed on base and the number in the inventory. Decremented when sold or incremented when a new item is obtained.
@@ -59,13 +58,13 @@ public class InventoryNode {
     public void place() {
         stored--;
         placed++;
-        EventManager.getSingleton().notifyListeners(new NodeGameEvent(this));
+        EventManager.getSingleton().notifyListeners(new InventoryNodeGameEvent(this));
     }
 
     public void pickUp() {
         stored++;
         placed--;
-        EventManager.getSingleton().notifyListeners(new NodeGameEvent(this));
+        EventManager.getSingleton().notifyListeners(new InventoryNodeGameEvent(this));
     }
 
     public boolean hasSupply() {
@@ -82,14 +81,14 @@ public class InventoryNode {
     public void addNew() {
         totalOwned++;
         stored++;
-        EventManager.getSingleton().notifyListeners(new NodeGameEvent(this));
+        EventManager.getSingleton().notifyListeners(new InventoryNodeGameEvent(this));
         assertCheck();
     }
 
     public void addNew(int numBought) {
         totalOwned += numBought;
         stored += numBought;
-        EventManager.getSingleton().notifyListeners(new NodeGameEvent(this));
+        EventManager.getSingleton().notifyListeners(new InventoryNodeGameEvent(this));
         assertCheck();
     }
 
@@ -108,7 +107,7 @@ public class InventoryNode {
     public void sellFromBase() {
         totalOwned--;
         placed--;
-        EventManager.getSingleton().notifyListeners(new NodeGameEvent(this));
+        EventManager.getSingleton().notifyListeners(new InventoryNodeGameEvent(this));
         assertCheck();
     }
 

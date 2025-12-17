@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.Align;
 import ore.forge.ButtonHelper;
 import ore.forge.ButtonType;
 import ore.forge.EventSystem.EventManager;
-import ore.forge.EventSystem.Events.NodeGameEvent;
+import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Input.DefaultState;
 import ore.forge.Input.InputManager;
@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class InventoryTable extends Table implements GameEventListener<NodeGameEvent> {
+public class InventoryTable extends Table implements GameEventListener<InventoryNodeGameEvent> {
     private final static int ROW_COUNT = 4;
     private Comparator<ItemIcon> sortMethod;
     private final TextField searchBar;
@@ -274,7 +274,7 @@ public class InventoryTable extends Table implements GameEventListener<NodeGameE
     }
 
     @Override
-    public void handle(NodeGameEvent event) {
+    public void handle(InventoryNodeGameEvent event) {
         var itemIcon = lookUp.get(event.node().getHeldItemID());
         itemIcon.updateTopLeftText("Stored: " + event.node().getStored());
         asyncSearch(searchBar.getText());
@@ -282,7 +282,7 @@ public class InventoryTable extends Table implements GameEventListener<NodeGameE
 
     @Override
     public Class<?> getEventType() {
-        return NodeGameEvent.class;
+        return InventoryNodeGameEvent.class;
     }
 
     public boolean isSearching() {

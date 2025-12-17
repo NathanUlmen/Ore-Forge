@@ -38,6 +38,8 @@ public class ItemSpawner {
                     Vector3 relativeDirection,
                     Matrix4 transform) {}
 
+    public enum Type {UPGRADER, DROPPER, FURNACE, CONVEYOR, TELEPORTER}
+    protected Type type;
     protected final String name, id, description;
     protected final AcquisitionInfo acquisitionInfo;
     protected final Model model;
@@ -161,7 +163,7 @@ public class ItemSpawner {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
                 //rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY));
-//                rigidBody.userData = new PhysicsBodyData(instance, null, null, rigidBody.getWorldTransform());
+                rigidBody.userData = new PhysicsBodyData(instance, this, null, rigidBody.getWorldTransform());
                 collisionObjects.add(rigidBody);
             } else {
                 //The rest will be sensor
@@ -181,6 +183,12 @@ public class ItemSpawner {
         return instance;
     }
 
+    public Type type() {
+        return type == null ? Type.DROPPER : type;
+    }
 
+    public String name() {
+        return name;
+    }
 
 }

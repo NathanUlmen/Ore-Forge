@@ -26,8 +26,8 @@ import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.Icon;
-import ore.forge.UI.IconGrid;
 import ore.forge.UI.IconRenderer;
+import ore.forge.UI.ItemInventoryMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +114,9 @@ public class Gameplay3D implements Screen {
         transform.setTranslation(0, 8, 0);
         instance1.place(transform.cpy());
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
+            if (object.userData == null) {
+                object.userData = "No Longer Null";
+            }
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
 //        modelInstances.add(instance1.visualComponent.modelInstance);
@@ -124,16 +127,18 @@ public class Gameplay3D implements Screen {
         itemIcon.setPosition(512, 512);
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
-        List<Icon> icons = new ArrayList<>();
-
-        for (int i = 0; i < 12; i++) {
+        List<Icon<ItemSpawner>> icons = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            PhysicsBodyData bodyData = (PhysicsBodyData) instance1.entityPhysicsBodies.getFirst().userData;
+            ItemUserData userData = (ItemUserData) bodyData.specificData;
+            itemIcon.setData(userData.blueprint());
             icons.add(itemIcon);
         }
-        System.out.println(icons.size());
-        IconGrid iconGrid = new IconGrid(icons);
-        iconGrid.setPosition(2024, 512);
+        ItemInventoryMenu inventoryMenu = new ItemInventoryMenu(icons);
+        inventoryMenu.setPosition(300, 300);
+        inventoryMenu.setSize(2024, 1024);
+        stage.addActor(inventoryMenu);
 //        itemIcon.setSize(256, 256);
-        stage.addActor(iconGrid);
 //        stage.addActor(itemIcon);
 
 //        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
@@ -147,6 +152,12 @@ public class Gameplay3D implements Screen {
 //        }
 //        entityInstances.add(instance2);
 //        modelInstances.add(instance2.visualComponent.modelInstance);
+        long usedBytes =
+            Runtime.getRuntime().totalMemory()
+                - Runtime.getRuntime().freeMemory();
+
+        System.out.println("Memory Used: " + (usedBytes / (1024 * 1024)) + " MB");
+
 
     }
 

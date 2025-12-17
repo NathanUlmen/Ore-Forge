@@ -127,6 +127,14 @@ public class Icon<E> extends Table {
             height = 512;
         }
     }
+
+    public void setData(E data) {
+        this.data = data;
+    }
+
+    public E getData() {
+        return data;
+    }
 }
 
 

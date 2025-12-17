@@ -3,7 +3,6 @@ package ore.forge.Screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -14,7 +13,7 @@ import ore.forge.ButtonHelper;
 import ore.forge.ButtonType;
 import ore.forge.Currency;
 import ore.forge.EventSystem.EventManager;
-import ore.forge.EventSystem.Events.NodeGameEvent;
+import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.*;
 import ore.forge.Player.Inventory;
@@ -41,7 +40,7 @@ import java.util.List;
  *
  *
  * */
-public class ShopMenu extends Table implements GameEventListener<NodeGameEvent> {
+public class ShopMenu extends Table implements GameEventListener<InventoryNodeGameEvent> {
     private final static Player player = Player.getSingleton();
     private final TextButton droppers, furnaces, processItems, specialPoints, prestigeItems;
     private final ArrayList<ItemIcon> dropperIcons, furnaceIcons, processItemsIcons, specialPointsIcons, prestigeItemsIcons;
@@ -355,7 +354,7 @@ public class ShopMenu extends Table implements GameEventListener<NodeGameEvent> 
     }
 
     @Override
-    public void handle(NodeGameEvent event) {
+    public void handle(InventoryNodeGameEvent event) {
         var icon = iconLookUp.get(event.node().getHeldItemID());
         if (icon != null) {
             icon.updateTopLeftText("Owned: " + event.node().getTotalOwned());
@@ -408,7 +407,7 @@ public class ShopMenu extends Table implements GameEventListener<NodeGameEvent> 
 
     @Override
     public Class<?> getEventType() {
-        return NodeGameEvent.class;
+        return InventoryNodeGameEvent.class;
     }
 
 

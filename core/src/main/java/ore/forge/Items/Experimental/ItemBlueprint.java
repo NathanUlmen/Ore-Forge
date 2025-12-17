@@ -1,7 +1,10 @@
 package ore.forge.Items.Experimental;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.AcquisitionInfo;
 import ore.forge.Items.ExtendedFixtureDef;
@@ -17,8 +20,10 @@ import java.util.HashMap;
  * for an Item.
  **/
 public abstract class ItemBlueprint {
-    protected final String name, id, description;
+    public enum ItemType {DROPPER, UPGRADER, FURNACE, CONVEYOR, TELEPORTER}
 
+    protected final String name, id, description;
+    protected ItemType type;
     protected HashMap<String, BodyLogic> behaviors;
 
     protected final BodyDef bodyDef;
@@ -38,6 +43,14 @@ public abstract class ItemBlueprint {
         fixtureDefs = loadFixtures(jsonValue.get("fixtures"));
         behaviors = loadBehaviors(jsonValue.get("behaviors"));
 
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public ItemType type() {
+        return type;
     }
 
     public String toString() {
