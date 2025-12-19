@@ -143,7 +143,7 @@ public class Gameplay3D implements Screen {
         inventoryMenu.setSize(3024, 1024);
         itemIcon.debug();
         itemIcon.setSize(1024, 1024);
-        stage.addActor(inventoryMenu);
+//        stage.addActor(inventoryMenu);
         stage.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
