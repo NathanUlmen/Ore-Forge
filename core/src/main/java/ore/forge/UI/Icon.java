@@ -26,25 +26,24 @@ public class Icon<E> extends Table {
         this.configData = new IconConfigData();
 
 
-        // ===== Border =====
+        //border
         Image border = new Image(UIHelper.getRoundFull());
         border.setColor(Color.BLACK);
         border.setScaling(Scaling.stretch);
 
-        // ===== Background =====
+        //background
         iconBackground = new Image(UIHelper.getRoundFull());
         iconBackground.setColor(Color.FIREBRICK);
         iconBackground.setScaling(Scaling.stretch);
 
-        // ===== Item image =====
+        //item image
         this.itemImage = new Image(elementImage);
         this.itemImage.setScaling(Scaling.fit);
 
-        // ===== Label style =====
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = UIHelper.generateFont(configData.fontSize);
 
-        // ===== Text =====
+        //top text
         topText = new Label("Top Text", labelStyle);
         topText.setAlignment(Align.topLeft);
 
@@ -52,10 +51,9 @@ public class Icon<E> extends Table {
         bottomText.setAlignment(Align.bottom);
         bottomText.setWrap(true);
 
-        // ===== Content stack =====
         Stack contentStack = new Stack();
 
-        // Image stack (background + item image)
+        //background + item image
         Stack imageStack = new Stack();
         imageStack.add(iconBackground);
 
@@ -66,31 +64,30 @@ public class Icon<E> extends Table {
 
         contentStack.add(imageStack);
 
-        // Top text
+        //top text
         topTextContainer = new Container<>(topText);
         topTextContainer.align(Align.topLeft);
         topTextContainer.pad(configData.padPercentage);
         topTextContainer.setClip(true);
         contentStack.add(topTextContainer);
 
-        // Bottom text
+        //bottom text
         bottomTextContainer = new Container<>(bottomText);
         bottomTextContainer.align(Align.bottom);
         bottomTextContainer.pad(configData.padPercentage);
         bottomTextContainer.fill();
         contentStack.add(bottomTextContainer);
 
-        // ===== Inset content so border is visible =====
+        // content so border is visible
         Container<Stack> contentContainer = new Container<>(contentStack);
         contentContainer.pad(configData.borderPadding);
         contentContainer.fill();
 
-        // ===== Root stack =====
+        //root stack
         Stack rootStack = new Stack();
         rootStack.add(border);
         rootStack.add(contentContainer);
 
-        // ===== Add to table =====
         add(rootStack).expand().fill();
         setTouchable(Touchable.enabled);
     }
