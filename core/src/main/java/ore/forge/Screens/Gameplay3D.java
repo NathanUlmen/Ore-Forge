@@ -16,7 +16,11 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -128,7 +132,7 @@ public class Gameplay3D implements Screen {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
         List<Icon<ItemSpawner>> icons = new ArrayList<>();
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 1; i++) {
             PhysicsBodyData bodyData = (PhysicsBodyData) instance1.entityPhysicsBodies.getFirst().userData;
             ItemUserData userData = (ItemUserData) bodyData.specificData;
             itemIcon.setData(userData.blueprint());
@@ -136,8 +140,24 @@ public class Gameplay3D implements Screen {
         }
         ItemInventoryMenu inventoryMenu = new ItemInventoryMenu(icons);
         inventoryMenu.setPosition(300, 300);
-        inventoryMenu.setSize(2024, 1024);
+        inventoryMenu.setSize(3024, 1024);
+        itemIcon.debug();
+        itemIcon.setSize(1024, 1024);
         stage.addActor(inventoryMenu);
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                Actor target = event.getTarget();
+
+                if (!(target instanceof TextField)) {
+                    stage.setKeyboardFocus(null);
+                } else {
+                    Gdx.input.setInputProcessor(stage);
+                }
+                return false;
+            }
+        });
+
 //        itemIcon.setSize(256, 256);
 //        stage.addActor(itemIcon);
 

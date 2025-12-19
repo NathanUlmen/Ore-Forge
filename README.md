@@ -73,14 +73,43 @@ Ore Forge and to manage the items that you have created so far.
 
 ---
 
-The plan is:
-* Load all Item blueprints into the game
-* Load our inventory save state.
-* Render Texture icon images from our list of all items 
-* Create our UI (ShopMenu, ItemInventoryMenu, Quests) from these icons, will pass our Inventory class into just to get the initial values for things like number of item owned.
-* Register Our ItemInventoryMenu to listen for state changes in Inventory so that it can update the view
-
 ## Libraries Used:
 
 * [LibGDX](https://github.com/libgdx/libgdx)
 
+
+
+main:
+move left till null
+move right till 1
+    write 0
+    move right till x
+        goto copy
+if read x:
+    goto finalize
+
+copy:
+move right till 1
+    goto write
+if read =
+    goto main
+
+
+write:
+replace 1 with 0
+move right till null
+write 1
+move left till x
+goto middle
+
+middle:
+move left till x
+goto copy
+
+finalize:
+move left till null
+move right till null:
+    if read 0:
+        write 1
+write #
+halt

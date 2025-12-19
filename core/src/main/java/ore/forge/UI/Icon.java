@@ -17,8 +17,6 @@ public class Icon<E> extends Table {
     private Label bottomText; //text at bottom middle of icon
     private IconConfigData configData; //Data used to configure
 
-    private Stack stack;
-    private Container<Image> backgroundContainer;
     private Container<Image> imageContainer;
     private Container<Label> topTextContainer;
     private Container<Label> bottomTextContainer;
@@ -27,72 +25,82 @@ public class Icon<E> extends Table {
         super();
         this.configData = new IconConfigData();
 
-        // Background
+
+        // ===== Border =====
+        Image border = new Image(UIHelper.getRoundFull());
+        border.setColor(Color.BLACK);
+        border.setScaling(Scaling.stretch);
+
+        // ===== Background =====
         iconBackground = new Image(UIHelper.getRoundFull());
         iconBackground.setColor(Color.FIREBRICK);
         iconBackground.setScaling(Scaling.stretch);
 
-        // Item image
+        // ===== Item image =====
         this.itemImage = new Image(elementImage);
         this.itemImage.setScaling(Scaling.fit);
 
-        // Label style
+        // ===== Label style =====
         Label.LabelStyle labelStyle = new Label.LabelStyle();
         labelStyle.font = UIHelper.generateFont(configData.fontSize);
 
-        // Top text
+        // ===== Text =====
         topText = new Label("Top Text", labelStyle);
         topText.setAlignment(Align.topLeft);
 
-        // Bottom text
         bottomText = new Label("Bottom Text", labelStyle);
         bottomText.setAlignment(Align.bottom);
         bottomText.setWrap(true);
 
-        // Stack setup
-        stack = new Stack();
-        stack.debugAll();
+        // ===== Content stack =====
+        Stack contentStack = new Stack();
 
-//        // Add background
-        backgroundContainer = new Container<>(iconBackground);
-        backgroundContainer.fill();
-
-        //Item image container
-        imageContainer = new Container<>(this.itemImage);
-        imageContainer.pad(configData.padPercentage);
-
+        // Image stack (background + item image)
         Stack imageStack = new Stack();
-        imageStack.add(iconBackground); // fills image area
+        imageStack.add(iconBackground);
 
+        imageContainer = new Container<>(itemImage);
         imageContainer.pad(configData.padPercentage);
         imageContainer.fill();
         imageStack.add(imageContainer);
-        stack.add(imageStack);
 
-        // Top text container
+        contentStack.add(imageStack);
+
+        // Top text
         topTextContainer = new Container<>(topText);
-        topTextContainer.setClip(true);
         topTextContainer.align(Align.topLeft);
         topTextContainer.pad(configData.padPercentage);
-        stack.add(topTextContainer);
+        topTextContainer.setClip(true);
+        contentStack.add(topTextContainer);
 
-        // Bottom text container
+        // Bottom text
         bottomTextContainer = new Container<>(bottomText);
         bottomTextContainer.align(Align.bottom);
         bottomTextContainer.pad(configData.padPercentage);
         bottomTextContainer.fill();
-        stack.add(bottomTextContainer);
+        contentStack.add(bottomTextContainer);
 
-        // Add stack to table
-        add(stack).expand().fill();
+        // ===== Inset content so border is visible =====
+        Container<Stack> contentContainer = new Container<>(contentStack);
+        contentContainer.pad(configData.borderPadding);
+        contentContainer.fill();
+
+        // ===== Root stack =====
+        Stack rootStack = new Stack();
+        rootStack.add(border);
+        rootStack.add(contentContainer);
+
+        // ===== Add to table =====
+        add(rootStack).expand().fill();
         setTouchable(Touchable.enabled);
-        this.debugAll();
     }
+
+
 
     @Override
     public void layout() {
         super.layout();
-        stack.setSize(getWidth(), getHeight());
+        this.setSize(getWidth(), getHeight());
     }
 
     @Override
@@ -105,7 +113,6 @@ public class Icon<E> extends Table {
         float scaleY = height / configData.height;
         float scale = Math.max(scaleX, scaleY);
 
-        backgroundContainer.pad(configData.padPercentage);
         imageContainer.pad(configData.padPercentage);
         topTextContainer.pad(configData.padPercentage);
         bottomTextContainer.pad(configData.padPercentage);
@@ -118,11 +125,13 @@ public class Icon<E> extends Table {
     public static class IconConfigData {
         public final int fontSize;
         public final Value padPercentage;
+        public final Value borderPadding;
         public final int width, height;
 
         public IconConfigData() {
             fontSize = 48;
             padPercentage = Value.percentHeight(.05f);
+            borderPadding = Value.percentHeight(.02f);
             width = 512;
             height = 512;
         }

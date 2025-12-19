@@ -1,61 +1,110 @@
 package ore.forge.UI;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import ore.forge.UIHelper;
 
 import java.util.List;
 
+/**@author Nathan Ulmen
+ * */
+//TODO:
 public class WidgetGrid extends ScrollPane {
-    private IconGridConfigData configData;
+    private IconGridConfigData config;
     private final Table table; //holds all our icons
 
-    public WidgetGrid() {
-        this(null);
+    public WidgetGrid(IconGridConfigData configData) {
+        this(null, configData);
     }
 
-
     public WidgetGrid(List<? extends Actor> icons) {
+        this(icons, new IconGridConfigData());
+    }
+
+    public WidgetGrid() {
+        this(null, new IconGridConfigData());
+    }
+
+    public WidgetGrid(List<? extends Actor> icons, IconGridConfigData configData) {
         super(new Table());
         table = (Table) this.getActor();
+        table.setBackground(UIHelper.getRoundFull().tint(Color.LIGHT_GRAY));
+        table.pad(10);
+
+        table.defaults().expandX().fillX();
         table.top().left(); //Set so it builds from top left
-        this.configData = new IconGridConfigData();
+        this.config = configData;
         setScrollingDisabled(true, false);
-        setSize(configData.width, configData.height);
-        this.setDebug(true, true);
+//        this.setDebug(true, true);
+        if (icons != null) {
+            setElements(icons);
+        }
+
     }
 
     public void setElements(List<? extends Actor> icons) {
         table.clear();
         int count = 0;
         for (Actor icon : icons) {
-            icon.setSize(configData.iconWidth, configData.iconHeight);
-            if (count != 0 && count % configData.numColumns == 0) {
+            if (count != 0 && count % config.numColumns == 0) {
                 table.row();
             }
-            table.add(icon).size(configData.iconWidth, configData.iconHeight)
-                .pad(configData.iconPadding);
+            table.add(icon).top().left()
+                .pad(config.iconPadding);
             count++;
         }
+        this.invalidateHierarchy();
+    }
+
+    @Override
+    public void layout() {
+        super.layout();
+
+        float availableWidth = getWidth()
+                - table.getPadLeft()
+                - table.getPadRight();
+
+        float totalPadding = config.numColumns * config.iconPadding * 2;
+        float iconWidth =
+            (availableWidth - totalPadding) / config.numColumns;
+
+        float iconHeight = iconWidth / config.aspectRatio;
+
+        for (Cell<?> cell : table.getCells()) {
+            cell.size(iconWidth, iconHeight);
+            cell.growX();
+        }
+
+        table.invalidate();
     }
 
     public static class IconGridConfigData {
         public final int numColumns;
         public final float borderPadding;
         public final float iconPadding;
-        public final float width, height;
-        public final float iconWidth, iconHeight;
+        public final float aspectRatio; // width / height
 
         public IconGridConfigData() {
-            this.numColumns = 6;
+            this(6, 1);
+        }
+
+        public IconGridConfigData(int numColumns) {
+            this(numColumns, 1);
+        }
+
+        public IconGridConfigData(float aspectRatio) {
+            this(6, aspectRatio);
+        }
+
+        public IconGridConfigData(int numColumns, float aspectRatio) {
+            this.numColumns = numColumns;
             this.iconPadding = 10f;
             this.borderPadding = 20f;
-            this.width = Gdx.graphics.getWidth() * .4f;
-            this.height = Gdx.graphics.getHeight() * .8f;
-            int totalPadding = (int) ((iconPadding * numColumns * 2) + (borderPadding * 2));
-            iconWidth = (width - totalPadding) / numColumns;
-            iconHeight = iconWidth;
+            this.aspectRatio = aspectRatio;
         }
+
     }
 }

@@ -1,7 +1,9 @@
 package ore.forge.UI;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.UIHelper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,10 +28,12 @@ public class ItemInventoryMenu extends Table {
         //Setup our searchbar and its logic.
         searchBar = new SearchBar();
         searchBar.onKeyTyped(this::applySearch);
+        searchBar.onFocusLost(() -> {
+        });
 
         filteredLists = new HashMap<>();
         //Setup our filters tab.
-        filterTab = new FilterTab();
+        filterTab = new FilterTab(new WidgetGrid.IconGridConfigData(5, 1));
         var filterOptions = new ArrayList<FilterTab.FilterOption>();
         for (ItemSpawner.Type itemType : ItemSpawner.Type.values()) {
             //Create list of all items of our current type.
@@ -52,11 +56,17 @@ public class ItemInventoryMenu extends Table {
         //Sort will sort our currentIcons.
 
         //finally display these icons
-        iconGrid = new WidgetGrid(currentIcons);
+        iconGrid = new WidgetGrid(currentIcons, new WidgetGrid.IconGridConfigData(5, .95f));
+        Table topTable = new Table();
+//        topTable.debug();
+        topTable.add(searchBar).top().left().grow();
+        topTable.add(filterTab).top().left().grow();
 
-        this.add(searchBar).top().left().grow().row();
-        this.add(filterTab).row();
-        this.add(iconGrid).row();
+        this.add(topTable).top().left().growX().row();
+
+        this.add(iconGrid).grow().padTop(10).row();
+        this.setBackground(UIHelper.getRoundFull().tint(Color.GRAY));
+//        this.debugAll();
     }
 
     public void updateFilters() {

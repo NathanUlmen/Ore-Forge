@@ -28,11 +28,13 @@ public class SearchBar extends Table {
         config = new SearchBarConfigData();
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
 
-        textFieldStyle.background = UIHelper.getRoundFull().tint(Color.BLACK);
+        textFieldStyle.background = UIHelper.getRoundFull().tint(Color.WHITE);
         textFieldStyle.cursor = UIHelper.getButton(ButtonType.ROUND_FULL_128).tint(Color.BLACK);
         textFieldStyle.font = UIHelper.generateFont(config.fontSize);
-        textFieldStyle.fontColor = Color.WHITE;
-        searchField = new TextField("Search...", textFieldStyle);
+        textFieldStyle.fontColor = Color.BLACK;
+        searchField = new TextField("", textFieldStyle);
+        searchField.setMessageText("Search...");
+        searchField.setFocusTraversal(true);
 
         //focus listeners
         searchField.addListener(new InputListener() {
@@ -49,8 +51,12 @@ public class SearchBar extends Table {
                 }
             }
         });
-        this.add(searchField).grow();
+        this.pad(10);
+        this.setBackground(UIHelper.getRoundFull().tint(Color.BLACK));
+        this.add(searchField).fill().expand();
+        this.debug();
     }
+
 
     /**
      * Called when the search field is clicked on
@@ -73,10 +79,15 @@ public class SearchBar extends Table {
     public void onKeyTyped(Consumer<String> callback) {
         this.textChangedCallback = callback;
         searchField.setTextFieldListener((textField, c) -> {
+
             if (textChangedCallback != null) {
                 textChangedCallback.accept(textField.getText());
             }
         });
+    }
+
+    public void clearFocus() {
+        searchField.clear();
     }
 
     public String getText() {
