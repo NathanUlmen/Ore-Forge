@@ -18,11 +18,11 @@ public class ItemInventoryMenu extends Table {
     private WidgetGrid iconGrid;
     private HashMap<String, List<Icon<ItemSpawner>>> filteredLists;
 
-    public ItemInventoryMenu(List<Icon<ItemSpawner>> allItems) {
+    public ItemInventoryMenu(List<Icon<ItemSpawner>> allIcons) {
         super();
         this.top().left();
 
-        this.allIcons = allItems;
+        this.allIcons = allIcons;
         this.currentIcons = new ArrayList<>();
 
         //Setup our searchbar and its logic.
@@ -35,10 +35,10 @@ public class ItemInventoryMenu extends Table {
         //Setup our filters tab.
         filterTab = new FilterTab(new WidgetGrid.IconGridConfigData(5, 1));
         var filterOptions = new ArrayList<FilterTab.FilterOption>();
-        for (ItemSpawner.Type itemType : ItemSpawner.Type.values()) {
+        for (ItemSpawner.ItemType itemType : ItemSpawner.ItemType.values()) {
             //Create list of all items of our current type.
             List<Icon<ItemSpawner>> category = new ArrayList<>();
-            for (Icon<ItemSpawner> icon : allIcons) {
+            for (Icon<ItemSpawner> icon : this.allIcons) {
                 if (icon.getData().type().equals(itemType)) {
                     category.add(icon);
                 }
@@ -67,6 +67,7 @@ public class ItemInventoryMenu extends Table {
         this.add(iconGrid).grow().padTop(10).row();
         this.setBackground(UIHelper.getRoundFull().tint(Color.GRAY));
 //        this.debugAll();
+        System.out.println(currentIcons.size());
     }
 
     public void updateFilters() {
@@ -89,6 +90,7 @@ public class ItemInventoryMenu extends Table {
     }
 
     public void applySearch(String s) {
+        System.out.println(s);
         var newIcons = new ArrayList<Icon<ItemSpawner>>();
         for (Icon<ItemSpawner> icon : allIcons) {
             if (icon.getData().name().contains(s)) {

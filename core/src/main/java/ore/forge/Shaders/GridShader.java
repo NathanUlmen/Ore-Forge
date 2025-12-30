@@ -29,7 +29,7 @@ public class GridShader implements Shader, Disposable {
     @Override
     public boolean canRender(Renderable renderable) {
         boolean result = renderable.userData instanceof VisualComponent vc && vc.attributes instanceof GridAttribute;
-        System.out.println("Can render: " + result);
+//        System.out.println("Can render: " + result);
         return result;
     }
 

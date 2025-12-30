@@ -38,8 +38,8 @@ public class ItemSpawner {
                     Vector3 relativeDirection,
                     Matrix4 transform) {}
 
-    public enum Type {UPGRADER, DROPPER, FURNACE, CONVEYOR, TELEPORTER}
-    protected Type type;
+    public enum ItemType {UPGRADER, DROPPER, FURNACE, CONVEYOR, TELEPORTER}
+    protected ItemType type;
     protected final String name, id, description;
     protected final AcquisitionInfo acquisitionInfo;
     protected final Model model;
@@ -156,7 +156,7 @@ public class ItemSpawner {
 
     //TODO: Add Collision Contact Rules for shapes
     public EntityInstance spawnInstance() {
-        VisualComponent visualComponent = new VisualComponent(new ModelInstance(this.model));
+        VisualComponent visualComponent = createVisualComponent();
         List<btCollisionObject> collisionObjects = new ArrayList<>();
         EntityInstance instance = new EntityInstance(collisionObjects, visualComponent);
         for (btCollisionShape collisionShape : collisionShapes) {
@@ -183,12 +183,21 @@ public class ItemSpawner {
         return instance;
     }
 
-    public Type type() {
-        return type == null ? Type.DROPPER : type;
+    public ItemType type() {
+        return type == null ? ItemType.DROPPER : type;
     }
 
     public String name() {
         return name;
     }
+
+    public String id() {
+        return id;
+    }
+
+    public VisualComponent createVisualComponent() {
+        return new VisualComponent(new ModelInstance(model));
+    }
+
 
 }

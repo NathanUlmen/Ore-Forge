@@ -13,11 +13,10 @@ public class VisualComponent implements Disposable {
         this.modelInstance.userData = this;
     }
 
-
     @Override
     public void dispose() {
         if (modelInstance != null && modelInstance.model != null) {
-            modelInstance.model.dispose();
+            //TODO
         }
     }
 }

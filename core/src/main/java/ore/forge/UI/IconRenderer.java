@@ -2,6 +2,9 @@ package ore.forge.UI;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.PixmapPacker;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -16,25 +19,29 @@ public class IconRenderer {
     private final ModelBatch modelBatch;
     private final Environment environment;
     private final PerspectiveCamera camera;
+    private PixmapPacker packer;
     private final int renderResolution;
     private final int saveResolution;
 
-    //TODO: make this things a texture atlas instead of returning individual textures each time
     public IconRenderer() {
         renderResolution = 8192;
-        saveResolution = 1024;
+        saveResolution = 512;
+        packer = new PixmapPacker(
+                4096,
+                4096,
+                Pixmap.Format.RGBA8888,
+                2,
+                false);
 
         modelBatch = new ModelBatch();
 
         environment = new Environment();
         environment.set(
-            new ColorAttribute(ColorAttribute.AmbientLight, 0.35f, 0.35f, 0.35f, 1f)
-        );
+                new ColorAttribute(ColorAttribute.AmbientLight, 0.35f, 0.35f, 0.35f, 1f));
 
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -1f, -0.5f)); // key
         environment.add(new DirectionalLight().set(0.4f, 0.4f, 0.4f, 1f, -0.5f, 0.2f)); // fill
         environment.add(new DirectionalLight().set(0.2f, 0.2f, 0.2f, 0f, 1f, 0f)); // rim
-
 
         camera = new PerspectiveCamera(67, renderResolution, renderResolution);
         camera.position.set(2f, 2f, 2f);
@@ -44,30 +51,29 @@ public class IconRenderer {
         camera.update();
     }
 
-    public Texture renderIcon(VisualComponent visualComponent) {
+    public void renderIcon(String key, VisualComponent visualComponent) {
         ModelInstance modelInstance = visualComponent.modelInstance;
         BoundingBox bb = modelInstance.calculateBoundingBox(new BoundingBox());
 
-        //Center our model
+        // Center our model
         Vector3 center = bb.getCenter(new Vector3());
-        modelInstance.transform.setTranslation(center.scl(-1)); //Shift by offsets to be centered
+        modelInstance.transform.setTranslation(center.scl(-1)); // Shift by offsets to be centered
 
         Vector3 dimensions = bb.getDimensions(new Vector3());
         float maxDim = Math.max(dimensions.x,
-            Math.max(dimensions.y, dimensions.z));
+                Math.max(dimensions.y, dimensions.z));
 
-        //Position our camera to be looking at the model diagonally
-        //TODO: Make it so big items look big by scaling non linearly or something
+        // Position our camera to be looking at the model diagonally
+        // TODO: Make it so big items look big by scaling non linearly or something
         camera.position.set(maxDim, maxDim * .75f, maxDim);
-        camera.lookAt(Vector3.Zero); //look at item
+        camera.lookAt(Vector3.Zero); // look at item
         camera.update();
 
         FrameBuffer fbo = new FrameBuffer(
-            Pixmap.Format.RGBA8888,
-            renderResolution,
-            renderResolution,
-            true
-        );
+                Pixmap.Format.RGBA8888,
+                renderResolution,
+                renderResolution,
+                true);
 
         fbo.begin();
 
@@ -78,33 +84,35 @@ public class IconRenderer {
 
         ModelInstance instance = visualComponent.modelInstance;
 
-        //Render model in our scene
+        // Render model in our scene
         modelBatch.begin(camera);
         modelBatch.render(instance, environment);
         modelBatch.end();
 
-        //Get pixmap from our buffer
+        // Get pixmap from our buffer
         Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, renderResolution, renderResolution);
         Pixmap downscaled = new Pixmap(saveResolution, saveResolution, pixmap.getFormat());
         pixmap.setFilter(Pixmap.Filter.BiLinear);
         downscaled.setFilter(Pixmap.Filter.BiLinear);
         downscaled.drawPixmap(pixmap,
-            0, 0, pixmap.getWidth(), pixmap.getHeight(),
-            0, 0, downscaled.getWidth(), downscaled.getHeight());
+                0, 0, pixmap.getWidth(), pixmap.getHeight(),
+                0, 0, downscaled.getWidth(), downscaled.getHeight());
 
-        downscaled = flipPixmapVertically(downscaled);
-        toFile(downscaled, "test.png");
+        Pixmap flipped = flipPixmapVertically(downscaled);
+        downscaled.dispose();
+        toFile(flipped, "test.png");
 
+        packer.pack(key, flipped);
         fbo.end();
         fbo.dispose();
-
-        //Convert to image
-        Texture texture = new Texture(downscaled);
-
         pixmap.dispose();
-        downscaled.dispose();
+    }
 
-        return texture;
+    public TextureAtlas buildAtlas() {
+        return packer.generateTextureAtlas(
+                TextureFilter.Linear,
+                TextureFilter.Linear,
+                true);
     }
 
     private static void toFile(Pixmap pixmap, String fileName) {
@@ -121,15 +129,13 @@ public class IconRenderer {
 
         for (int y = 0; y < h; y++) {
             flipped.drawPixmap(
-                src,
-                0, y, w, 1,        // Source: x, y, width, height
-                0, h - y - 1, w, 1 // Dest: x, y flipped vertically
+                    src,
+                    0, y, w, 1, // Source: x, y, width, height
+                    0, h - y - 1, w, 1 // Dest: x, y flipped vertically
             );
         }
 
         return flipped;
     }
 
-
 }
-

@@ -2,6 +2,7 @@ package ore.forge.UI;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Align;
@@ -9,7 +10,7 @@ import com.badlogic.gdx.utils.Scaling;
 import ore.forge.UIHelper;
 
 public class Icon<E> extends Table {
-    private E data; //Links to our item blueprint/data.
+    private final E data; //Links to our item blueprint/data.
 
     private Image itemImage; //image of our model
     private Image iconBackground; //background, used to denote rarity.
@@ -21,8 +22,9 @@ public class Icon<E> extends Table {
     private Container<Label> topTextContainer;
     private Container<Label> bottomTextContainer;
 
-    public Icon(Texture elementImage) {
+    public Icon(TextureRegion elementImage, E data) {
         super();
+        this.data = data;
         this.configData = new IconConfigData();
 
 
@@ -103,7 +105,6 @@ public class Icon<E> extends Table {
     @Override
     public void setSize(float width, float height) {
         super.setSize(width, height);
-        System.out.println("Called!");
 
         // Scale padding proportionally
         float scaleX = width / configData.width;
@@ -132,10 +133,6 @@ public class Icon<E> extends Table {
             width = 512;
             height = 512;
         }
-    }
-
-    public void setData(E data) {
-        this.data = data;
     }
 
     public E getData() {

@@ -9,20 +9,21 @@ import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.UI.UI;
 
 public class InputHandler {
     protected CameraController3D cameraController;
     private InputState inputState;
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
-    public EntityInstance entityInstance;
 
-    public InputHandler(CameraController3D controller3D) {
+    public InputHandler(CameraController3D controller3D, UI ui) {
         cameraController = controller3D;
         var defaultInput = new DefaultInputState(this);
         var selectingInput = new SelectingItemsInputState(this);
         var buildingInput = new BuildingInputState(this);
-        var openedInventory = new OpenedInventoryState(this);
+        var openedInventory = new OpenedMenuState(this, ui);
+        ui.configOpenedInventory(openedInventory);
 
         //Setup Default
         defaultInput.setSelecting(selectingInput);
@@ -37,6 +38,7 @@ public class InputHandler {
 
         //Setup OpenedInventory
         openedInventory.setBuildingInputState(buildingInput);
+        openedInventory.setDefaultInputState(defaultInput);
 
         setInputState(defaultInput);
 
@@ -44,6 +46,7 @@ public class InputHandler {
 
     public void update(float delta) {
         inputState.update(delta);
+        System.out.println(inputState.getClass().getSimpleName());
     }
 
     public CameraController3D cameraController() {

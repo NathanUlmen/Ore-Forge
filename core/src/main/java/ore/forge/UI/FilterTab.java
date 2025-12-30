@@ -99,7 +99,7 @@ public class FilterTab extends Table {
             public final Value padPercentage;
 
             public FilterOptionConfig() {
-                this.fontSize = 48;
+                this.fontSize = 28;
                 padPercentage = Value.percentHeight(.1f);
             }
         }

@@ -5,9 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.PhysicsBodyData;
+import ore.forge.UI.UIMenu;
 
 public class DefaultInputState extends InputState {
-    private OpenedInventoryState openedInventoryState;
+    private OpenedMenuState openedMenuState;
     private SelectingItemsInputState selecting;
 
 
@@ -29,8 +30,6 @@ public class DefaultInputState extends InputState {
     @Override
     public void update(float delta) {
         cameraController.update(delta);
-        var camera = cameraController.getCamera();
-
         //Shoot ray to see if it collides with an object
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
             var rayCallback = rayCastForItem();
@@ -46,14 +45,28 @@ public class DefaultInputState extends InputState {
             rayCallback.dispose();
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+            inputHandler.setInputState(openedMenuState);
+            openedMenuState.setActive(UIMenu.INVENTORY);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+            inputHandler.setInputState(openedMenuState);
+            openedMenuState.setActive(UIMenu.SHOP);
+        }
+
     }
 
     public void setSelecting(SelectingItemsInputState selecting) {
         this.selecting = selecting;
     }
 
-    public void setOpenedInventoryState(OpenedInventoryState openedInventoryState) {
-        this.openedInventoryState = openedInventoryState;
+    public void setOpenedMenuState(OpenedMenuState openedMenuState) {
+        this.openedMenuState = openedMenuState;
+    }
+
+    public void setOpenedInventoryState(OpenedMenuState openedMenuState) {
+        this.openedMenuState = openedMenuState;
     }
 
 }

@@ -16,22 +16,14 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import ore.forge.*;
 import ore.forge.Input3D.CameraController3D;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Items.Experimental.*;
 import ore.forge.Shaders.CustomShaderProvider;
-import ore.forge.UI.Icon;
-import ore.forge.UI.IconRenderer;
-import ore.forge.UI.ItemInventoryMenu;
+import ore.forge.UI.UI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +43,7 @@ public class Gameplay3D implements Screen {
     private FurnaceSpawner furnaceSpawner;
     private InputHandler inputHandler;
 
-    private Stage stage;
-    private final Icon itemIcon;
+    private UI ui;
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
@@ -62,19 +53,6 @@ public class Gameplay3D implements Screen {
     private float rotationAngle = 0;
 
     public Gameplay3D() {
-        //Config camera
-        camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.near = 1f; //Min distance can see/draw
-        camera.far = 1000f; //Max distance can see/draw
-        camera.position.set(0, 10, 10);
-        camera.lookAt(0, 0, 0);
-
-        //Config cameraController;
-        cameraController3D = new CameraController3D(camera);
-
-        //Configure Input Handler
-        inputHandler = new InputHandler(cameraController3D);
-
         //Config ModelBatch
         modelBatch = new ModelBatch(new CustomShaderProvider());
 
@@ -87,7 +65,6 @@ public class Gameplay3D implements Screen {
 
         //Initialize collision Manager
         collisionManager = new CollisionManager();
-
 
         //Create Plane:
         Matrix4 planeTransform = new Matrix4();
@@ -123,61 +100,28 @@ public class Gameplay3D implements Screen {
             }
             physicsWorld.dynamicsWorld().addCollisionObject(object);
         }
-//        modelInstances.add(instance1.visualComponent.modelInstance);
         entityInstances.add(instance1);
 
-        IconRenderer creator = new IconRenderer();
-        itemIcon = new Icon(creator.renderIcon(instance1.visualComponent));
-        itemIcon.setPosition(512, 512);
-        stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
-        List<Icon<ItemSpawner>> icons = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
-            PhysicsBodyData bodyData = (PhysicsBodyData) instance1.entityPhysicsBodies.getFirst().userData;
-            ItemUserData userData = (ItemUserData) bodyData.specificData;
-            itemIcon.setData(userData.blueprint());
-            icons.add(itemIcon);
-        }
-        ItemInventoryMenu inventoryMenu = new ItemInventoryMenu(icons);
-        inventoryMenu.setPosition(300, 300);
-        inventoryMenu.setSize(3024, 1024);
-        itemIcon.debug();
-        itemIcon.setSize(1024, 1024);
-//        stage.addActor(inventoryMenu);
-        stage.addListener(new InputListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                Actor target = event.getTarget();
 
-                if (!(target instanceof TextField)) {
-                    stage.setKeyboardFocus(null);
-                } else {
-                    Gdx.input.setInputProcessor(stage);
-                }
-                return false;
-            }
-        });
+        //Config UI
+        List<ItemSpawner> allItems = new ArrayList<>();
+        allItems.add(dropperSpawner);
+        allItems.add(spawner);
+        ui = new UI(allItems);
+        Gdx.input.setInputProcessor(ui);
 
-//        itemIcon.setSize(256, 256);
-//        stage.addActor(itemIcon);
+        //Config camera
+        camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.near = 1f; //Min distance can see/draw
+        camera.far = 1000f; //Max distance can see/draw
+        camera.position.set(0, 10, 10);
+        camera.lookAt(0, 0, 0);
 
-//        value = jsonReader.parse(Gdx.files.internal("Items/3DTestFurnace.json"));
-//        furnaceSpawner = new  FurnaceSpawner(value);
-//        EntityInstance instance2 = furnaceSpawner.spawnInstance();
-//        Matrix4 transform2 = new Matrix4();
-//        transform2.translate(-10, 0, 3);
-//        instance2.place(transform2.cpy());
-//        for (btCollisionObject object : instance2.entityPhysicsBodies) {
-//            physicsWorld.dynamicsWorld().addCollisionObject(object);
-//        }
-//        entityInstances.add(instance2);
-//        modelInstances.add(instance2.visualComponent.modelInstance);
-        long usedBytes =
-            Runtime.getRuntime().totalMemory()
-                - Runtime.getRuntime().freeMemory();
+        //Config cameraController;
+        cameraController3D = new CameraController3D(camera);
 
-        System.out.println("Memory Used: " + (usedBytes / (1024 * 1024)) + " MB");
-
+        //Configure Input Handler
+        inputHandler = new InputHandler(cameraController3D, ui);
 
     }
 
@@ -237,9 +181,9 @@ public class Gameplay3D implements Screen {
         modelBatch.end();
 
 
-        stage.act();
-        stage.getViewport().apply();
-        stage.draw();
+        ui.act();
+        ui.getViewport().apply();
+        ui.draw();
 
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
