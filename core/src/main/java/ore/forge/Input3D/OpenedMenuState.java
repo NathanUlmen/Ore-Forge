@@ -7,8 +7,6 @@ import ore.forge.UI.UIMenu;
 
 import java.util.EnumSet;
 
-import javax.swing.UIManager;
-
 /**
  * Will transition to the following states:
  * Default State (on all Menus closed)
@@ -46,9 +44,18 @@ public class OpenedMenuState extends InputState {
             updateMenuStates(UIMenu.SHOP);
         }
 
-        // if not searching in any of the menus and key pressed move camera
+        //if not searching in any of the menus and key pressed move camera
         if (!isSearching) {
             cameraController.update(delta);
+        }
+
+        //Close all tabs
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && !isSearching) {
+            for (var menu : menuStates) {
+                ui.toggleMenu(menu);
+            }
+            menuStates.clear();
+            inputHandler.setInputState(defaultInputState);
         }
 
         // at the very end

@@ -6,13 +6,13 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-public class CameraController3D {
+public class FreeCamController implements CameraController {
     private final PerspectiveCamera camera;
     private static final float MOVE_SPEED = 10;
     private static final float SPEED_SCALAR = 2.5f;
     private final Vector2 mouseScreen;
 
-    public CameraController3D(PerspectiveCamera camera) {
+    public FreeCamController(PerspectiveCamera camera) {
         this.camera = camera;
         mouseScreen = new Vector2();
     }

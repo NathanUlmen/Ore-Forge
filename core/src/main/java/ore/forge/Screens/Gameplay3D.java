@@ -19,8 +19,9 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
-import ore.forge.Input3D.CameraController3D;
+import ore.forge.Input3D.FreeCamController;
 import ore.forge.Input3D.InputHandler;
+import ore.forge.Input3D.IsometricCameraController;
 import ore.forge.Items.Experimental.*;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.UI;
@@ -33,7 +34,7 @@ public class Gameplay3D implements Screen {
     private final PerspectiveCamera camera;
     private final ModelBatch modelBatch;
     private final Environment environment;
-    private final CameraController3D cameraController3D;
+    private final FreeCamController freeCamContronller;
     public static final ArrayList<ModelInstance> modelInstances = new ArrayList<>();
     public static final ArrayList<EntityInstance> entityInstances = new ArrayList<>();
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
@@ -118,10 +119,11 @@ public class Gameplay3D implements Screen {
         camera.lookAt(0, 0, 0);
 
         //Config cameraController;
-        cameraController3D = new CameraController3D(camera);
+        freeCamContronller = new FreeCamController(camera);
+
 
         //Configure Input Handler
-        inputHandler = new InputHandler(cameraController3D, ui);
+        inputHandler = new InputHandler(new IsometricCameraController(camera), ui);
 
     }
 

@@ -8,16 +8,15 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
-import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.UI.UI;
 
 public class InputHandler {
-    protected CameraController3D cameraController;
+    protected CameraController cameraController;
     private InputState inputState;
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
 
-    public InputHandler(CameraController3D controller3D, UI ui) {
+    public InputHandler(CameraController controller3D, UI ui) {
         cameraController = controller3D;
         var defaultInput = new DefaultInputState(this);
         var selectingInput = new SelectingItemsInputState(this);
@@ -49,7 +48,7 @@ public class InputHandler {
         System.out.println(inputState.getClass().getSimpleName());
     }
 
-    public CameraController3D cameraController() {
+    public CameraController cameraController() {
         return cameraController;
     }
 

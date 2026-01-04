@@ -36,6 +36,7 @@ public class BuildingInputState extends InputState {
     //TODO: make sure centerPosition is mouse position
     @Override
     public void update(float delta) {
+        cameraController.update(delta);
         Vector3 mouseWorld = inputHandler.getMouseGroundPosition(cameraController.getCamera());
 
 //        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {

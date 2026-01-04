@@ -34,11 +34,10 @@ public class WidgetGrid extends ScrollPane {
         table.setBackground(UIHelper.getRoundFull().tint(Color.LIGHT_GRAY));
         table.pad(10);
 
-        table.defaults().expandX().fillX();
+//        table.defaults().expandX().fillX();
         table.top().left(); //Set so it builds from top left
         this.config = configData;
         setScrollingDisabled(true, false);
-//        this.setDebug(true, true);
         if (icons != null) {
             setElements(icons);
         }
@@ -75,7 +74,7 @@ public class WidgetGrid extends ScrollPane {
 
         for (Cell<?> cell : table.getCells()) {
             cell.size(iconWidth, iconHeight);
-            cell.growX();
+//            cell.growX();
         }
 
         table.invalidate();

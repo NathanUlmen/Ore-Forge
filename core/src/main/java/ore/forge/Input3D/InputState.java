@@ -10,7 +10,7 @@ import ore.forge.CollisionRules;
 import ore.forge.PhysicsWorld;
 
 public abstract class InputState {
-    protected final CameraController3D cameraController;
+    protected final CameraController cameraController;
     protected final InputHandler inputHandler;
 
     public InputState(InputHandler inputHandler) {
