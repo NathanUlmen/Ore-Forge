@@ -6,31 +6,32 @@ import java.util.List;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import ore.forge.VisualComponent;
 import ore.forge.Input3D.OpenedMenuState;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 
 public class UI extends Stage {
     private ItemInventoryMenu inventoryMenu;
     private TextureAtlas iconAtlas;
 
-    public UI(List<ItemSpawner> allItems) {
+    public UI(List<ItemDefinition> allItems) {
         super();
         // Create our texture atlas of icon images
         IconRenderer iconRenderer = new IconRenderer();
-        for (ItemSpawner item : allItems) {
-            VisualComponent vc = item.createVisualComponent();
+        for (ItemDefinition item : allItems) {
+            VisualComponent vc = new VisualComponent(new ModelInstance(item.getModel()));
             iconRenderer.renderIcon(item.id(), vc);
             vc.dispose();
         }
         iconAtlas = iconRenderer.buildAtlas();
 
         //Create our Icons for Inventory
-        List<Icon<ItemSpawner>> allIcons = new ArrayList<>();
-        for (ItemSpawner item : allItems) {
+        List<Icon<ItemDefinition>> allIcons = new ArrayList<>();
+        for (ItemDefinition item : allItems) {
             System.out.println("Loop Ran!");
             AtlasRegion region = iconAtlas.findRegion(item.id());
             allIcons.add(new Icon<>(region, item));

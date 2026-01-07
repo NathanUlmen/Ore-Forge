@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.utils.JsonValue;
 
-public class DropperSpawner extends ItemSpawner{
+public class DropperSpawner extends ItemSpawner {
     public OreBlueprint oreBlueprint;
     public btCollisionShape oreShape;
     public Model oreModel;

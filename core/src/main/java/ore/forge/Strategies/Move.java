@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Items.Experimental.ItemUserData;
 import ore.forge.Ore;
 import ore.forge.PhysicsBodyData;
@@ -37,7 +37,7 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void attach(ItemSpawner spawner, btCollisionObject parentObject) {
+    public void attach(ItemDefinition spawner, btCollisionObject parentObject) {
         this.sensor = parentObject;
 
     }

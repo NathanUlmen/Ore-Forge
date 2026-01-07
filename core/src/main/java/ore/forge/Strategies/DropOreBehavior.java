@@ -12,7 +12,7 @@ import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
 import ore.forge.Items.Experimental.DropperSpawner;
 import ore.forge.Items.Experimental.EntityInstance;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Screens.Gameplay3D;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
@@ -50,7 +50,7 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
-    public void attach(ItemSpawner spawner, btCollisionObject parent) {
+    public void attach(ItemDefinition spawner, btCollisionObject parent) {
         this.dropperSpawner = (DropperSpawner) spawner;
         this.parent = parent;
     }

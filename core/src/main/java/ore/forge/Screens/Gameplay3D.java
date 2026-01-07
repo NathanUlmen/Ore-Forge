@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Gameplay3D implements Screen {
-    //Rendering
+    // Rendering
     private final PerspectiveCamera camera;
     private final ModelBatch modelBatch;
     private final Environment environment;
@@ -40,7 +40,7 @@ public class Gameplay3D implements Screen {
     private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
-    private ItemSpawner spawner;
+    private ItemDefinition spawner;
     private FurnaceSpawner furnaceSpawner;
     private InputHandler inputHandler;
 
@@ -54,20 +54,20 @@ public class Gameplay3D implements Screen {
     private float rotationAngle = 0;
 
     public Gameplay3D() {
-        //Config ModelBatch
+        // Config ModelBatch
         modelBatch = new ModelBatch(new CustomShaderProvider());
 
-        //Config Model Instance list
+        // Config Model Instance list
 
-        //Config Environment
+        // Config Environment
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, .8f, .8f, .8f, 1f));
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
 
-        //Initialize collision Manager
+        // Initialize collision Manager
         collisionManager = new CollisionManager();
 
-        //Create Plane:
+        // Create Plane:
         Matrix4 planeTransform = new Matrix4();
         planeTransform.setTranslation(0, -0.5f, 0);
         Model model = createBox(100, 1f, 100);
@@ -75,24 +75,25 @@ public class Gameplay3D implements Screen {
         btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 0.5f, 50f));
         btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
         VisualComponent visualComponent = new VisualComponent(groundModelInstance);
-//        visualComponent.attributes = new GridAttribute(GridAttribute.ID);
+        // visualComponent.attributes = new GridAttribute(GridAttribute.ID);
         var rigidBodies = new ArrayList<btCollisionObject>();
         rigidBodies.add(groundRigidBody);
         EntityInstance planeInstance = new EntityInstance(rigidBodies, visualComponent);
         planeInstance.setTransform(planeTransform);
-        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
-            CollisionRules.combineBits(CollisionRules.ORE));
+        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody,
+                CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
+                CollisionRules.combineBits(CollisionRules.ORE));
         entityInstances.add(planeInstance);
 
-        //Create Static test items from JSON
+        // Create Static test items from JSON
         JsonReader jsonReader = new JsonReader();
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
-        this.spawner = new UpgraderSpawner(value);
+        this.spawner = new ItemDefinition();
 
         Matrix4 transform = new Matrix4();
         value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
-        var dropperSpawner = new DropperSpawner(value);
-        EntityInstance instance1 = dropperSpawner.spawnInstance();
+        ItemDefinition dropperSpawner = new ItemDefinition();
+        EntityInstance instance1 = InstanceCreator.createInstance(dropperSpawner);
         transform.setTranslation(0, 8, 0);
         instance1.place(transform.cpy());
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
@@ -103,26 +104,24 @@ public class Gameplay3D implements Screen {
         }
         entityInstances.add(instance1);
 
-
-        //Config UI
-        List<ItemSpawner> allItems = new ArrayList<>();
+        // Config UI
+        List<ItemDefinition> allItems = new ArrayList<>();
         allItems.add(dropperSpawner);
         allItems.add(spawner);
         ui = new UI(allItems);
         Gdx.input.setInputProcessor(ui);
 
-        //Config camera
+        // Config camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.near = 1f; //Min distance can see/draw
-        camera.far = 1000f; //Max distance can see/draw
+        camera.near = 1f; // Min distance can see/draw
+        camera.far = 1000f; // Max distance can see/draw
         camera.position.set(0, 10, 10);
         camera.lookAt(0, 0, 0);
 
-        //Config cameraController;
+        // Config cameraController;
         freeCamContronller = new FreeCamController(camera);
 
-
-        //Configure Input Handler
+        // Configure Input Handler
         inputHandler = new InputHandler(new IsometricCameraController(camera), ui);
 
     }
@@ -134,30 +133,30 @@ public class Gameplay3D implements Screen {
 
     @Override
     public void render(float delta) {
-        //Process Input
+        // Process Input
         inputHandler.update(delta);
         camera.update();
 
-        //Process input
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {//rotate item
+        // Process input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {// rotate item
             rotationAngle += 90;
         }
-        //Place item
+        // Place item
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             Vector3 position = getMouseGroundPosition(camera);
-            //Spawn an instance of the item and add it to the physics simulation
-            EntityInstance instance = spawner.spawnInstance();
+            // Spawn an instance of the item and add it to the physics simulation
+            EntityInstance instance = InstanceCreator.createInstance(spawner);
             Matrix4 transform = new Matrix4().setToTranslation(position);
-            transform.rotate(Vector3.Y, rotationAngle % 360); //Bound it to 360
+            transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
             instance.place(transform);
-//            modelInstances.add(instance.visualComponent.modelInstance);
+            // modelInstances.add(instance.visualComponent.modelInstance);
             for (btCollisionObject object : instance.entityPhysicsBodies) {
                 physicsWorld.dynamicsWorld().addCollisionObject(object,
-                    object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY) : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
+                        object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY)
+                                : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
             }
             entityInstances.add(instance);
         }
-
 
         // Physics simulation Step
         physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
@@ -171,7 +170,7 @@ public class Gameplay3D implements Screen {
             }
         }
 
-        //Render
+        // Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
@@ -182,7 +181,6 @@ public class Gameplay3D implements Screen {
         }
         modelBatch.end();
 
-
         ui.act();
         ui.getViewport().apply();
         ui.draw();
@@ -190,8 +188,7 @@ public class Gameplay3D implements Screen {
         collisionManager.updateTouchingEntities();
         TimerUpdater.update(delta);
 
-
-//        physicsWorld.drawDebug(camera);
+        // physicsWorld.drawDebug(camera);
     }
 
     @Override
@@ -222,8 +219,8 @@ public class Gameplay3D implements Screen {
     private Model createBox(float width, float height, float depth, Color color) {
         ModelBuilder builder = new ModelBuilder();
         return builder.createBox(width, height, depth,
-            new Material(ColorAttribute.createDiffuse(color)),
-            VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
+                new Material(ColorAttribute.createDiffuse(color)),
+                VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal);
     }
 
     private Model createBox(float width, float height, float depth) {
@@ -233,8 +230,8 @@ public class Gameplay3D implements Screen {
     private btRigidBody createStaticBody(ModelInstance instance, btCollisionShape shape) {
         Matrix4 transform = instance.transform;
         btDefaultMotionState motionState = new btDefaultMotionState(transform);
-        btRigidBody.btRigidBodyConstructionInfo info =
-            new btRigidBody.btRigidBodyConstructionInfo(0, motionState, shape, Vector3.Zero);
+        btRigidBody.btRigidBodyConstructionInfo info = new btRigidBody.btRigidBodyConstructionInfo(0, motionState,
+                shape, Vector3.Zero);
         btRigidBody body = new btRigidBody(info);
         info.dispose();
         return body;
@@ -245,8 +242,8 @@ public class Gameplay3D implements Screen {
         shape.calculateLocalInertia(mass, inertia);
         Matrix4 transform = instance.transform;
         btDefaultMotionState motionState = new btDefaultMotionState(transform);
-        btRigidBody.btRigidBodyConstructionInfo info =
-            new btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, inertia);
+        btRigidBody.btRigidBodyConstructionInfo info = new btRigidBody.btRigidBodyConstructionInfo(mass, motionState,
+                shape, inertia);
         btRigidBody body = new btRigidBody(info);
         info.dispose();
         return body;
@@ -263,13 +260,14 @@ public class Gameplay3D implements Screen {
         // Intersect the ray with the ground plane
         if (Intersector.intersectRayPlane(ray, groundPlane, intersection)) {
             // Clamp Y >= 0 just in case
-            if (intersection.y < 0f) intersection.y = 0f;
-            return new Vector3(MathUtils.floor(intersection.x), MathUtils.floor(intersection.y), MathUtils.floor(intersection.z));
+            if (intersection.y < 0f)
+                intersection.y = 0f;
+            return new Vector3(MathUtils.floor(intersection.x), MathUtils.floor(intersection.y),
+                    MathUtils.floor(intersection.z));
         } else {
             // No intersection (looking up at sky)
             return new Vector3(ray.origin);
         }
     }
-
 
 }

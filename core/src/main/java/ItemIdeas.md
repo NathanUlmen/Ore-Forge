@@ -301,7 +301,7 @@ Terra, Geo,
     
 At the beginning of the semester I decided to port my game from 2D to 3D. 
 This required the of existing systems(physics, rendering, controls, camera, etc.) and the addition of new
-ones (Loading 3D models). The most difficult of these to adapt to/learn was rendering.
+ones (Loading 3D models). The most difficult of these to adapt to/learn was rendering. 
 In computer graphics if you want to add visual effects to you scene beyond displaying the base model
 you will need to use these things called shader programs. Shaders are little programs that 
 run on the GPU. There are two main types of shaders, vertex shaders and fragment shaders.

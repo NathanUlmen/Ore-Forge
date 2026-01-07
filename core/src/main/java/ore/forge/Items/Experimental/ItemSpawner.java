@@ -33,12 +33,6 @@ import java.util.List;
 
 public class ItemSpawner {
 
-    record NodeInfo(String behaviorKey,
-                    String collisionType,
-                    Vector3 relativeDirection,
-                    Matrix4 transform) {}
-
-    public enum ItemType {UPGRADER, DROPPER, FURNACE, CONVEYOR, TELEPORTER}
     protected ItemType type;
     protected final String name, id, description;
     protected final AcquisitionInfo acquisitionInfo;
@@ -129,7 +123,7 @@ public class ItemSpawner {
         for (Node part : model.nodes) {
             NodeInfo info = nodeInfoMap.get(part.id);
             btCollisionShape bulletShape = Bullet.obtainStaticNodeShape(part, false);
-            switch (info.collisionType) {
+            switch (info.collisionType()) {
                 case "both": {
                     //For elements that need both a sensor and collision enabled. EX: conveyor
                     compoundShape.addChildShape(part.localTransform, bulletShape);
@@ -147,7 +141,7 @@ public class ItemSpawner {
                     break;
                 }
                 default:
-                    throw new IllegalStateException("Unexpected value: " + info.collisionType);
+                    throw new IllegalStateException("Unexpected value: " + info.collisionType());
             }
         }
         shapeList.add(compoundShape);
@@ -168,13 +162,13 @@ public class ItemSpawner {
             } else {
                 //The rest will be sensor
                 NodeInfo nodeInfo = collisionShapeMap.get(collisionShape);
-                BodyLogic bodyLogic = behaviors.get(nodeInfo.behaviorKey).clone();
+                BodyLogic bodyLogic = behaviors.get(nodeInfo.behaviorKey()).clone();
                 btGhostObject ghostObject = new btGhostObject();
                 ghostObject.setCollisionShape(collisionShape);
-                ghostObject.setWorldTransform(nodeInfo.transform);
+                ghostObject.setWorldTransform(nodeInfo.transform());
                 bodyLogic.attach(this, ghostObject);
-                ItemUserData itemUserData = new ItemUserData(nodeInfo.relativeDirection, this);
-                ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform);
+                ItemUserData itemUserData = new ItemUserData(nodeInfo.relativeDirection(), this);
+                ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform());
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);

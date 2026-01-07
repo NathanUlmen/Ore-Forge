@@ -2,7 +2,10 @@ package ore.forge.UI;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemType;
 import ore.forge.UIHelper;
 
 import java.util.ArrayList;
@@ -11,34 +14,34 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ItemInventoryMenu extends Table {
-    private List<Icon<ItemSpawner>> allIcons; //All itemIcons
-    private List<Icon<ItemSpawner>> currentIcons;
+    private List<Icon<ItemDefinition>> allIcons; // All itemIcons
+    private List<Icon<ItemDefinition>> currentIcons;
     private SearchBar searchBar;
     private FilterTab filterTab;
     private WidgetGrid iconGrid;
-    private HashMap<String, List<Icon<ItemSpawner>>> filteredLists;
+    private HashMap<String, List<Icon<ItemDefinition>>> filteredLists;
 
-    public ItemInventoryMenu(List<Icon<ItemSpawner>> allIcons) {
+    public ItemInventoryMenu(List<Icon<ItemDefinition>> allIcons) {
         super();
         this.top().left();
 
         this.allIcons = allIcons;
         this.currentIcons = new ArrayList<>();
 
-        //Setup our searchbar and its logic.
+        // Setup our searchbar and its logic.
         searchBar = new SearchBar();
         searchBar.onKeyTyped(this::applySearch);
         searchBar.onFocusLost(() -> {
         });
 
         filteredLists = new HashMap<>();
-        //Setup our filters tab.
+        // Setup our filters tab.
         filterTab = new FilterTab(new WidgetGrid.IconGridConfigData(5, 1));
         var filterOptions = new ArrayList<FilterTab.FilterOption>();
-        for (ItemSpawner.ItemType itemType : ItemSpawner.ItemType.values()) {
-            //Create list of all items of our current type.
-            List<Icon<ItemSpawner>> category = new ArrayList<>();
-            for (Icon<ItemSpawner> icon : this.allIcons) {
+        for (ItemType itemType : ItemType.values()) {
+            // Create list of all items of our current type.
+            List<Icon<ItemDefinition>> category = new ArrayList<>();
+            for (Icon<ItemDefinition> icon : this.allIcons) {
                 if (icon.getData().type().equals(itemType)) {
                     category.add(icon);
                 }
@@ -52,13 +55,13 @@ public class ItemInventoryMenu extends Table {
         }
         filterTab.setOptions(filterOptions);
 
-        //Set up our sort option (a toggle(click through) or a drop-down menu)
-        //Sort will sort our currentIcons.
+        // Set up our sort option (a toggle(click through) or a drop-down menu)
+        // Sort will sort our currentIcons.
 
-        //finally display these icons
+        // finally display these icons
         iconGrid = new WidgetGrid(currentIcons, new WidgetGrid.IconGridConfigData(5, .95f));
         Table topTable = new Table();
-//        topTable.debug();
+        // topTable.debug();
         topTable.add(searchBar).top().left().grow();
         topTable.add(filterTab).top().left().grow();
 
@@ -66,19 +69,19 @@ public class ItemInventoryMenu extends Table {
 
         this.add(iconGrid).grow().padTop(10).row();
         this.setBackground(UIHelper.getRoundFull().tint(Color.GRAY));
-//        this.debugAll();
-        System.out.println(currentIcons.size());
+        // this.debugAll();
+        this.debugAll();
     }
 
     public void updateFilters() {
-        var filteredIcons = new ArrayList<Icon<ItemSpawner>>();
+        var filteredIcons = new ArrayList<Icon<ItemDefinition>>();
         for (FilterTab.FilterOption option : filterTab.getOptions()) {
             if (option.isChecked()) {
                 filteredIcons.addAll(filteredLists.get(option.getFilterId()));
             }
         }
 
-        //no filters enabled so we display all
+        // no filters enabled so we display all
         if (filteredIcons.isEmpty()) {
             for (var list : filteredLists.values()) {
                 filteredIcons.addAll(list);
@@ -91,8 +94,8 @@ public class ItemInventoryMenu extends Table {
 
     public void applySearch(String s) {
         System.out.println(s);
-        var newIcons = new ArrayList<Icon<ItemSpawner>>();
-        for (Icon<ItemSpawner> icon : allIcons) {
+        var newIcons = new ArrayList<Icon<ItemDefinition>>();
+        for (Icon<ItemDefinition> icon : allIcons) {
             if (icon.getData().name().contains(s)) {
                 newIcons.add(icon);
             }
@@ -102,8 +105,8 @@ public class ItemInventoryMenu extends Table {
     }
 
     public void sortIcons() {
-        //TODO: Apply selected sort function
-        currentIcons.sort(Comparator.comparing(o -> o.getData().name())); //sorts by name
+        // TODO: Apply selected sort function
+        currentIcons.sort(Comparator.comparing(o -> o.getData().name())); // sorts by name
         this.iconGrid.setElements(currentIcons);
     }
 

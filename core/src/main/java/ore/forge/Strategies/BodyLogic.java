@@ -1,7 +1,7 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
 public interface BodyLogic {
@@ -27,7 +27,7 @@ public interface BodyLogic {
      * Attaches the behavior to the specified objects
      *
      */
-    void attach(ItemSpawner spawner, btCollisionObject collisionObject);
+    void attach(ItemDefinition spawner, btCollisionObject collisionObject);
 
     void onContactStart(PhysicsBodyData subject, PhysicsBodyData source);
 

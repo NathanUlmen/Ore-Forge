@@ -5,7 +5,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
 public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEvent> {
@@ -24,7 +24,7 @@ public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEven
 
 
     @Override
-    public void attach(ItemSpawner spawner, btCollisionObject collisionObject) {
+    public void attach(ItemDefinition spawner, btCollisionObject collisionObject) {
 
     }
 

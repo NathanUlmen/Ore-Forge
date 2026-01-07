@@ -5,7 +5,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.FurnaceBlueprint;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Ore;
 import ore.forge.PhysicsBodyData;
 import ore.forge.Player.Player;
@@ -50,7 +50,7 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void attach(ItemSpawner spawner, btCollisionObject parent) {
+    public void attach(ItemDefinition spawner, btCollisionObject parent) {
 
     }
 
