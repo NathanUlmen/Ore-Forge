@@ -1,7 +1,6 @@
 package ore.forge.Expressions;
 
 import com.badlogic.gdx.utils.JsonValue;
-import com.mongodb.internal.VisibleForTesting;
 import ore.forge.Expressions.Operands.MethodBasedOperand;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
@@ -37,7 +36,7 @@ public class Function implements NumericOperand {
     //Takes a Json Value, extracts the function string from it, then creates a function object based on the extracted string
     /**
      * */
-    public static Function parseFunction(JsonValue jsonValue) {
+    public static Function compile(JsonValue jsonValue) {
         String equation = jsonValue.getString("upgradeFunction");
         return compile(equation);
     }
@@ -46,7 +45,7 @@ public class Function implements NumericOperand {
      * @param equation - string representation of a mathematical function.
      * @return parsed function of the inputted string.
      */
-    public static Function parseFunction(String equation) {
+    public static Function compile(String equation) {
         equation = equation.replaceAll("(\\d+)([-+])(\\d+)", "$1 $2 $3"); //get rid of spaces in Function string.
         Matcher matcher = pattern.matcher(equation);
         return parseFromTokens(matcher);

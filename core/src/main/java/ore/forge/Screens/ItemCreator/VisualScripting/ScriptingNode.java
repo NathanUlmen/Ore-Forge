@@ -17,7 +17,6 @@ import ore.forge.Expressions.Condition;
 import ore.forge.Expressions.Function;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operators.NumericOperator;
-import ore.forge.Screens.ItemCreator.ItemCreatorScreen;
 import ore.forge.Screens.ItemCreator.VisualScripting.Forums.ConstantHiddenForum;
 import ore.forge.Strategies.UpgradeStrategies.BasicUpgrade;
 import ore.forge.Strategies.UpgradeStrategies.BundledUpgrade;
@@ -57,10 +56,8 @@ public class ScriptingNode<E> extends Table {
     private boolean selected;
     private static final float SNAP_DISTANCE = 100;
     private static float elapsedTime = 0; //used for highlight effect.
-    private ItemCreatorScreen canvas;
 
     public ScriptingNode(Field... fields) {
-        canvas = null;
         this.childNodes = new ArrayList<>();
         this.fields = new ArrayList<>();
         for (Field field : fields) {
@@ -126,9 +123,9 @@ public class ScriptingNode<E> extends Table {
             if (Gdx.input.isKeyJustPressed(Input.Keys.FORWARD_DEL) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
                 for (ScriptingNode<E> child : childNodes) {
                     child.remove();
-                    canvas.getScriptingNodes().remove(child);
+//                    canvas.getScriptingNodes().remove(child);
                 }
-                canvas.getScriptingNodes().remove(this);
+//                canvas.getScriptingNodes().remove(this);
                 remove();
             }
         } else {
@@ -282,10 +279,6 @@ public class ScriptingNode<E> extends Table {
 
     public List<ScriptingNode<E>> getChildNodes() {
         return childNodes;
-    }
-
-    public void setCanvas(ItemCreatorScreen canvas) {
-        this.canvas = canvas;
     }
 
     public static class ValidationResult<E> {

@@ -57,7 +57,7 @@ public class BasicUpgrade implements UpgradeStrategy {
         return switch (valueToModify) {
             case ORE_VALUE -> (Ore ore) -> ore.setOreValue(numericOperator.apply(ore.getOreValue(), modifier));
             case TEMPERATURE ->
-                (Ore ore) -> ore.setTemp((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
+                (Ore ore) -> ore.setTemperature((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
             case MULTIORE ->
                 (Ore ore) -> ore.setMultiOre((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
             case SPEED_SCALAR ->

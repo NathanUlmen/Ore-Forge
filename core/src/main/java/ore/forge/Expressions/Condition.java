@@ -8,9 +8,7 @@ import ore.forge.Expressions.Operators.ComparisonOperator;
 import ore.forge.Expressions.Operators.LogicalOperator;
 import ore.forge.Ore;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,14 +16,21 @@ import java.util.regex.Pattern;
 /**
  * @author Nathan Ulmen
  */
-public class Condition implements BooleanExpression {
+public class Condition implements BooleanExpression<Ore> {
     private final static Pattern pattern = Pattern.compile("(([A-Z_]+\\.)([A-Z_]+)\\(([^)]+)\\))|\\{([^}]*)}|\\(|\\)|<->|[<>]=?|==|!=|&&|\\|\\||!|[A-Z_]+|\"(.*)\"|([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)");
-    private final ArrayList<BooleanExpression> expressions;
+    private final ArrayList<BooleanExpression<Ore>> expressions;
     private final Stack<LogicalOperator> logicalOperators;
+    private BooleanExpression<Ore> expression;
 
-    private Condition(ArrayList<BooleanExpression> expressions, Stack<LogicalOperator> logicalOperators) {
+    private Condition(ArrayList<BooleanExpression<Ore>> expressions, Stack<LogicalOperator> logicalOperators) {
         this.expressions = expressions;
         this.logicalOperators = logicalOperators;
+    }
+
+    private Condition(BooleanExpression<Ore> expression) {
+        this.expression = expression;
+        this.expressions = new ArrayList<>();
+        this.logicalOperators = new Stack<>();
     }
 
     private enum Parenthesis {
