@@ -1,13 +1,10 @@
-package ore.forge.Items.Experimental;
+package ore.forge;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
-import ore.forge.PhysicsBodyData;
-import ore.forge.PhysicsWorld;
-import ore.forge.VisualComponent;
 
 import java.util.List;
 

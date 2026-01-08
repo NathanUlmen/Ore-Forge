@@ -1,16 +1,16 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Items.Item;
+import ore.forge.Items.ItemDefinition;
 
-public record ItemRemovedGameEvent(Item item) implements GameEvent<Item> {
+public record ItemRemovedGameEvent(ItemDefinition item) implements GameEvent<ItemDefinition> {
     @Override
     public Class<?> getEventType() {
         return ItemRemovedGameEvent.class;
     }
 
     @Override
-    public Item getSubject() {
+    public ItemDefinition getSubject() {
         return item;
     }
 

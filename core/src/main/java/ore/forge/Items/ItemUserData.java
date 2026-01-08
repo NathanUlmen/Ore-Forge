@@ -1,4 +1,4 @@
-package ore.forge.Items.Experimental;
+package ore.forge.Items;
 
 import com.badlogic.gdx.math.Vector3;
 

@@ -1,7 +1,6 @@
 package ore.forge.Player;
 
-import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.ItemSpawner;
+import ore.forge.Items.ItemDefinition;
 
 public class ItemInventoryNode {
     private final ItemDefinition heldItem;
@@ -68,7 +67,7 @@ public class ItemInventoryNode {
 
     /**
      * Used to increase the number owned of this item by the specified ammount.
-     * 
+     *
      * @param toAdd - the number of items to add to total owned.
      */
     public void addNew(int toAdd) {

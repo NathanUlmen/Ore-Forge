@@ -1,4 +1,4 @@
-package ore.forge.Items.Experimental;
+package ore.forge.Items.Properties;
 
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.OreDefinition;

@@ -4,7 +4,8 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Currency;
 
 public record AcquisitionInfo(
-    AcquisitionInfo.UnlockMethod unlockMethod,
+    Tier tier,
+    UnlockMethod unlockMethod,
     double unlockRequirement,
     boolean isUnlocked,
     boolean canBeSold,
@@ -14,10 +15,10 @@ public record AcquisitionInfo(
     double sellPrice,
     float rarity
 ) {
-    public enum UnlockMethod {SPECIAL_POINTS, PRESTIGE_LEVEL, QUEST, NONE}
 
-    public AcquisitionInfo(JsonValue json, Item.Tier tier) {
+    public AcquisitionInfo(JsonValue json, Tier tier) {
         this(
+            tier,
             computeUnlockMethod(json, tier),
             computeUnlockRequirement(json, tier),
             computeIsUnlocked(json, tier),
@@ -30,7 +31,7 @@ public record AcquisitionInfo(
         );
     }
 
-    private static UnlockMethod computeUnlockMethod(JsonValue json, Item.Tier tier) {
+    private static UnlockMethod computeUnlockMethod(JsonValue json, Tier tier) {
         return switch (tier) {
             case PINNACLE, EXOTIC -> UnlockMethod.QUEST;
             case PRESTIGE, SPECIAL, EPIC, SUPER_RARE, RARE, UNCOMMON, COMMON ->
@@ -38,9 +39,9 @@ public record AcquisitionInfo(
         };
     }
 
-    private static double computeUnlockRequirement(JsonValue json, Item.Tier tier) {
+    private static double computeUnlockRequirement(JsonValue json, Tier tier) {
         String methodStr = json.getString("unlockMethod", "NONE");
-        if (tier == Item.Tier.PRESTIGE || tier == Item.Tier.SPECIAL) {
+        if (tier == Tier.PRESTIGE || tier == Tier.SPECIAL) {
             if (methodStr.equals("PRESTIGE_LEVEL") || methodStr.equals("SPECIAL_POINTS")) {
                 return json.getDouble("unlockRequirement", Double.NaN);
             }
@@ -48,26 +49,26 @@ public record AcquisitionInfo(
         return -1;
     }
 
-    private static boolean computeIsUnlocked(JsonValue json, Item.Tier tier) {
+    private static boolean computeIsUnlocked(JsonValue json, Tier tier) {
         UnlockMethod method = computeUnlockMethod(json, tier);
         return method == UnlockMethod.NONE;
     }
 
-    private static boolean computeCanBeSold(Item.Tier tier) {
+    private static boolean computeCanBeSold(Tier tier) {
         return switch (tier) {
             case PRESTIGE, SPECIAL, EPIC, SUPER_RARE, RARE, UNCOMMON, COMMON -> true;
             default -> false;
         };
     }
 
-    private static boolean computeIsPrestigeProof(Item.Tier tier) {
+    private static boolean computeIsPrestigeProof(Tier tier) {
         return switch (tier) {
             case PINNACLE, EXOTIC, PRESTIGE, SPECIAL -> true;
             default -> false;
         };
     }
 
-    private static Currency computeCurrency(Item.Tier tier) {
+    private static Currency computeCurrency(Tier tier) {
         return switch (tier) {
             case PINNACLE -> Currency.NONE;
             case EXOTIC, SPECIAL -> Currency.SPECIAL_POINTS;

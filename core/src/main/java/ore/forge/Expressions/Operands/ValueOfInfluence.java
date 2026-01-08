@@ -1,10 +1,8 @@
 package ore.forge.Expressions.Operands;
 
 import ore.forge.Expressions.NumericOperand;
-import ore.forge.ItemMap;
 import ore.forge.Ore;
 import ore.forge.OreRealm;
-import ore.forge.Player.Player;
 import ore.forge.Stopwatch;
 
 import java.util.Comparator;
@@ -16,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 public enum ValueOfInfluence implements NumericOperand {
     ACTIVE_ORE {
     },
-    PLACED_ITEMS {
-    },
-    SPECIAL_POINTS {
-    },
-    WALLET {
-    },
-    PRESTIGE_LEVEL {
-    },
+//    PLACED_ITEMS {
+//    },
+//    SPECIAL_POINTS {
+//    },
+//    WALLET {
+//    },
+//    PRESTIGE_LEVEL {
+//    },
     AVG_ORE_VALUE,
     MEDIAN_ORE_VALUE,
 //    MEDIAN_ORE_TEMP,
@@ -46,8 +44,6 @@ public enum ValueOfInfluence implements NumericOperand {
     }
 
     private final OreRealm oreRealm = OreRealm.getSingleton();
-    private final Player player = Player.getSingleton();
-    private final ItemMap itemMap = ItemMap.getSingleton();
     private final DoubleSupplier doubleSupplier;
 
     public static boolean isValue(String value) {
@@ -67,10 +63,10 @@ public enum ValueOfInfluence implements NumericOperand {
     ValueOfInfluence() {
         doubleSupplier = switch (this) {
             case ACTIVE_ORE -> () -> oreRealm.getActiveOre().size();
-            case PLACED_ITEMS -> () -> itemMap.getPlacedItems().size();
-            case SPECIAL_POINTS -> player::getSpecialPoints;
-            case WALLET -> player::getWallet;
-            case PRESTIGE_LEVEL -> player::getPrestigeLevel;
+//            case PLACED_ITEMS -> () -> itemMap.getPlacedItems().size();
+//            case SPECIAL_POINTS -> player::getSpecialPoints;
+//            case WALLET -> player::getWallet;
+//            case PRESTIGE_LEVEL -> player::getPrestigeLevel;
             case AVG_ORE_VALUE -> () -> {
                 double total = 0;
                 for (Ore ore : oreRealm.getActiveOre()) {

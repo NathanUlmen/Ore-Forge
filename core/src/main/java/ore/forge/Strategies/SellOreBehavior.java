@@ -4,11 +4,9 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.FurnaceBlueprint;
-import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.Ore;
 import ore.forge.PhysicsBodyData;
-import ore.forge.Player.Player;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
@@ -42,11 +40,12 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     public void attach(Body body, Fixture fixture) {
-        assert body.getUserData() instanceof FurnaceBlueprint;
-        if (body.getUserData() instanceof FurnaceBlueprint bp) {
-            this.spRewardAmount = bp.getSpRewardAmount();
-            this.spRewardThreshold = bp.getSpRewardThreshold();
-        }
+//        assert body.getUserData() instanceof FurnaceBlueprint;
+//        if (body.getUserData() instanceof FurnaceBlueprint bp) {
+//            this.spRewardAmount = bp.getSpRewardAmount();
+//            this.spRewardThreshold = bp.getSpRewardThreshold();
+//        }
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -68,15 +67,15 @@ public class SellOreBehavior implements BodyLogic {
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
         if (subject.specificData instanceof Ore ore && timeTouching > 0.5f) {
             upgradeStrategy.applyTo(ore);
-            var player = Player.getSingleton();
+//            var player = Player.getSingleton();
 //            var eventManager = EventManager.getSingleton();
-            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
+//            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
 //            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
 
             //Compute and Reward Special points
-            spRewardProgress += ore.getMultiOre();
-            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
-            spRewardProgress %= spRewardThreshold;
+//            spRewardProgress += ore.getMultiOre();
+//            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
+//            spRewardProgress %= spRewardThreshold;
 
 
             /*
@@ -89,6 +88,7 @@ public class SellOreBehavior implements BodyLogic {
 //            ore.rigidBody.setWorldTransform(ore.rigidBody.getWorldTransform().translate(0, 10000, 0));
 //            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
         }
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

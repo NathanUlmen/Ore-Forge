@@ -1,4 +1,4 @@
-package ore.forge.Items.Experimental;
+package ore.forge.Items;
 
 public enum ItemRole {
     UPGRADER(1),

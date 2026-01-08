@@ -1,9 +1,11 @@
 package ore.forge.EventSystem.Events;
 
+import com.badlogic.gdx.math.Vector3;
+import ore.forge.EntityInstance;
 import ore.forge.FontColors;
-import ore.forge.Items.Item;
+import ore.forge.Items.ItemDefinition;
 
-public record ItemPlacedGameEvent(Item item) implements GameEvent {
+public record ItemPlacedGameEvent(ItemDefinition item, EntityInstance instance) implements GameEvent {
 
     @Override
     public Class getEventType() {
@@ -12,12 +14,14 @@ public record ItemPlacedGameEvent(Item item) implements GameEvent {
 
     @Override
     public Object getSubject() {
-        return Item.class;
+        return ItemDefinition.class;
     }
 
     @Override
     public String getBriefInfo() {
-        return item.getName() + " placed at " + item.getVector2();
+        Vector3 translation = new Vector3();
+        instance.transform().getTranslation(translation);
+        return item.name() + " placed at " + translation;
     }
 
     @Override

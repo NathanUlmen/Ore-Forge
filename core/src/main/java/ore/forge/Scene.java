@@ -3,7 +3,6 @@ package ore.forge;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import ore.forge.Items.Experimental.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;

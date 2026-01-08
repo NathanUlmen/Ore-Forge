@@ -4,28 +4,10 @@
 package ore.forge;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import ore.forge.Player.Player;
-import ore.forge.QuestComponents.QuestManager;
 import ore.forge.Screens.Gameplay3D;
-import ore.forge.Screens.MainMenu;
-import ore.forge.Screens.PauseMenu;
-import ore.forge.Screens.SettingsMenu;
 
 /**@author Nathan Ulmen*/
 public class OreForge extends Game {
-	public MainMenu mainMenuScreen;
-    public Label memoryCounter;
-	public Player player;
-
-
-	public PauseMenu pauseMenu;
-	public Screen gameplayScreen;
-	public SettingsMenu settingsMenu;
-
-	private SpriteBatch spriteBatch;
 
 	public void create() {
         /*
@@ -34,17 +16,17 @@ public class OreForge extends Game {
 		* Load Save Data
 		* Create the Objects for elements like the map and UI.
 		* */
-		spriteBatch = new SpriteBatch();
-        ItemManager itemManager = new ItemManager(null);
-        var questManager = new QuestManager();
-        OreRealm.getSingleton().populate(); //Create/pool all ore.
-        Player.getSingleton().loadSaveData();
-        Player.getSingleton().initInventory(itemManager);
-        Player.getSingleton().getInventory().printInventory();
 
-        var prestigeManager = new PrestigeManager(itemManager);
+//        ItemManager itemManager = new ItemManager(null);
+//        var questManager = new QuestManager();
+//        OreRealm.getSingleton().populate(); //Create/pool all ore.
+//        Player.getSingleton().loadSaveData();
+//        Player.getSingleton().initInventory(itemManager);
+//        Player.getSingleton().getInventory().printInventory();
 
-        ItemMap.getSingleton().loadState(itemManager);
+//        var prestigeManager = new PrestigeManager(itemManager);
+
+//        ItemMap.getSingleton().loadState(itemManager);
 //		mainMenuScreen = new MainMenu(this, itemManager);
 //		settingsMenu = new SettingsMenu(this, itemManager);
 //		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
@@ -67,14 +49,5 @@ public class OreForge extends Game {
 	public void dispose() {
 		super.dispose();
 	}
-
-	public SpriteBatch getSpriteBatch() {
-		return spriteBatch;
-	}
-
-	public MainMenu getMainMenuScreen() {
-		return mainMenuScreen;
-	}
-
 
 }

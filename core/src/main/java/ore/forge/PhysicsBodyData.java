@@ -2,7 +2,6 @@ package ore.forge;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.Strategies.BodyLogic;
 
 /**

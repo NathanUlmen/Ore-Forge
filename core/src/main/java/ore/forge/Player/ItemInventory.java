@@ -1,6 +1,6 @@
 package ore.forge.Player;
 
-import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.Items.ItemDefinition;
 
 import java.util.HashMap;
 import java.util.List;

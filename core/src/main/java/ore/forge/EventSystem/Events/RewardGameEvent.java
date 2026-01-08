@@ -1,9 +1,9 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Items.Item;
+import ore.forge.Items.ItemDefinition;
 
-public record RewardGameEvent(Item reward, int count) implements GameEvent {
+public record RewardGameEvent(ItemDefinition reward, int count) implements GameEvent {
 
     @Override
     public Class getEventType() {

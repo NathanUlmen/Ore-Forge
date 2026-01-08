@@ -3,8 +3,8 @@ package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.UpgraderProperties;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.Items.Properties.UpgraderProperties;
 import ore.forge.*;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 

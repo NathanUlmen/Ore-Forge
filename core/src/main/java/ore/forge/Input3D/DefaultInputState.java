@@ -3,7 +3,7 @@ package ore.forge.Input3D;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.EntityInstance;
 import ore.forge.PhysicsBodyData;
 import ore.forge.UI.UIMenu;
 

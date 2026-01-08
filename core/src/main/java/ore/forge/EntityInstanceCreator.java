@@ -1,4 +1,4 @@
-package ore.forge.Items.Experimental;
+package ore.forge;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
@@ -7,7 +7,9 @@ import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import ore.forge.*;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.Items.ItemUserData;
+import ore.forge.Items.NodeInfo;
 import ore.forge.Strategies.BodyLogic;
 
 import java.util.ArrayList;
@@ -16,10 +18,10 @@ import java.util.List;
 public class EntityInstanceCreator {
 
     public static EntityInstance createInstance(ItemDefinition itemDefinition) {
-        VisualComponent visualComponent = new VisualComponent(new ModelInstance(itemDefinition.model));
+        VisualComponent visualComponent = new VisualComponent(new ModelInstance(itemDefinition.model()));
         List<btCollisionObject> collisionObjects = new ArrayList<>();
         EntityInstance instance = new EntityInstance(collisionObjects, visualComponent);
-        for (btCollisionShape collisionShape : itemDefinition.collisionShapes) {
+        for (btCollisionShape collisionShape : itemDefinition.collisionShapes()) {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
                 //rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY));
@@ -27,8 +29,8 @@ public class EntityInstanceCreator {
                 collisionObjects.add(rigidBody);
             } else {
                 //The rest will be sensor
-                NodeInfo nodeInfo = itemDefinition.shapeMap.get(collisionShape);
-                BodyLogic bodyLogic = itemDefinition.behaviors.get(nodeInfo.behaviorKey()).clone();
+                NodeInfo nodeInfo = itemDefinition.shapeMap().get(collisionShape);
+                BodyLogic bodyLogic = itemDefinition.behaviors().get(nodeInfo.behaviorKey()).clone();
                 btGhostObject ghostObject = new btGhostObject();
                 ghostObject.setCollisionShape(collisionShape);
                 ghostObject.setWorldTransform(nodeInfo.transform());

@@ -2,8 +2,8 @@ package ore.forge.UI;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.ItemRole;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.Items.ItemRole;
 import ore.forge.UIHelper;
 
 import java.util.ArrayList;

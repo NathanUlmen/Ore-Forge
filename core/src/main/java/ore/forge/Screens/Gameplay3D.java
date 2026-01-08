@@ -22,10 +22,7 @@ import ore.forge.*;
 import ore.forge.Input3D.FreeCamController;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Input3D.IsometricCameraController;
-import ore.forge.Items.Experimental.EntityInstance;
-import ore.forge.Items.Experimental.EntityInstanceCreator;
-import ore.forge.Items.Experimental.FurnaceSpawner;
-import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.UI;
 
@@ -44,7 +41,6 @@ public class Gameplay3D implements Screen {
     private final CollisionManager collisionManager;
     private btRigidBody cubeBody;
     private ItemDefinition spawner;
-    private FurnaceSpawner furnaceSpawner;
     private InputHandler inputHandler;
 
     private UI ui;

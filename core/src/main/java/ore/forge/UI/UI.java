@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import ore.forge.Input3D.OpenedMenuState;
-import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.VisualComponent;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class UI extends Stage {
         // Create our texture atlas of icon images
         IconRenderer iconRenderer = new IconRenderer();
         for (ItemDefinition item : allItems) {
-            VisualComponent vc = new VisualComponent(new ModelInstance(item.getModel()));
+            VisualComponent vc = new VisualComponent(new ModelInstance(item.model()));
             iconRenderer.renderIcon(item.id(), vc);
             vc.dispose();
         }

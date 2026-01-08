@@ -2,9 +2,9 @@ package ore.forge.EventSystem.Events;
 
 import ore.forge.Currency;
 import ore.forge.FontColors;
-import ore.forge.Items.Item;
+import ore.forge.Items.ItemDefinition;
 
-public record FailedPurchaseGameEvent(Item item, Currency currency, int amount) implements GameEvent {
+public record FailedPurchaseGameEvent(ItemDefinition item, Currency currency, int amount) implements GameEvent {
 
     @Override
     public Class getEventType() {
@@ -18,7 +18,7 @@ public record FailedPurchaseGameEvent(Item item, Currency currency, int amount) 
 
     @Override
     public String getBriefInfo() {
-        return "Failed to purchase " + item.getName() + ". Not enough " + currency;
+        return "Failed to purchase " + item.name() + ". Not enough " + currency;
     }
 
     @Override

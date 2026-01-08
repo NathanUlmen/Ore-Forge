@@ -1,4 +1,4 @@
-package ore.forge.Items.Experimental;
+package ore.forge.Items;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.VertexAttributes;
@@ -14,8 +14,9 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.AcquisitionInfo;
-import ore.forge.Items.Item;
+import ore.forge.Items.Properties.DropperProperties;
+import ore.forge.Items.Properties.ItemProperties;
+import ore.forge.Items.Properties.UpgraderProperties;
 import ore.forge.OreDefinition;
 import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.BodyLogic;
@@ -28,6 +29,7 @@ import java.util.List;
 public class ItemDefinition {
     //General Stuff
     protected String name, id, description;
+    protected Tier category;
     protected ItemRole[] role;
     protected AcquisitionInfo acquisitionInfo;
 
@@ -39,6 +41,9 @@ public class ItemDefinition {
 
     //Gameplay Logic/Behavior
     protected HashMap<String, BodyLogic> behaviors;
+
+
+
     protected HashMap<btCollisionShape, NodeInfo> shapeMap;
 
     //Properties specific to item type
@@ -48,7 +53,8 @@ public class ItemDefinition {
         //General Stuff
         String name = json.getString("name");
         String id = json.getString("id");
-        AcquisitionInfo acquisitionInfo = new AcquisitionInfo(json.get("acquisitionInfo"), Item.Tier.valueOf(json.getString("tier")));
+        Tier category = Tier.valueOf(json.getString("tier"));
+        AcquisitionInfo acquisitionInfo = new AcquisitionInfo(json.get("acquisitionInfo"), category);
         String description = json.getString("description");
 
         ItemRole[] roles = new ItemRole[json.get("role").size];
@@ -213,11 +219,31 @@ public class ItemDefinition {
         return role;
     }
 
+    public List<btCollisionShape> collisionShapes() {
+        return collisionShapes;
+    }
+
+    public HashMap<btCollisionShape, NodeInfo> shapeMap() {
+        return shapeMap;
+    }
+
+    public HashMap<String, BodyLogic> behaviors() {
+        return behaviors;
+    }
+
+    public ItemRole[] role() {
+        return role;
+    }
+
+    public Tier category() {
+        return category;
+    }
+
     public AcquisitionInfo getAcquisitionInfo() {
         return acquisitionInfo;
     }
 
-    public Model getModel() {
+    public Model model() {
         return model;
     }
 

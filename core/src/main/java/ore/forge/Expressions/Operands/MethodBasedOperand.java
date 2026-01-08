@@ -1,17 +1,15 @@
 package ore.forge.Expressions.Operands;
 
-import ore.forge.ItemMap;
 import ore.forge.Ore;
 import ore.forge.OreRealm;
-import ore.forge.Player.Player;
 
 /*
  * Basically We are going to have an object that contains a custom lambda/function, a "collection", and a search param(string)
  * */
 public enum MethodBasedOperand {
     UPGRADE_TAGS,
-    BASE,
-    INVENTORY,
+//    BASE,
+//    INVENTORY,
     ACTIVE_ORE;
 
 
@@ -40,8 +38,6 @@ public enum MethodBasedOperand {
         return booleanRetriever.retrieve(ore, id);
     }
 
-    private final Player player = Player.getSingleton();
-    private final ItemMap itemMap = ItemMap.getSingleton();
     private final OreRealm oreRealm = OreRealm.getSingleton();
     private final BooleanRetriever booleanRetriever;
     private final ValueRetriever valueRetriever;
@@ -49,23 +45,23 @@ public enum MethodBasedOperand {
     MethodBasedOperand() {
         booleanRetriever = switch (this) {
             case UPGRADE_TAGS -> Ore::containsTag;
-            case BASE -> (Ore ore, String id) -> itemMap.containsItem(id);
-            case INVENTORY -> (Ore ore, String id) -> {
-                var node = player.getInventory().getNode(id);
-                return node != null && node.getTotalOwned() > 0;
-            };
+//            case BASE -> (Ore ore, String id) -> itemMap.containsItem(id);
+//            case INVENTORY -> (Ore ore, String id) -> {
+//                var node = player.getInventory().getNode(id);
+//                return node != null && node.getTotalOwned() > 0;
+//            };
             case ACTIVE_ORE -> (Ore ore, String id) -> oreRealm.containsOre(id);
         };
         valueRetriever = switch (this) {
             case UPGRADE_TAGS -> Ore::tagUpgradeCount;
-            case BASE -> (Ore ore, String id) -> {
-                var node = player.getInventory().getNode(id);
-                return node != null ? node.getPlaced() : 0;
-            };
-            case INVENTORY -> (Ore ore, String id) -> {
-                var node = player.getInventory().getNode(id);
-                return node != null ? node.getTotalOwned() : 0;
-            };
+//            case BASE -> (Ore ore, String id) -> {
+//                var node = player.getInventory().getNode(id);
+//                return node != null ? node.getPlaced() : 0;
+//            };
+//            case INVENTORY -> (Ore ore, String id) -> {
+//                var node = player.getInventory().getNode(id);
+//                return node != null ? node.getTotalOwned() : 0;
+//            };
             case ACTIVE_ORE -> (Ore ore, String id) -> oreRealm.getOreCount(id);
         };
 

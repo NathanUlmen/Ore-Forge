@@ -5,8 +5,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.ItemUserData;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.Items.ItemUserData;
 import ore.forge.Ore;
 import ore.forge.PhysicsBodyData;
 

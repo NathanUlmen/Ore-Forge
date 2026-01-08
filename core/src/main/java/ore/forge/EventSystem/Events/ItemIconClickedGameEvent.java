@@ -1,9 +1,10 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Screens.Widgets.ItemIcon;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.UI.Icon;
 
-public record ItemIconClickedGameEvent(ItemIcon itemIcon) implements GameEvent {
+public record ItemIconClickedGameEvent(Icon<ItemDefinition> itemIcon) implements GameEvent {
     @Override
     public Class<?> getEventType() {
         return ItemIconClickedGameEvent.class;
@@ -16,7 +17,7 @@ public record ItemIconClickedGameEvent(ItemIcon itemIcon) implements GameEvent {
 
     @Override
     public String getBriefInfo() {
-        return "Click on " + itemIcon.getName();
+        return "Click on " + itemIcon.getData().name();
     }
 
     @Override

@@ -1,10 +1,9 @@
 import com.badlogic.gdx.physics.box2d.World;
 import ore.forge.CollisionManager;
+import ore.forge.EntityInstance;
 import ore.forge.EventSystem.EventManager;
-import ore.forge.Items.Experimental.EntityInstance;
 import ore.forge.PhysicsWorld;
 import ore.forge.Player.ItemInventory;
-import ore.forge.Player.Player;
 import ore.forge.Strategies.TimeUpdatable;
 import ore.forge.UI.UI;
 
@@ -20,7 +19,7 @@ public class GameContext {
     public PhysicsWorld physicsWorld;
     public CollisionManager collisionManager;
     public UI ui;
-    public Player player;
+//    public Player player;
     public ItemInventory itemInventory;
     public Deque<EntityInstance> toAdd, toRemove;
 

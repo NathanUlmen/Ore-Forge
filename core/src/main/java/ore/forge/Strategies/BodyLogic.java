@@ -1,7 +1,7 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
 public interface BodyLogic {

@@ -1,22 +1,22 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Player.InventoryNode;
+import ore.forge.Player.ItemInventoryNode;
 
-public record InventoryNodeGameEvent(InventoryNode node) implements GameEvent<InventoryNode> {
+public record InventoryNodeGameEvent(ItemInventoryNode node) implements GameEvent<ItemInventoryNode> {
     @Override
     public Class<?> getEventType() {
         return InventoryNodeGameEvent.class;
     }
 
     @Override
-    public InventoryNode getSubject() {
+    public ItemInventoryNode getSubject() {
         return node;
     }
 
     @Override
     public String getBriefInfo() {
-        return node.getName() + " updated.";
+        return node.getPlaced() + " updated.";
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
-import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.EntityInstance;
 import ore.forge.Screens.Gameplay3D;
 import ore.forge.Shaders.GridAttribute;
 
