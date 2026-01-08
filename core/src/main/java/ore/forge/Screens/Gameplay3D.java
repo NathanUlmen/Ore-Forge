@@ -22,7 +22,10 @@ import ore.forge.*;
 import ore.forge.Input3D.FreeCamController;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Input3D.IsometricCameraController;
-import ore.forge.Items.Experimental.*;
+import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.Items.Experimental.EntityInstanceCreator;
+import ore.forge.Items.Experimental.FurnaceSpawner;
+import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Shaders.CustomShaderProvider;
 import ore.forge.UI.UI;
 
@@ -88,12 +91,12 @@ public class Gameplay3D implements Screen {
         // Create Static test items from JSON
         JsonReader jsonReader = new JsonReader();
         JsonValue value = jsonReader.parse(Gdx.files.internal("Items/3DTestItem.json"));
-        this.spawner = new ItemDefinition();
+        this.spawner = ItemDefinition.createDefinition(value);
 
         Matrix4 transform = new Matrix4();
         value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
-        ItemDefinition dropperSpawner = new ItemDefinition();
-        EntityInstance instance1 = InstanceCreator.createInstance(dropperSpawner);
+        ItemDefinition dropperSpawner = ItemDefinition.createDefinition(value);
+        EntityInstance instance1 = EntityInstanceCreator.createInstance(dropperSpawner);
         transform.setTranslation(0, 8, 0);
         instance1.place(transform.cpy());
         for (btCollisionObject object : instance1.entityPhysicsBodies) {
@@ -145,7 +148,7 @@ public class Gameplay3D implements Screen {
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             Vector3 position = getMouseGroundPosition(camera);
             // Spawn an instance of the item and add it to the physics simulation
-            EntityInstance instance = InstanceCreator.createInstance(spawner);
+            EntityInstance instance = EntityInstanceCreator.createInstance(spawner);
             Matrix4 transform = new Matrix4().setToTranslation(position);
             transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
             instance.place(transform);

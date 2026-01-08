@@ -2,13 +2,8 @@
   "name": "Basic Upgrader",
   "description": "An upgrader that adds 2 to the value of ore it upgrades.",
   "id": "abc123",
-  "upgradeTag": {
-    "name": "Basic Upgrader",
-    "id": "abc123",
-    "maxUpgrades": 500,
-    "isResetter": false
-  },
   "tier": "COMMON",
+  "role": ["UPGRADER"],
   "acquisitionInfo": {
     "unlockMethod": "NONE",
     "unlockRequirement": 0,
@@ -41,39 +36,113 @@
   "parts": [
     {
       "type": "box",
-      "relativePosition": [0, 0, 0],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection": [-1, 0, 0],
-      "dimensions": [4, 0.1, 4],
+      "relativePosition": [
+        0,
+        0,
+        0
+      ],
+      "relativeRotation": [
+        0,
+        0,
+        0
+      ],
+      "relativeDirection": [
+        -1,
+        0,
+        0
+      ],
+      "dimensions": [
+        4,
+        0.1,
+        4
+      ],
       "behaviorKey": "b1",
       "bulletCollisionType": "both"
     },
     {
       "type": "box",
-      "relativePosition": [0, 1, 0],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection": [0, 0, 1],
-      "dimensions": [0.5, 2, 4],
+      "relativePosition": [
+        0,
+        1,
+        0
+      ],
+      "relativeRotation": [
+        0,
+        0,
+        0
+      ],
+      "relativeDirection": [
+        0,
+        0,
+        1
+      ],
+      "dimensions": [
+        0.5,
+        2,
+        4
+      ],
       "behaviorKey": "b2",
       "bulletCollisionType": "btGhostObject"
     },
     {
-      "type" : "box",
-      "relativePosition": [0, 0, -2.5],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection" : [0, 0, 0],
-      "dimensions": [4, 0.75, 1],
+      "type": "box",
+      "relativePosition": [
+        0,
+        0,
+        -2.5
+      ],
+      "relativeRotation": [
+        0,
+        0,
+        0
+      ],
+      "relativeDirection": [
+        0,
+        0,
+        0
+      ],
+      "dimensions": [
+        4,
+        0.75,
+        1
+      ],
       "behaviorKey": "",
       "bulletCollisionType": "btRigidBody"
     },
     {
-      "type" : "box",
-      "relativePosition": [0, 0, 2.5],
-      "relativeRotation": [0, 0, 0],
-      "relativeDirection" : [0, 0, 0],
-      "dimensions": [4, 0.75, 1],
+      "type": "box",
+      "relativePosition": [
+        0,
+        0,
+        2.5
+      ],
+      "relativeRotation": [
+        0,
+        0,
+        0
+      ],
+      "relativeDirection": [
+        0,
+        0,
+        0
+      ],
+      "dimensions": [
+        4,
+        0.75,
+        1
+      ],
       "behaviorKey": "",
       "bulletCollisionType": "btRigidBody"
+    }
+  ],
+
+  "properties": [
+    {
+      "type": "UpgradeTag",
+      "name": "Basic Upgrader",
+      "id": "abc123",
+      "maxUpgrades": 10,
+      "isResetter": false
     }
   ]
 }

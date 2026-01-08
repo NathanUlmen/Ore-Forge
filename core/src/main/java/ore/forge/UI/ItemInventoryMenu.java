@@ -2,10 +2,8 @@ package ore.forge.UI;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-
 import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.ItemSpawner;
-import ore.forge.Items.Experimental.ItemType;
+import ore.forge.Items.Experimental.ItemRole;
 import ore.forge.UIHelper;
 
 import java.util.ArrayList;
@@ -38,16 +36,17 @@ public class ItemInventoryMenu extends Table {
         // Setup our filters tab.
         filterTab = new FilterTab(new WidgetGrid.IconGridConfigData(5, 1));
         var filterOptions = new ArrayList<FilterTab.FilterOption>();
-        for (ItemType itemType : ItemType.values()) {
+        for (ItemRole itemRole : ItemRole.values()) {
             // Create list of all items of our current type.
             List<Icon<ItemDefinition>> category = new ArrayList<>();
             for (Icon<ItemDefinition> icon : this.allIcons) {
-                if (icon.getData().type().equals(itemType)) {
+                ItemRole[] roles = icon.getData().type();
+                if ((ItemRole.combineBits(roles) & itemRole.mask) != 0) {
                     category.add(icon);
                 }
             }
-            filteredLists.put(itemType.name(), category);
-            FilterTab.FilterOption filterOption = new FilterTab.FilterOption(itemType.name(), itemType.name());
+            filteredLists.put(itemRole.name(), category);
+            FilterTab.FilterOption filterOption = new FilterTab.FilterOption(itemRole.name(), itemRole.name());
             filterOption.setOnClicked((f) -> {
                 this.updateFilters();
             });

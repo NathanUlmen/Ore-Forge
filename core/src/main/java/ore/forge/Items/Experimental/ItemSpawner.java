@@ -33,7 +33,7 @@ import java.util.List;
 
 public class ItemSpawner {
 
-    protected ItemType type;
+    protected ItemRole type;
     protected final String name, id, description;
     protected final AcquisitionInfo acquisitionInfo;
     protected final Model model;
@@ -166,9 +166,9 @@ public class ItemSpawner {
                 btGhostObject ghostObject = new btGhostObject();
                 ghostObject.setCollisionShape(collisionShape);
                 ghostObject.setWorldTransform(nodeInfo.transform());
-                bodyLogic.attach(this, ghostObject);
-                ItemUserData itemUserData = new ItemUserData(nodeInfo.relativeDirection(), this);
-                ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform());
+//                bodyLogic.attach(this, ghostObject);
+//                ItemUserData itemUserData = new ItemUserData(nodeInfo.relativeDirection(), this);
+//                ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform());
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 collisionObjects.add(ghostObject);
@@ -177,8 +177,8 @@ public class ItemSpawner {
         return instance;
     }
 
-    public ItemType type() {
-        return type == null ? ItemType.DROPPER : type;
+    public ItemRole type() {
+        return type == null ? ItemRole.DROPPER : type;
     }
 
     public String name() {

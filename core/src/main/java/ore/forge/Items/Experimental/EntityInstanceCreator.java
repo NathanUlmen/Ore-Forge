@@ -7,15 +7,13 @@ import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import ore.forge.CollisionRules;
-import ore.forge.PhysicsBodyData;
+import ore.forge.*;
 import ore.forge.Strategies.BodyLogic;
-import ore.forge.VisualComponent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class InstanceCreator {
+public class EntityInstanceCreator {
 
     public static EntityInstance createInstance(ItemDefinition itemDefinition) {
         VisualComponent visualComponent = new VisualComponent(new ModelInstance(itemDefinition.model));
@@ -46,8 +44,20 @@ public class InstanceCreator {
     }
 
     //Create one for ore instance too...
-    public static EntityInstance createInstance() {
+    public static EntityInstance createInstance(OreDefinition oreDefinition) {
+        //Visual Setup
+        VisualComponent visualComponent = new VisualComponent(new ModelInstance(oreDefinition.model()));
+        //Physics Setup
+        btRigidBody oreBody = new btRigidBody(10, new btDefaultMotionState(), oreDefinition.oreShape());
+        var tempList = new ArrayList<btCollisionObject>(1);
+        tempList.add(oreBody);
+        //Create oru instance
+        EntityInstance instance = new EntityInstance(tempList, visualComponent);
 
-        return null;
+        Ore ore = new Ore();
+        ore.setOreValue(oreDefinition.oreValue());
+        oreBody.userData = new PhysicsBodyData(instance, ore, null, oreBody.getWorldTransform());
+
+        return instance;
     }
 }

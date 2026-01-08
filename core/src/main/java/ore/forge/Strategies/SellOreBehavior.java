@@ -50,7 +50,7 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void attach(ItemDefinition spawner, btCollisionObject parent) {
+    public void attach(ItemDefinition definition, btCollisionObject parent) {
 
     }
 
@@ -86,7 +86,7 @@ public class SellOreBehavior implements BodyLogic {
              * Remove from render list
              *
              * */
-            ore.rigidBody.setWorldTransform(ore.rigidBody.getWorldTransform().translate(0, 10000, 0));
+//            ore.rigidBody.setWorldTransform(ore.rigidBody.getWorldTransform().translate(0, 10000, 0));
 //            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
         }
     }

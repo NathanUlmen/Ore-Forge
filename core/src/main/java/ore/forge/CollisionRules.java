@@ -5,14 +5,14 @@ public enum CollisionRules {
     ORE_PROCESSOR(1),
     WORLD_GEOMETRY(2);
 
-    private final int bit;
+    public final int mask;
 
     CollisionRules(int bitNum) {
-        this.bit = (1 << bitNum);
+        this.mask = (1 << bitNum);
     }
 
     public int getBit() {
-        return bit;
+        return mask;
     }
 
     public static int combineBits(CollisionRules... rules) {

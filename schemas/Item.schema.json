@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "3DGameObject",
   "type": "object",
-  "required": ["name", "id", "tier", "acquisitionInfo", "behaviors", "parts"],
+  "required": ["name", "id", "tier", "role", "acquisitionInfo", "behaviors", "parts"],
   "properties": {
     "name": {
       "type": "string",
@@ -15,6 +15,49 @@
     "description": {
       "type": "string",
       "description": "Optional textual description."
+    },
+    "role": {
+      "type": "array",
+      "description": "The roles this item fulfills.",
+      "items": {
+        "type": "string",
+        "enum": ["UPGRADER", "DROPPER", "FURNACE", "CONVEYOR", "TELEPORTER"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "properties": {
+      "type": "array",
+      "description": "Properties required for attached behaviors to function properly.",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "name", "id", "maxUpgrades", "isResetter"],
+            "properties": {
+              "type": { "const": "UpgradeTag" },
+              "name": { "type": "string" },
+              "id": { "type": "string" },
+              "maxUpgrades": { "type": "integer" },
+              "isResetter": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "id", "oreName", "oreValue", "oreTemperature", "multiOre"],
+            "properties": {
+              "type": { "const": "OreDefinition" },
+              "oreName": { "type": "string" },
+              "id" : {"type" :  "string"},
+              "oreValue": { "type": "number" },
+              "oreTemperature": { "type": "number" },
+              "multiOre": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "minItems": 1
     },
     "tier": {
       "type": "string",
@@ -75,24 +118,8 @@
         }
       }
     },
-    "upgradeTag": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "id": { "type": "string" },
-        "maxUpgrades": { "type": "integer" },
-        "isResetter": { "type": "boolean" }
-      },
-      "required": ["name", "id", "maxUpgrades", "isResetter"]
-    },
-    "oreProperties" : {
-      "properties": {
-        "oreName": {"type" : "string"},
-        "oreValue": {"type" : "number"},
-        "oreTemperature": {"type" : "number"},
-        "multiOre": {"type" : "integer"}
-      }
-    },
+
+
     "behaviors": {
       "type": "array",
       "items": {

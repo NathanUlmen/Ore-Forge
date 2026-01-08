@@ -1,7 +1,6 @@
 package ore.forge.Player;
 
 import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.ItemSpawner;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,12 +8,12 @@ import java.util.List;
 public class ItemInventory {
     private final HashMap<String, ItemInventoryNode> nodes;
 
-    public ItemInventory(List<ItemDefinition> spawners) {
+    public ItemInventory(List<ItemDefinition> definitions) {
         nodes = new HashMap<>();
 
         // Create all our nodes
-        for (ItemDefinition spawner : spawners) {
-            var node = new ItemInventoryNode(spawner, 99);
+        for (ItemDefinition definition : definitions) {
+            var node = new ItemInventoryNode(definition, 99);
             nodes.put(node.id(), node);
         }
 

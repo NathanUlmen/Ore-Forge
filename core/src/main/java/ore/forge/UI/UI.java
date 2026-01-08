@@ -1,18 +1,17 @@
 package ore.forge.UI;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-
-import ore.forge.VisualComponent;
 import ore.forge.Input3D.OpenedMenuState;
 import ore.forge.Items.Experimental.ItemDefinition;
+import ore.forge.VisualComponent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UI extends Stage {
     private ItemInventoryMenu inventoryMenu;
@@ -32,11 +31,9 @@ public class UI extends Stage {
         //Create our Icons for Inventory
         List<Icon<ItemDefinition>> allIcons = new ArrayList<>();
         for (ItemDefinition item : allItems) {
-            System.out.println("Loop Ran!");
             AtlasRegion region = iconAtlas.findRegion(item.id());
             allIcons.add(new Icon<>(region, item));
         }
-        System.out.println(allIcons.size());
         inventoryMenu = new ItemInventoryMenu(allIcons);
         inventoryMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
         inventoryMenu.setVisible(false);

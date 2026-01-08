@@ -7,8 +7,6 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-
-import ore.forge.Player.ItemInventory;
 import ore.forge.Player.Player;
 import ore.forge.QuestComponents.QuestManager;
 import ore.forge.Screens.Gameplay3D;
@@ -52,7 +50,7 @@ public class OreForge extends Game {
 //		gameplayScreen = new Gameplay(this, itemManager, GameWorld.instance());
 //		pauseMenu = new PauseMenu(this, itemManager);
 
-		ItemInventory itemInventory = new ItemInventory(null);
+//		ItemInventory itemInventory = new ItemInventory(null);
         Gameplay3D gameplay3D = new Gameplay3D();
 //		setScreen(mainMenuScreen); commented out so we can experiment with rework 2D
 //      setScreen(gameplayScreen); commented out so we can experiment with rework 3D

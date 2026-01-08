@@ -4,7 +4,7 @@ package ore.forge.Strategies;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.Experimental.ItemDefinition;
-import ore.forge.Items.Experimental.UpgraderSpawner;
+import ore.forge.Items.Experimental.UpgraderProperties;
 import ore.forge.*;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
@@ -42,10 +42,9 @@ public class UpgradeOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void attach(ItemDefinition spawner, btCollisionObject collisionObject) {
-        assert spawner instanceof UpgraderSpawner;
-        var upgraderSpawner = (UpgraderSpawner) spawner;
-        this.upgradeTag = new UpgradeTag(upgraderSpawner.getUpgradeTag());
+    public void attach(ItemDefinition definition, btCollisionObject collisionObject) {
+        UpgraderProperties properties = definition.itemProperties(UpgraderProperties.class);
+        this.upgradeTag = new UpgradeTag(properties.upgradeTag());
     }
 
     @Override

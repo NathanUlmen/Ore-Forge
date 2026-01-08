@@ -37,7 +37,7 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void attach(ItemDefinition spawner, btCollisionObject parentObject) {
+    public void attach(ItemDefinition definition, btCollisionObject parentObject) {
         this.sensor = parentObject;
 
     }
@@ -60,8 +60,7 @@ public class Move implements BodyLogic {
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
         assert subject.specificData instanceof Ore;
-        Ore ore = (Ore) subject.specificData;
-        btRigidBody rigidBody = ore.rigidBody;
+        btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.entityPhysicsBodies.getFirst();
 
         // Get conveyor direction in world space
         ItemUserData itemUserData = (ItemUserData) source.specificData;

@@ -27,7 +27,7 @@ public interface BodyLogic {
      * Attaches the behavior to the specified objects
      *
      */
-    void attach(ItemDefinition spawner, btCollisionObject collisionObject);
+    void attach(ItemDefinition definition, btCollisionObject collisionObject);
 
     void onContactStart(PhysicsBodyData subject, PhysicsBodyData source);
 

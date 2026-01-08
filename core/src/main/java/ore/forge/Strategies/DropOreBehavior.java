@@ -1,6 +1,5 @@
 package ore.forge.Strategies;
 
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
@@ -10,8 +9,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.EventSystem.Events.ItemRemovedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
-import ore.forge.Items.Experimental.DropperSpawner;
+import ore.forge.Items.Experimental.DropperProperties;
 import ore.forge.Items.Experimental.EntityInstance;
+import ore.forge.Items.Experimental.EntityInstanceCreator;
 import ore.forge.Items.Experimental.ItemDefinition;
 import ore.forge.Screens.Gameplay3D;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 @SuppressWarnings("unused")
 public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
     private final DropStrategy dropperStrategy;
-    private DropperSpawner dropperSpawner;
+    private DropperProperties dropperProperties;
     private btCollisionObject parent;
 
     public DropOreBehavior(JsonValue value) {
@@ -50,8 +50,8 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
-    public void attach(ItemDefinition spawner, btCollisionObject parent) {
-        this.dropperSpawner = (DropperSpawner) spawner;
+    public void attach(ItemDefinition definition, btCollisionObject parent) {
+        dropperProperties = definition.itemProperties(DropperProperties.class);
         this.parent = parent;
     }
 
@@ -60,18 +60,19 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
         if (dropperStrategy.drop(delta)) {
+            OreDefinition oreDefinition = dropperProperties.oreDefinition();
+            EntityInstance ore = EntityInstanceCreator.createInstance(oreDefinition);
 
             //Add ore to the world
-            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperSpawner.oreModel));
-            Ore oreInfo = new Ore();
+//            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperProperties.oreModel));
+//            Ore oreInfo = new Ore();
 
 
             Vector3 inertia = new Vector3();
-            dropperSpawner.oreShape.calculateLocalInertia(10, inertia);
-            var oreBody = new btRigidBody(10f, new btDefaultMotionState(), dropperSpawner.oreShape, inertia);
+            oreDefinition.oreShape().calculateLocalInertia(10, inertia);
+            var oreBody = new btRigidBody(10f, new btDefaultMotionState(), oreDefinition.oreShape(), inertia);
 //            oreBody.setSleepingThresholds(1, 0);
 
-            oreInfo.rigidBody = oreBody;
             oreBody.applyCentralImpulse(new Vector3(0, -150f, 0)); //Make it look like its "spitting" the ore out
 
             var collisionObjects = new ArrayList<btCollisionObject>();
@@ -80,13 +81,10 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
             oreBody.setCcdMotionThreshold(0);
             oreBody.setCcdMotionThreshold(0);
 
-            var oreInstance = new EntityInstance(collisionObjects, visualComponent);
-            oreBody.userData = new PhysicsBodyData(oreInstance, oreInfo, null, oreBody.getWorldTransform());
 
-            oreInstance.place(parent.getWorldTransform().cpy());
-            Gameplay3D.modelInstances.add(oreInstance.visualComponent.modelInstance);
-            Gameplay3D.entityInstances.add(oreInstance);
-            for (var object : oreInstance.entityPhysicsBodies) {
+            Gameplay3D.modelInstances.add(ore.visualComponent.modelInstance);
+            Gameplay3D.entityInstances.add(ore);
+            for (var object : ore.entityPhysicsBodies) {
                 PhysicsWorld.instance().dynamicsWorld().addRigidBody((btRigidBody) object,
                     CollisionRules.combineBits(CollisionRules.ORE),
                     CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));

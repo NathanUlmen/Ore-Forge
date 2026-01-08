@@ -1,10 +1,6 @@
 package ore.forge;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Filter;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
 import ore.forge.Items.Blocks.Worker;
 import ore.forge.Strategies.OreEffects.BundledOreEffect;
@@ -24,9 +20,6 @@ public class Ore {
     protected final static ItemMap itemMap = ItemMap.getSingleton();
     protected final static OreRealm oreRealm = OreRealm.getSingleton();
 
-    public btRigidBody rigidBody;
-
-    private Body body;
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;
     private final ArrayList<OreEffect> effects;
@@ -363,10 +356,6 @@ public class Ore {
 
     public void removeUpgradeCooldown(UpgradeTag tag) {
         cooldownLookup.remove(tag);
-    }
-
-    public Body getBody() {
-        return body;
     }
 
     public boolean isBurning() {

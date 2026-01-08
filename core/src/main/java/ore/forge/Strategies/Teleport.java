@@ -24,7 +24,7 @@ public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEven
 
 
     @Override
-    public void attach(ItemDefinition spawner, btCollisionObject collisionObject) {
+    public void attach(ItemDefinition definition, btCollisionObject collisionObject) {
 
     }
 
