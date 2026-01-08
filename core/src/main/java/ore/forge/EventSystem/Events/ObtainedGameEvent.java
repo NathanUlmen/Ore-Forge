@@ -1,9 +1,9 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Items.Item;
+import ore.forge.Items.ItemDefinition;
 
-public record ObtainedGameEvent(Item item, int count) implements GameEvent {
+public record ObtainedGameEvent(ItemDefinition item, int count) implements GameEvent {
 
     @Override
     public Class getEventType() {
@@ -17,7 +17,7 @@ public record ObtainedGameEvent(Item item, int count) implements GameEvent {
 
     @Override
     public String getBriefInfo() {
-        return "Obtained " + count + " " + item.getName();
+        return "Obtained " + count + " " + item.name();
     }
 
     @Override

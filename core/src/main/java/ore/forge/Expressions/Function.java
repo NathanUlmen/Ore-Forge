@@ -1,6 +1,7 @@
 package ore.forge.Expressions;
 
 import com.badlogic.gdx.utils.JsonValue;
+import com.mongodb.internal.VisibleForTesting;
 import ore.forge.Expressions.Operands.MethodBasedOperand;
 import ore.forge.Expressions.Operands.NumericOreProperties;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
@@ -22,30 +23,30 @@ import java.util.regex.Pattern;
  * This class will parse an equation from a String and return a Function.
  */
 public class Function implements NumericOperand {
-    /**
-     * ([a-zA-Z_]+) Matches for variables. EX: ORE_VALUE, TEMPERATURE, ACTIVE_ORE
-     * ([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?) Matches for numbers. (includes doubles, scientific notation) EX: -2.7E9, 3.2E-2, -.1, 12.7 etc.
-     * ([+\\-/*^%=]) Matches for Operators (+, -, *, /, =, %, ^)
-     */
     private final static Pattern pattern = Pattern.compile(
         "(([A-Z_]+\\.)([A-Z_]+)\\(([^)]+)\\))|(log\\(|sqrt\\(|ln\\(|abs\\()((?:[^)(]|\\((?:[^)(]|\\((?:[^)(]|\\([^)(]*\\))*\\))*\\))*)|([a-zA-Z_]+)|(-?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)|\\(|\\)|([+\\-*/^=%])");
     private final NumericOperand leftNumericOperand, rightNumericOperand;
     private final NumericOperator numericOperator;
 
-    public Function(NumericOperand leftNumericOperand, NumericOperand rightNumericOperand, NumericOperator numericOperator) {
+    private Function(NumericOperand leftNumericOperand, NumericOperand rightNumericOperand, NumericOperator numericOperator) {
         this.leftNumericOperand = leftNumericOperand;
         this.rightNumericOperand = rightNumericOperand;
         this.numericOperator = numericOperator;
     }
 
     //Takes a Json Value, extracts the function string from it, then creates a function object based on the extracted string
-    public static Function compile(JsonValue jsonValue) {
+    /**
+     * */
+    public static Function parseFunction(JsonValue jsonValue) {
         String equation = jsonValue.getString("upgradeFunction");
         return compile(equation);
     }
 
-    //Takes a Json Value, extracts the string from it, then creates a Function object based on the extracted string
-    public static Function compile(String equation) {
+    /** Takes a string that represents a mathematical function, tokenizes it, and creates a mathematical function from it.
+     * @param equation - string representation of a mathematical function.
+     * @return parsed function of the inputted string.
+     */
+    public static Function parseFunction(String equation) {
         equation = equation.replaceAll("(\\d+)([-+])(\\d+)", "$1 $2 $3"); //get rid of spaces in Function string.
         Matcher matcher = pattern.matcher(equation);
         return parseFromTokens(matcher);

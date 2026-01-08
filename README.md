@@ -77,3 +77,39 @@ Ore Forge and to manage the items that you have created so far.
 
 * [LibGDX](https://github.com/libgdx/libgdx)
 
+
+
+main:
+move left till null
+move right till 1
+    write 0
+    move right till x
+        goto copy
+if read x:
+    goto finalize
+
+copy:
+move right till 1
+    goto write
+if read =
+    goto main
+
+
+write:
+replace 1 with 0
+move right till null
+write 1
+move left till x
+goto middle
+
+middle:
+move left till x
+goto copy
+
+finalize:
+move left till null
+move right till null:
+    if read 0:
+        write 1
+write #
+halt

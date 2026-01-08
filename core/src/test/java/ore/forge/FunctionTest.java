@@ -180,8 +180,8 @@ class FunctionTest {
     void testMedianOreValue() {
 //        int[] array = new int[]{12, 3, 5, 7, 4, 19, 26};
         int[] array = new int[]{2, 3, 1, 4, 5, 0};
-        for (int j : array) {
-            oreRealm.giveOre().setOreValue(j);
+        for (int num : array) {
+            oreRealm.giveOre().setOreValue(num);
         }
         var testCase = Function.compile("MEDIAN_ORE_VALUE");
         assertEquals(2.5, testCase.calculate(null));

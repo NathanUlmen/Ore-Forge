@@ -56,10 +56,14 @@ public class BasicUpgrade implements UpgradeStrategy {
     private Consumer<Ore> configureUpgradeFunction() {
         return switch (valueToModify) {
             case ORE_VALUE -> (Ore ore) -> ore.setOreValue(numericOperator.apply(ore.getOreValue(), modifier));
-            case TEMPERATURE -> (Ore ore) -> ore.setTemperature((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
-            case MULTIORE -> (Ore ore) -> ore.setMultiOre((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
-            case SPEED_SCALAR -> (Ore ore) -> ore.setSpeedScalar((float) numericOperator.apply(ore.getSpeedScalar(), modifier));
-            case UPGRADE_COUNT, SPEED, RESET_COUNT -> throw new IllegalArgumentException(valueToModify + " is not a valid value to Modify.");
+            case TEMPERATURE ->
+                (Ore ore) -> ore.setTemp((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
+            case MULTIORE ->
+                (Ore ore) -> ore.setMultiOre((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
+            case SPEED_SCALAR ->
+                (Ore ore) -> ore.setSpeedScalar((float) numericOperator.apply(ore.getSpeedScalar(), modifier));
+            case UPGRADE_COUNT, SPEED, RESET_COUNT ->
+                throw new IllegalArgumentException(valueToModify + " is not a valid value to Modify.");
         };
     }
 

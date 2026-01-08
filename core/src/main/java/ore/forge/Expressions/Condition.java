@@ -18,12 +18,14 @@ import java.util.regex.Pattern;
 /**
  * @author Nathan Ulmen
  */
-public class Condition implements BooleanExpression<Ore> {
-    private final BooleanExpression<Ore> expression;
+public class Condition implements BooleanExpression {
     private final static Pattern pattern = Pattern.compile("(([A-Z_]+\\.)([A-Z_]+)\\(([^)]+)\\))|\\{([^}]*)}|\\(|\\)|<->|[<>]=?|==|!=|&&|\\|\\||!|[A-Z_]+|\"(.*)\"|([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)");
+    private final ArrayList<BooleanExpression> expressions;
+    private final Stack<LogicalOperator> logicalOperators;
 
-    private Condition(BooleanExpression<Ore> expression) {
-        this.expression = expression;
+    private Condition(ArrayList<BooleanExpression> expressions, Stack<LogicalOperator> logicalOperators) {
+        this.expressions = expressions;
+        this.logicalOperators = logicalOperators;
     }
 
     private enum Parenthesis {
@@ -96,8 +98,9 @@ public class Condition implements BooleanExpression<Ore> {
             } else if (ValueOfInfluence.isValue(token)) {
                 operands.push(ValueOfInfluence.valueOf(token));
             } else {
-                String stringContents = matcher.group(6);//Get the contents inside the ""
-                operands.push(new StringConstant(stringContents));
+                var stringContents = matcher.group(6); //Contents inside the string
+                StringConstant constant = new StringConstant(stringContents);
+                operands.push(constant);
             }
         }
         while (!operators.isEmpty()) {

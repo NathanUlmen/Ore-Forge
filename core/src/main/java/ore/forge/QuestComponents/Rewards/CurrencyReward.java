@@ -2,10 +2,9 @@ package ore.forge.QuestComponents.Rewards;
 
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Currency;
-import ore.forge.Player.Player;
 
 public class CurrencyReward implements Reward {
-    private final Player player = Player.getSingleton();
+//    private final Player player = Player.getSingleton();
     private final Currency type;
     private final double rewardAmount;
 
@@ -23,10 +22,11 @@ public class CurrencyReward implements Reward {
     @Override
     public void grantReward() {
         switch (type) {
-            case CASH -> player.addToWallet(rewardAmount);
-            case SPECIAL_POINTS -> player.addSpecialPoints((int) rewardAmount);
-            case PRESTIGE_POINTS-> player.setPrestigeCurrency((int) (player.getPrestigeCurrency() + rewardAmount));
+//            case CASH -> player.addToWallet(rewardAmount);
+//            case SPECIAL_POINTS -> player.addSpecialPoints((int) rewardAmount);
+//            case PRESTIGE_POINTS-> player.setPrestigeCurrency((int) (player.getPrestigeCurrency() + rewardAmount));
         }
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

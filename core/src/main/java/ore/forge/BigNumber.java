@@ -122,6 +122,10 @@ public class BigNumber implements Comparable<BigNumber> {
         return normalize(this.mantissa / other, this.exponent);
     }
 
+    public static BigNumber MAX_VALUE() {
+        return new BigNumber(9.99999999999999999D, Long.MAX_VALUE);
+    }
+
     /* Modulo is: a - (b * int(a/b))
      * but we run into issues when the number is outside the range of the Significant digits.
      * Might look into using a method inspired by this video??? https://www.youtube.com/watch?v=skUuFzPUhIc
@@ -140,6 +144,19 @@ public class BigNumber implements Comparable<BigNumber> {
         }
 
         return null;
+    }
+
+    private long digitDifference(BigNumber other) {
+        BigNumber bigger, smaller;
+        if (this.exponent >= other.mantissa) {
+            bigger = this;
+            smaller = other;
+        } else {
+            bigger = other;
+            smaller = this;
+        }
+
+        return bigger.exponent - smaller.exponent;
     }
 
     public BigNumber floor() {
@@ -164,10 +181,6 @@ public class BigNumber implements Comparable<BigNumber> {
 
     public BigNumber abs() {
         return BigNumber.abs(this);
-    }
-
-    public BigNumber pow(BigNumber other) {
-        return null;
     }
 
     public BigNumber round() {
@@ -209,7 +222,6 @@ public class BigNumber implements Comparable<BigNumber> {
         return normalize(result.mantissa * 2.302585092994046, result.exponent);
     }
 
-
     public BigNumber log10() {
         return normalize(exponent + Math.log10(mantissa), 0);
     }
@@ -228,7 +240,7 @@ public class BigNumber implements Comparable<BigNumber> {
     }
 
     public String toString() {
-        return mantissa + "e" + String.format("%s", Long.valueOf(exponent));
+        return mantissa + " E " + String.format("%s", Long.valueOf(exponent));
     }
 
     public boolean canBeDouble() {
@@ -259,7 +271,6 @@ public class BigNumber implements Comparable<BigNumber> {
             return 1;
         }
         return -1;
-
     }
 
     private class MutableBigNumber {

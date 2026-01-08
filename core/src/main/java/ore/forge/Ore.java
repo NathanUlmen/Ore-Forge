@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import ore.forge.Experimental.PhysicsObject;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
-import ore.forge.Items.Blocks.Worker;
 import ore.forge.Strategies.OreEffects.BundledOreEffect;
 import ore.forge.Strategies.OreEffects.Burning;
 import ore.forge.Strategies.OreEffects.ObserverOreEffect;
@@ -19,8 +18,6 @@ import java.util.Stack;
  */
 public class Ore extends PhysicsObject {
     //Ore can be classified by name, id, type. Ores can have multiple types.
-    protected final static ItemMap itemMap = ItemMap.getSingleton();
-    protected final static OreRealm oreRealm = OreRealm.getSingleton();
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;
     private final ArrayList<OreEffect> effects;
@@ -31,7 +28,7 @@ public class Ore extends PhysicsObject {
     private int upgradeCount, multiOre;
     private float oreTemperature;
     private float moveSpeed, speedScalar;
-    private Direction direction;
+    private float direction;
     private boolean isDoomed;
     private float deltaTime;
     private boolean isActive;
@@ -44,6 +41,8 @@ public class Ore extends PhysicsObject {
         0.25f, 0.8125f,     // Top Left
         0.0625f, 0.5645f, //Left Middle
     };
+
+    private HashMap<UpgradeTag, UpgradeCooldown> cooldownLookup;
 
     public Ore() {
         super(new Polygon(VERTICES));
@@ -60,28 +59,12 @@ public class Ore extends PhysicsObject {
         tagMap = new HashMap<>();
         position = new Vector2();
         destination = new Vector2();
-        direction = Direction.NORTH;
+        direction = Direction.NORTH.getAngle();
         effects = new ArrayList<>();
         removalStack = new Stack<>();
         observerEffects = new ArrayList<>();
+        cooldownLookup = new HashMap<>();
         this.resetCount = 0;
-    }
-
-    public void act(float deltaTime) {
-        this.deltaTime = deltaTime;
-        if (!effects.isEmpty()) {
-            updateEffects(deltaTime);
-        }
-        if (position.x != destination.x || position.y != destination.y) {
-            move(deltaTime);
-        } else {
-            activateBlock();
-        }
-        //End Step effects like invincibility;
-        if (this.isDoomed()) {
-            //notify listeners that this ore is doomed so that it can be saved.
-            oreRealm.takeOre(this);
-        }
     }
 
     private void updateEffects(float deltaTime) {
@@ -94,34 +77,6 @@ public class Ore extends PhysicsObject {
     private void removeOldEffects() {
         while (!removalStack.empty()) {
             effects.remove(removalStack.pop());
-        }
-    }
-
-    private void move(float deltaTime) {
-        position.x = updatePosition(position.x, destination.x, moveSpeed * deltaTime);
-        position.y = updatePosition(position.y, destination.y, moveSpeed * deltaTime);
-
-        if (position.idt(destination)) {
-            activateBlock();
-        }
-        //Ore has arrived at destination.
-    }
-
-    private float updatePosition(float currentPosition, float targetDestination, float moveDistance) {
-        float delta = targetDestination - currentPosition;
-
-        if (Math.abs(delta) <= moveDistance) {
-            return targetDestination;
-        }
-
-        return currentPosition + Math.signum(delta) * moveDistance;
-    }
-
-    public void activateBlock() {
-        if ((itemMap.getBlock(position) instanceof Worker worker)) {
-            worker.handle(this);
-        } else {
-            setIsDoomed(true);
         }
     }
 
@@ -165,14 +120,14 @@ public class Ore extends PhysicsObject {
         return this;
     }
 
-    public Ore setDestination(Vector2 target, float speed, Direction direction) {
+    public Ore setDestination(Vector2 target, float speed, float direction) {
         this.destination.set(target);
         this.direction = direction;
         setMoveSpeed(speed);
         return this;
     }
 
-    public void setDestination(float x, float y, float speed, Direction direction) {
+    public void setDestination(float x, float y, float speed, float direction) {
         this.destination.set(x, y);
         this.direction = direction;
         setMoveSpeed(speed);
@@ -202,6 +157,12 @@ public class Ore extends PhysicsObject {
                 tag.reset();
             }
         }
+
+        for (UpgradeCooldown cooldown : cooldownLookup.values()) {
+            TimerUpdater.unregister(cooldown);
+        }
+        cooldownLookup.clear();
+
         resetCount++;
     }
 
@@ -268,7 +229,7 @@ public class Ore extends PhysicsObject {
         return destination;
     }
 
-    public Direction getDirection() {
+    public float getDirection() {
         return direction;
     }
 
@@ -346,6 +307,19 @@ public class Ore extends PhysicsObject {
 
     public void setResetCount(int resetCount) {
         this.resetCount = resetCount;
+    }
+
+    public boolean isUpgradable(UpgradeTag tag) {
+        var oreTag = getUpgradeTag(tag);
+        return !oreTag.atUpgradeLimit() && !cooldownLookup.containsKey(tag);
+    }
+
+    public void addUpgradeCooldown(UpgradeTag tag, UpgradeCooldown cooldown) {
+        cooldownLookup.put(tag, cooldown);
+    }
+
+    public void removeUpgradeCooldown(UpgradeTag tag) {
+        cooldownLookup.remove(tag);
     }
 
     public boolean isBurning() {

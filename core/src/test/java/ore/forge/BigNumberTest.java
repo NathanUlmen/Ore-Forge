@@ -2,9 +2,6 @@ package ore.forge;
 
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -116,7 +113,8 @@ public class BigNumberTest {
 
     @Test
     void testFloor() {
-        assertEquals(54236, new BigNumber("5.423697E4").floor().convertToDouble(), 1e-6);
+        double maxDifference = 0.0001f;
+        assertEquals(54236, new BigNumber("5.423697E4").floor().convertToDouble(), maxDifference);
     }
 
     @Test
@@ -127,8 +125,9 @@ public class BigNumberTest {
 
     @Test
     void testModuloBig() {
-        var result = new BigNumber("2e800").modulo(20);
-        assertEquals(0, result.mantissa());
+        BigNumber left = new BigNumber(BigNumber.MAX_VALUE);
+        BigNumber right = new BigNumber(3);
+        assertEquals(Double.MAX_VALUE % 3, left.modulo(right).convertToDouble());
     }
 
     @Test

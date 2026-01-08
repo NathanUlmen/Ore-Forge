@@ -2,15 +2,15 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Earth Upgrader",
-	"type": "Upgrader",
-	"totalOwned": 59,
+	"role": "Upgrader",
+	"totalOwned": 58,
 	"id": "190-dAwHRtDt",
 	"isUnlocked": true
 },
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Epci Test Conveyor",
-	"type": "Conveyor",
+	"role": "Conveyor",
 	"totalOwned": 0,
 	"id": "636-AFxKOYDn",
 	"isUnlocked": false
@@ -18,15 +18,15 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Fire Upgrader",
-	"type": "Upgrader",
-	"totalOwned": 159,
+	"role": "Upgrader",
+	"totalOwned": 161,
 	"id": "831-hUrLWgPv",
 	"isUnlocked": true
 },
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Glacier Upgrader",
-	"type": "Upgrader",
+	"role": "Upgrader",
 	"totalOwned": 4,
 	"id": "739-xKzVfCOe",
 	"isUnlocked": false
@@ -34,7 +34,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Incremental Upgrader",
-	"type": "Upgrader",
+	"role": "Upgrader",
 	"totalOwned": 0,
 	"id": "027-SFbZoOEK",
 	"isUnlocked": false
@@ -42,7 +42,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Prestige Test Furnace",
-	"type": "Furnace",
+	"role": "Furnace",
 	"totalOwned": 0,
 	"id": "946-CRkVMwXO",
 	"isUnlocked": false
@@ -50,7 +50,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Random Upgrader",
-	"type": "Upgrader",
+	"role": "Upgrader",
 	"totalOwned": 2,
 	"id": "934-BCuuCnKI",
 	"isUnlocked": false
@@ -58,7 +58,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Rare Test Furnace Foog boog doog zoog",
-	"type": "Furnace",
+	"role": "Furnace",
 	"totalOwned": 3,
 	"id": "365-jaOjRymR",
 	"isUnlocked": false
@@ -66,7 +66,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Renewal Forge",
-	"type": "Upgrader",
+	"role": "Upgrader",
 	"totalOwned": 0,
 	"id": "186-vRXVneQs",
 	"isUnlocked": false
@@ -74,7 +74,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Special Test Dropper",
-	"type": "Dropper",
+	"role": "Dropper",
 	"totalOwned": 9,
 	"id": "925-TflakZoc",
 	"isUnlocked": true
@@ -82,7 +82,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Super Rare Test Conveyor",
-	"type": "Conveyor",
+	"role": "Conveyor",
 	"totalOwned": 0,
 	"id": "636-AsxKOYDn",
 	"isUnlocked": false
@@ -90,7 +90,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Test Conveyor",
-	"type": "Conveyor",
+	"role": "Conveyor",
 	"totalOwned": 0,
 	"id": "273-wuzABHNv",
 	"isUnlocked": true
@@ -98,7 +98,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Test Dropper",
-	"type": "Dropper",
+	"role": "Dropper",
 	"totalOwned": 0,
 	"id": "945-TPrTiZoc",
 	"isUnlocked": false
@@ -106,7 +106,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Test Furnace",
-	"type": "Furnace",
+	"role": "Furnace",
 	"totalOwned": 0,
 	"id": "061-dewexgnq",
 	"isUnlocked": false
@@ -114,7 +114,7 @@
 {
 	"class": "ore.forge.Player.Inventory$InventoryData",
 	"itemName": "Wind Upgrader",
-	"type": "Upgrader",
+	"role": "Upgrader",
 	"totalOwned": 47,
 	"id": "586-ZDcobXvU",
 	"isUnlocked": false

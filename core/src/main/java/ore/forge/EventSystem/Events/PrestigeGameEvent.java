@@ -1,7 +1,6 @@
 package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
-import ore.forge.Player.Player;
 
 public record PrestigeGameEvent(Boolean result) implements GameEvent<Boolean> {
 
@@ -17,10 +16,11 @@ public record PrestigeGameEvent(Boolean result) implements GameEvent<Boolean> {
 
     @Override
     public String getBriefInfo() {
-        if (result) {
-            return "Successfully prestiged to level " + (Player.getSingleton().getPrestigeLevel() + 1);
-        }
-        return "Failed to prestige.";
+        throw new UnsupportedOperationException("Not supported yet.");
+//        if (result) {
+//            return "Successfully prestiged to level " + (Player.getSingleton().getPrestigeLevel() + 1);
+//        }
+//        return "Failed to prestige.";
     }
 
     @Override

@@ -1,0 +1,234 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "3DGameObject",
+  "type": "object",
+  "required": ["name", "id", "tier", "role", "acquisitionInfo", "behaviors", "parts"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The display name of the object."
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the object."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional textual description."
+    },
+    "role": {
+      "type": "array",
+      "description": "The roles this item fulfills.",
+      "items": {
+        "type": "string",
+        "enum": ["UPGRADER", "DROPPER", "FURNACE", "CONVEYOR", "TELEPORTER"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "properties": {
+      "type": "array",
+      "description": "Properties required for attached behaviors to function properly.",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "name", "id", "maxUpgrades", "isResetter"],
+            "properties": {
+              "type": { "const": "UpgradeTag" },
+              "name": { "type": "string" },
+              "id": { "type": "string" },
+              "maxUpgrades": { "type": "integer" },
+              "isResetter": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "id", "oreName", "oreValue", "oreTemperature", "multiOre"],
+            "properties": {
+              "type": { "const": "OreDefinition" },
+              "oreName": { "type": "string" },
+              "id" : {"type" :  "string"},
+              "oreValue": { "type": "number" },
+              "oreTemperature": { "type": "number" },
+              "multiOre": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["COMMON", "UNCOMMON", "RARE", "SUPER_RARE", "EPIC", "SPECIAL", "PRESTIGE", "EXOTIC", "PINNACLE"],
+      "description": "Tier of the object."
+    },
+    "acquisitionInfo" : {
+      "type": "object",
+      "required": [
+        "unlockMethod",
+        "unlockRequirement",
+        "isUnlocked",
+        "canBeSold",
+        "isPrestigeProof",
+        "currency",
+        "itemValue",
+        "sellPrice",
+        "rarity"
+      ],
+      "properties": {
+        "unlockMethod": {
+          "type": "string",
+          "enum": ["SPECIAL_POINTS", "PRESTIGE_LEVEL", "QUEST", "NONE"],
+          "description": "Method required to unlock the item."
+        },
+        "unlockRequirement": {
+          "type": "number",
+          "description": "The value required to unlock the item, if applicable."
+        },
+        "isUnlocked": {
+          "type": "boolean",
+          "description": "Whether the item is already unlocked by default."
+        },
+        "canBeSold": {
+          "type": "boolean",
+          "description": "Whether the item can be sold."
+        },
+        "isPrestigeProof": {
+          "type": "boolean",
+          "description": "Whether the item is immune to prestige reset or similar mechanic."
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["NONE", "SPECIAL_POINTS", "PRESTIGE_POINTS", "CASH"],
+          "description": "Currency used for acquiring or valuing the item."
+        },
+        "itemValue": {
+          "type": "number",
+          "description": "The in-game value of the item."
+        },
+        "sellPrice": {
+          "type": "number",
+          "description": "The price received when selling the item."
+        },
+        "rarity": {
+          "type": "number",
+          "description": "A float representing the rarity weight of the item between 0 and 1. -1 if not applicable"
+        }
+      }
+    },
+
+
+    "behaviors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "behaviorName": { "type": "string" },
+          "key": { "type": "string" },
+          "force": { "type": "number" },
+          "upgradeCooldown": { "type": "number" },
+          "upgrade": {
+            "type": "object",
+            "properties": {
+              "upgradeName": { "type": "string" },
+              "valueToModify": { "type": "string" },
+              "operator": { "type": "string" },
+              "modifier": { "type": "number" }
+            },
+            "required": ["upgradeName", "valueToModify", "operator", "modifier"]
+          }
+        },
+        "required": ["behaviorName", "key"]
+      }
+    },
+    "parts": {
+      "type": "array",
+      "description": "Each part of the object with physics and rendering info.",
+      "items": {
+        "type": "object",
+        "required": ["type", "bulletCollisionType", "relativePosition", "relativeRotation"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["box", "sphere", "capsule", "mesh"],
+            "description": "Type of collision shape."
+          },
+          "bulletCollisionType": {
+            "type": "string",
+            "enum" : ["btRigidBody", "btGhostObject", "both"],
+            "description": "The type of body to create and add to the bullet physics simulation."
+          },
+          "collisionMesh": {
+            "type": "string",
+            "description": "Optional path to a custom collision mesh for Bullet. Can be same as renderMesh or a simplified version."
+          },
+          "render": {
+            "type": "object",
+            "properties": {
+              "modelPath": { "type": "string", "description": "Path to the render model (g3db, glTF, etc.)" },
+              "material": {
+                "type": "object",
+                "properties": {
+                  "diffuseColor": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "specularColor": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "emissiveColor": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "texture": { "type": "string" }
+                }
+              }
+            },
+            "required": ["modelPath"]
+          },
+          "behaviorKey": {
+            "type": "string",
+            "description": "Links this part to a behavior from the 'behaviors' array."
+          },
+          "dimensions": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Width, height, depth (for box/capsule) or bounding dimensions."
+          },
+          "relativePosition": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Position relative to the parent object."
+          },
+          "relativeRotation": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Rotation relative to the parent object (degrees) around X, Y, Z axes."
+          },
+          "relativeDirection" : {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 3,
+            "maxItems": 3,
+            "description": "Direction Relative to parent object that behaviors will use."
+          }
+        }
+      }
+    }
+  }
+}

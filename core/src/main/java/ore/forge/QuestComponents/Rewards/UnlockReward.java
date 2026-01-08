@@ -1,10 +1,9 @@
 package ore.forge.QuestComponents.Rewards;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Player.Player;
 
 public class UnlockReward implements Reward{
-    private final static Player player = Player.getSingleton();
+//    private final static Player player = Player.getSingleton();
     private final String unlockedItemID;
 
     public UnlockReward(String unlockedItemID) {
@@ -17,7 +16,8 @@ public class UnlockReward implements Reward{
 
     @Override
     public void grantReward() {
-        player.getInventory().getNode(unlockedItemID).getHeldItem().setUnlocked(true);
+        throw new UnsupportedOperationException("Not supported yet.");
+//        player.getInventory().getNode(unlockedItemID).getHeldItem().setUnlocked(true);
     }
 
 }

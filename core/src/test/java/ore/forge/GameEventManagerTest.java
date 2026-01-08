@@ -1,12 +1,13 @@
 package ore.forge;
 
-import ore.forge.EventSystem.GameEventListener;
 import ore.forge.EventSystem.EventManager;
-import ore.forge.EventSystem.Events.NodeGameEvent;
+import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
 import ore.forge.EventSystem.Events.OreDroppedGameEvent;
+import ore.forge.EventSystem.GameEventListener;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GameEventManagerTest {
     private EventManager manager;
@@ -106,7 +107,7 @@ public class GameEventManagerTest {
             var fodder = new GameEventListener<OreDroppedGameEvent>() {
                 @Override
                 public void handle(OreDroppedGameEvent event) {
-                    manager.notifyListeners(new NodeGameEvent(null));
+                    manager.notifyListeners(new InventoryNodeGameEvent(null));
                 }
 
                 @Override
