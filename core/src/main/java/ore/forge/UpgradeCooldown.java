@@ -1,8 +1,8 @@
 package ore.forge;
 
-import ore.forge.Strategies.TimeUpdatable;
+import ore.forge.Strategies.Updatable;
 
-public class UpgradeCooldown implements TimeUpdatable {
+public class UpgradeCooldown implements Updatable {
     private final CoolDown cooldown;
     private final UpgradeTag tag;
     private final Ore ore;
@@ -15,7 +15,7 @@ public class UpgradeCooldown implements TimeUpdatable {
     }
 
     @Override
-    public void update(float delta) {
+    public void update(float delta, GameState state) {
         if (cooldown.update(delta)) {
             ore.removeUpgradeCooldown(tag);
             TimerUpdater.unregister(this);

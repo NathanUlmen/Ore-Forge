@@ -18,7 +18,7 @@ import ore.forge.Strategies.DropperStrategies.DropStrategy;
 import java.util.ArrayList;
 
 @SuppressWarnings("unused")
-public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListener<ItemRemovedGameEvent> {
+public class DropOreBehavior implements BodyLogic, Updatable, GameEventListener<ItemRemovedGameEvent> {
     private final DropStrategy dropperStrategy;
     private DropperProperties dropperProperties;
     private btCollisionObject parent;
@@ -54,7 +54,7 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
-    public void update(float delta) {
+    public void update(float delta, GameState state) {
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
         if (dropperStrategy.drop(delta)) {
@@ -91,17 +91,17 @@ public class DropOreBehavior implements BodyLogic, TimeUpdatable, GameEventListe
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
 
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
 
     }
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
 
     }
 

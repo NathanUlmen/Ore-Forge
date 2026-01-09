@@ -1,6 +1,6 @@
 package ore.forge;
 
-import ore.forge.Strategies.TimeUpdatable;
+import ore.forge.Strategies.Updatable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -8,13 +8,13 @@ import java.util.Deque;
 import java.util.List;
 
 public class TimerUpdater {
-    private static final List<TimeUpdatable> updatables = new ArrayList<>();
-    private static final Deque<TimeUpdatable> removalQueue = new ArrayDeque<>();
-    private static final Deque<TimeUpdatable> insertionQueue = new ArrayDeque<>();
+    private static final List<Updatable> updatables = new ArrayList<>();
+    private static final Deque<Updatable> removalQueue = new ArrayDeque<>();
+    private static final Deque<Updatable> insertionQueue = new ArrayDeque<>();
 
     public static void update(float deltaTime) {
-        for (TimeUpdatable updatable : updatables) {
-            updatable.update(deltaTime);
+        for (Updatable updatable : updatables) {
+            updatable.update(deltaTime, );
         }
         //remove expired Updatables from list and add new ones
         while (!removalQueue.isEmpty()) {
@@ -25,11 +25,11 @@ public class TimerUpdater {
         }
     }
 
-    public static void register(TimeUpdatable updatable) {
+    public static void register(Updatable updatable) {
         insertionQueue.add(updatable);
     }
 
-    public static void unregister(TimeUpdatable updatable) {
+    public static void unregister(Updatable updatable) {
         removalQueue.add(updatable);
     }
 

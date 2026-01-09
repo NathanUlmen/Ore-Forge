@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.GameState;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Items.ItemUserData;
 import ore.forge.Ore;
@@ -48,7 +49,7 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
 
     }
 
@@ -58,7 +59,7 @@ public class Move implements BodyLogic {
     * This allows for conveyors to be at an incline
     *   */
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
         assert subject.specificData instanceof Ore;
         btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.entityPhysicsBodies.getFirst();
 
@@ -87,7 +88,7 @@ public class Move implements BodyLogic {
 
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
 
     }
 

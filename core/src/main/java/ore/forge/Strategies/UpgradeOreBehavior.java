@@ -53,7 +53,7 @@ public class UpgradeOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
         assert subject.specificData instanceof Ore;
         assert upgradeTag != null && upgradeStrategy != null;
         Ore ore = (Ore) subject.specificData;
@@ -64,12 +64,12 @@ public class UpgradeOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
 
     }
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
         if (subject.specificData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
             ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
             ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();

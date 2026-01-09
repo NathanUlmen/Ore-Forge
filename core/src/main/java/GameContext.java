@@ -4,7 +4,7 @@ import ore.forge.EntityInstance;
 import ore.forge.EventSystem.EventManager;
 import ore.forge.PhysicsWorld;
 import ore.forge.Player.ItemInventory;
-import ore.forge.Strategies.TimeUpdatable;
+import ore.forge.Strategies.Updatable;
 import ore.forge.UI.UI;
 
 import javax.swing.*;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class GameContext {
     public World world;
-    public List<TimeUpdatable> updatable; //update
+    public List<Updatable> updatable; //update
     public EventManager eventManager;
     public Renderer renderer;
     public PhysicsWorld physicsWorld;
@@ -31,8 +31,8 @@ public class GameContext {
         //update our physics step
         physicsWorld.dynamicsWorld().stepSimulation(delta);
 
-        for (TimeUpdatable e : updatable) {
-            e.update(delta);
+        for (Updatable e : updatable) {
+            e.update(delta, );
         }
 
 
