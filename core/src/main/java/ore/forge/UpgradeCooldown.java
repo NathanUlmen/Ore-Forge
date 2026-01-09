@@ -15,7 +15,7 @@ public class UpgradeCooldown implements Updatable {
     }
 
     @Override
-    public void update(float delta, GameState state) {
+    public void update(float delta, GameContext state) {
         if (cooldown.update(delta)) {
             ore.removeUpgradeCooldown(tag);
             TimerUpdater.unregister(this);

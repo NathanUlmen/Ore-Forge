@@ -4,7 +4,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.GameState;
+import ore.forge.GameContext;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Ore;
 import ore.forge.PhysicsBodyData;
@@ -60,15 +60,15 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
         if (subject.specificData instanceof Ore ore && timeTouching > 0.5f) {
             upgradeStrategy.applyTo(ore);
-//            var player = Player.getSingleton();
+//            var player = ore.forge.Player.Player.getSingleton();
 //            var eventManager = EventManager.getSingleton();
 //            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
 //            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
@@ -93,7 +93,7 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 

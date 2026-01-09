@@ -5,7 +5,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.EventSystem.Events.ItemPlacedGameEvent;
 import ore.forge.EventSystem.GameEventListener;
-import ore.forge.GameState;
+import ore.forge.GameContext;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
@@ -36,17 +36,17 @@ public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEven
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
 
     }
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 

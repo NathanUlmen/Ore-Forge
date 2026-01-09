@@ -7,7 +7,7 @@ public record AcquisitionInfo(
     Tier tier,
     UnlockMethod unlockMethod,
     double unlockRequirement,
-    boolean isUnlocked,
+    boolean isUnlocked, //whether or not unlocked by default.
     boolean canBeSold,
     boolean isPrestigeProof,
     Currency currency,

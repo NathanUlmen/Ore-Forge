@@ -7,13 +7,13 @@ import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionWorld;
 import ore.forge.CollisionRules;
-import ore.forge.GameState;
+import ore.forge.GameContext;
 import ore.forge.PhysicsWorld;
 
 public abstract class InputState {
     protected final CameraController cameraController;
     protected final InputHandler inputHandler;
-    protected GameState gameState;
+    protected GameContext ctx;
 
     public InputState(InputHandler inputHandler) {
         this.inputHandler = inputHandler;

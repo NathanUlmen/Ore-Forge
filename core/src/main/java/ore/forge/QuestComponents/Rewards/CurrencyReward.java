@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Currency;
 
 public class CurrencyReward implements Reward {
-//    private final Player player = Player.getSingleton();
+//    private final ore.forge.Player.Player player = ore.forge.Player.Player.getSingleton();
     private final Currency type;
     private final double rewardAmount;
 

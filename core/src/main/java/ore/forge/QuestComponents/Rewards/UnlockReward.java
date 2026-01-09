@@ -3,7 +3,7 @@ package ore.forge.QuestComponents.Rewards;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class UnlockReward implements Reward{
-//    private final static Player player = Player.getSingleton();
+//    private final static ore.forge.Player.Player player = ore.forge.Player.Player.getSingleton();
     private final String unlockedItemID;
 
     public UnlockReward(String unlockedItemID) {

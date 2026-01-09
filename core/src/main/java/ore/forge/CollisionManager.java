@@ -1,7 +1,5 @@
 package ore.forge;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 
@@ -10,13 +8,15 @@ import java.util.Set;
 
 public class CollisionManager extends ContactListener {
     private final Set<CollisionPair> touchingEntities;
-    private final GameState gameState;
+    private final StagedCollection<CollisionPair> collisions;
+    private final GameContext gameState;
 
     //Potential Optimization: Pool CollisionPairs.
-    public CollisionManager(GameState gameState) {
+    public CollisionManager(GameContext gameState) {
         super();
         this.gameState = gameState;
         touchingEntities = new HashSet<>();
+        collisions = new StagedCollection<>();
     }
 
     @Override
@@ -49,10 +49,9 @@ public class CollisionManager extends ContactListener {
         }
     }
 
-    public void updateTouchingEntities() {
-        final float deltaTime = Gdx.graphics.getDeltaTime();
+    public void updateTouchingEntities(float delta) {
         for (var pair : touchingEntities) {
-            pair.updateTouchingTime(deltaTime);
+            pair.updateTouchingTime(delta);
             if (pair.a() instanceof PhysicsBodyData first && pair.b() instanceof PhysicsBodyData second) {
                 if (first.bodyLogic != null) {
                     first.bodyLogic.colliding(second, first, gameState, pair.getTimeTouching());
@@ -64,10 +63,16 @@ public class CollisionManager extends ContactListener {
         }
     }
 
+    public void removeAllPairsWith(EntityInstance entity) {
+
+    }
+
     public int getNumTouchingEntities() {
         return touchingEntities.size();
     }
 
-    public void removePhysicsBody() {}
+    public void removePhysicsBody() {
+
+    }
 
 }

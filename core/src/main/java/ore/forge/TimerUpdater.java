@@ -14,7 +14,7 @@ public class TimerUpdater {
 
     public static void update(float deltaTime) {
         for (Updatable updatable : updatables) {
-            updatable.update(deltaTime, );
+            updatable.update(deltaTime, null);
         }
         //remove expired Updatables from list and add new ones
         while (!removalQueue.isEmpty()) {

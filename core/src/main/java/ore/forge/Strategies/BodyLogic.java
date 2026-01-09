@@ -1,7 +1,7 @@
 package ore.forge.Strategies;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.GameState;
+import ore.forge.GameContext;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
@@ -30,11 +30,11 @@ public interface BodyLogic {
      */
     void attach(ItemDefinition definition, btCollisionObject collisionObject);
 
-    void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state);
+    void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context);
 
-    void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching);
+    void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching);
 
-    void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state);
+    void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context);
 
     /**
      * Used to return a new instance of this behavior, replicating things that aren't state

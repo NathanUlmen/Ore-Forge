@@ -22,9 +22,9 @@ public class OreForge extends Game {
 //        ItemManager itemManager = new ItemManager(null);
 //        var questManager = new QuestManager();
 //        OreRealm.getSingleton().populate(); //Create/pool all ore.
-//        Player.getSingleton().loadSaveData();
-//        Player.getSingleton().initInventory(itemManager);
-//        Player.getSingleton().getInventory().printInventory();
+//        ore.forge.Player.Player.getSingleton().loadSaveData();
+//        ore.forge.Player.Player.getSingleton().initInventory(itemManager);
+//        ore.forge.Player.Player.getSingleton().getInventory().printInventory();
 
 //        var prestigeManager = new PrestigeManager(itemManager);
 

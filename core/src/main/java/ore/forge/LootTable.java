@@ -84,7 +84,7 @@ public class LootTable {
 //        while (iterator.hasNext()) {
 //            ItemDefinition item = iterator.next();
 //            if (item.getAcquisitionInfo().tier() == Tier.PRESTIGE && item.getAcquisitionInfo().unlockMethod() == UnlockMethod.PRESTIGE_LEVEL) {
-//                if (item.getAcquisitionInfo().unlockRequirement() <= Player.getPrestiegeLeve()) { //TODO Broke after refactor
+//                if (item.getAcquisitionInfo().unlockRequirement() <= ore.forge.Player.Player.getPrestiegeLeve()) { //TODO Broke after refactor
 //                    addItem(item);
 //                    iterator.remove();
 //                }

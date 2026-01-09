@@ -18,7 +18,7 @@ public record PrestigeGameEvent(Boolean result) implements GameEvent<Boolean> {
     public String getBriefInfo() {
         throw new UnsupportedOperationException("Not supported yet.");
 //        if (result) {
-//            return "Successfully prestiged to level " + (Player.getSingleton().getPrestigeLevel() + 1);
+//            return "Successfully prestiged to level " + (ore.forge.Player.Player.getSingleton().getPrestigeLevel() + 1);
 //        }
 //        return "Failed to prestige.";
     }

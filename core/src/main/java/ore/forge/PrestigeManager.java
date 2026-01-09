@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PrestigeManager implements GameEventListener<PrestigeGameEvent> {
     private final LootTable lootTable;
-//    private final static Player player = Player.getSingleton();
+//    private final static ore.forge.Player.Player player = ore.forge.Player.Player.getSingleton();
 //    private final static ItemMap itemMap = ItemMap.getSingleton();
 
     public PrestigeManager(List<ItemDefinition> allItems) {

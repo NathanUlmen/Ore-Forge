@@ -47,7 +47,8 @@ public class SelectingItemsInputState extends InputState {
         //remove selected items
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             for (EntityInstance item : selectedItems) {
-                item.remove();
+                ctx.entityManager.stageRemove(item);
+
             }
             selectedItems.clear();
             inputHandler.setInputState(defaultState);

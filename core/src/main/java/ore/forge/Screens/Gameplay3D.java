@@ -64,7 +64,7 @@ public class Gameplay3D implements Screen {
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
 
         // Initialize collision Manager
-        collisionManager = new CollisionManager();
+        collisionManager = new CollisionManager(null);
 
         // Create Plane:
         Matrix4 planeTransform = new Matrix4();
@@ -184,7 +184,7 @@ public class Gameplay3D implements Screen {
         ui.getViewport().apply();
         ui.draw();
 
-        collisionManager.updateTouchingEntities();
+        collisionManager.updateTouchingEntities(delta);
         TimerUpdater.update(delta);
 
         // physicsWorld.drawDebug(camera);

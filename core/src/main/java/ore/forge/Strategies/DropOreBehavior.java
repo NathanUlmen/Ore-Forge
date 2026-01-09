@@ -54,7 +54,7 @@ public class DropOreBehavior implements BodyLogic, Updatable, GameEventListener<
     }
 
     @Override
-    public void update(float delta, GameState state) {
+    public void update(float delta, GameContext state) {
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
         if (dropperStrategy.drop(delta)) {
@@ -91,17 +91,17 @@ public class DropOreBehavior implements BodyLogic, Updatable, GameEventListener<
     }
 
     @Override
-    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 
     @Override
-    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameState state, float timeTouching) {
+    public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
 
     }
 
     @Override
-    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameState state) {
+    public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
 
     }
 

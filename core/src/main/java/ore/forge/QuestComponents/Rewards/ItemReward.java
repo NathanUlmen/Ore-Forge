@@ -3,7 +3,7 @@ package ore.forge.QuestComponents.Rewards;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class ItemReward implements Reward {
-//    private final Player player = Player.getSingleton();
+//    private final ore.forge.Player.Player player = ore.forge.Player.Player.getSingleton();
     private final String itemID;
     private final int count;
 
