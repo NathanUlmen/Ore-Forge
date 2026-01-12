@@ -2,7 +2,9 @@ package ore.forge;
 
 import ore.forge.Strategies.Updatable;
 
-public class EntityManager {
+import java.util.Iterator;
+
+public class EntityManager implements Iterable<EntityInstance> {
     private final StagedCollection<EntityInstance> entities;
 
     public EntityManager() {
@@ -18,7 +20,6 @@ public class EntityManager {
     }
 
     public void flush(GameContext ctx) {
-
         //Remove entities
         for (EntityInstance e : entities.toRemove()) {
             //Remove from collisionManager
@@ -49,8 +50,12 @@ public class EntityManager {
 
         }
 
+
         entities.flush();
     }
 
-
+    @Override
+    public Iterator<EntityInstance> iterator() {
+        return entities.iterator();
+    }
 }

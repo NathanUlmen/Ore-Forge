@@ -45,7 +45,6 @@ public class InputHandler {
 
     public void update(float delta) {
         inputState.update(delta);
-        System.out.println(inputState.getClass().getSimpleName());
     }
 
     public CameraController cameraController() {

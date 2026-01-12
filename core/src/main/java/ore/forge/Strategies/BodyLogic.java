@@ -10,12 +10,12 @@ public interface BodyLogic {
      * Used to register to specific event systems
      *
      */
-    void register();
+    void register(GameContext context);
 
     /**
      * Used to unregister from event and or update systems
      */
-    void unregister();
+    void unregister(GameContext context);
 
     /**
      * Called when updating time sensitive information

@@ -19,29 +19,33 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
-import ore.forge.Input3D.FreeCamController;
 import ore.forge.Input3D.InputHandler;
 import ore.forge.Input3D.IsometricCameraController;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Shaders.CustomShaderProvider;
+import ore.forge.Strategies.BodyLogic;
 import ore.forge.UI.UI;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static ore.forge.CollisionRules.ORE;
 
 public class Gameplay3D implements Screen {
     // Rendering
     private final PerspectiveCamera camera;
     private final ModelBatch modelBatch;
     private final Environment environment;
-    private final FreeCamController freeCamContronller;
-    public static final ArrayList<ModelInstance> modelInstances = new ArrayList<>();
-    public static final ArrayList<EntityInstance> entityInstances = new ArrayList<>();
-    private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
-    private final CollisionManager collisionManager;
-    private btRigidBody cubeBody;
+//    public static final ArrayList<ModelInstance> modelInstances = new ArrayList<>();
+//    public static final ArrayList<EntityInstance> entityInstances = new ArrayList<>();
+//    private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
+//    private final CollisionManager collisionManager;
+    private GameContext context;
     private ItemDefinition spawner;
     private InputHandler inputHandler;
+
+    private int tickCount;
+    private float totalTime;
 
     private UI ui;
 
@@ -53,6 +57,7 @@ public class Gameplay3D implements Screen {
     private float rotationAngle = 0;
 
     public Gameplay3D() {
+        context = GameContext.INSTANCE;
         // Config ModelBatch
         modelBatch = new ModelBatch(new CustomShaderProvider());
 
@@ -64,7 +69,7 @@ public class Gameplay3D implements Screen {
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
 
         // Initialize collision Manager
-        collisionManager = new CollisionManager(null);
+//        collisionManager = new CollisionManager(null);
 
         // Create Plane:
         Matrix4 planeTransform = new Matrix4();
@@ -73,16 +78,58 @@ public class Gameplay3D implements Screen {
         ModelInstance groundModelInstance = new ModelInstance(model);
         btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 0.5f, 50f));
         btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
+        groundRigidBody.setFriction(100);
         VisualComponent visualComponent = new VisualComponent(groundModelInstance);
         // visualComponent.attributes = new GridAttribute(GridAttribute.ID);
-        var rigidBodies = new ArrayList<btCollisionObject>();
-        rigidBodies.add(groundRigidBody);
-        EntityInstance planeInstance = new EntityInstance(rigidBodies, visualComponent);
-        planeInstance.setTransform(planeTransform);
-        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody,
-                CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
-                CollisionRules.combineBits(CollisionRules.ORE));
-        entityInstances.add(planeInstance);
+
+        var rigidBodies = new ArrayList<PhysicsBody>();
+        rigidBodies.add(new PhysicsBody(groundRigidBody, null, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
+        PhysicsComponent physicsComponent = new PhysicsComponent(rigidBodies);
+        EntityInstance planeInstance = new EntityInstance(physicsComponent, visualComponent);
+        BodyLogic bodyLogic = new BodyLogic() {
+            @Override
+            public void register(GameContext context) {
+
+            }
+
+            @Override
+            public void unregister(GameContext context) {
+
+            }
+
+            @Override
+            public void attach(ItemDefinition definition, btCollisionObject collisionObject) {
+
+            }
+
+            @Override
+            public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
+
+            }
+
+            @Override
+            public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
+                if (timeTouching > 1f) {
+                    context.entityManager.stageRemove(subject.parentEntityInstance);
+                }
+            }
+
+            @Override
+            public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
+
+            }
+
+            @Override
+            public BodyLogic clone() {
+                return null;
+            }
+        };
+        groundRigidBody.userData = new PhysicsBodyData(planeInstance, null, bodyLogic, null);
+            planeInstance.setTransform(planeTransform);
+//        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody,
+//                CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
+//                CollisionRules.combineBits(CollisionRules.ORE));
+        context.entityManager.stageAdd(planeInstance);
 
         // Create Static test items from JSON
         JsonReader jsonReader = new JsonReader();
@@ -94,14 +141,9 @@ public class Gameplay3D implements Screen {
         ItemDefinition dropperSpawner = ItemDefinition.createDefinition(value);
         EntityInstance instance1 = EntityInstanceCreator.createInstance(dropperSpawner);
         transform.setTranslation(0, 8, 0);
-        instance1.place(transform.cpy());
-        for (btCollisionObject object : instance1.entityPhysicsBodies) {
-            if (object.userData == null) {
-                object.userData = "No Longer Null";
-            }
-            physicsWorld.dynamicsWorld().addCollisionObject(object);
-        }
-        entityInstances.add(instance1);
+        instance1.setTransform(transform.cpy());
+        context.entityManager.stageAdd(instance1);
+//        entityInstances.add(instance1);
 
         // Config UI
         List<ItemDefinition> allItems = new ArrayList<>();
@@ -117,8 +159,6 @@ public class Gameplay3D implements Screen {
         camera.position.set(0, 10, 10);
         camera.lookAt(0, 0, 0);
 
-        // Config cameraController;
-        freeCamContronller = new FreeCamController(camera);
 
         // Configure Input Handler
         inputHandler = new InputHandler(new IsometricCameraController(camera), ui);
@@ -147,34 +187,34 @@ public class Gameplay3D implements Screen {
             EntityInstance instance = EntityInstanceCreator.createInstance(spawner);
             Matrix4 transform = new Matrix4().setToTranslation(position);
             transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
-            instance.place(transform);
+            instance.setTransform(transform);
             // modelInstances.add(instance.visualComponent.modelInstance);
-            for (btCollisionObject object : instance.entityPhysicsBodies) {
-                physicsWorld.dynamicsWorld().addCollisionObject(object,
-                        object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY)
-                                : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
-            }
-            entityInstances.add(instance);
+//                physicsWorld.dynamicsWorld().addCollisionObject(object,
+//                        object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY)
+//                                : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
+            context.entityManager.stageAdd(instance);
         }
+
+        context.update(delta);
 
         // Physics simulation Step
-        physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
-
-        for (var instance : entityInstances) {
-            var modelInstance = instance.visualComponent.modelInstance;
-            for (int i = 0; i < instance.entityPhysicsBodies.size(); i++) {
-                if (instance.entityPhysicsBodies.get(i) instanceof btRigidBody rb) {
-                    rb.getMotionState().getWorldTransform(modelInstance.transform);
-                }
-            }
-        }
+//        physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
+//
+//        for (var instance : entityInstances) {
+//            var modelInstance = instance.visualComponent.modelInstance;
+//            for (int i = 0; i < instance.entityPhysicsBodies.size(); i++) {
+//                if (instance.entityPhysicsBodies.get(i) instanceof btRigidBody rb) {
+//                    rb.getMotionState().getWorldTransform(modelInstance.transform);
+//                }
+//            }
+//        }
 
         // Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
         modelBatch.begin(camera);
-        for (var instance : entityInstances) {
+        for (var instance : context.entityManager) {
             var modelInstance = instance.visualComponent.modelInstance;
             modelBatch.render(modelInstance, environment);
         }
@@ -184,9 +224,10 @@ public class Gameplay3D implements Screen {
         ui.getViewport().apply();
         ui.draw();
 
-        collisionManager.updateTouchingEntities(delta);
-        TimerUpdater.update(delta);
+//        collisionManager.updateTouchingEntities(delta);
+//        TimerUpdater.update(delta);
 
+//        context.physicsWorld.drawDebug(camera);
         // physicsWorld.drawDebug(camera);
     }
 

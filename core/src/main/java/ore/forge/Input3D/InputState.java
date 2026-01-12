@@ -13,7 +13,7 @@ import ore.forge.PhysicsWorld;
 public abstract class InputState {
     protected final CameraController cameraController;
     protected final InputHandler inputHandler;
-    protected GameContext ctx;
+    protected GameContext context;
 
     public InputState(InputHandler inputHandler) {
         this.inputHandler = inputHandler;

@@ -2,6 +2,7 @@ package ore.forge;
 
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 
 public class VisualComponent implements Disposable {
@@ -11,6 +12,10 @@ public class VisualComponent implements Disposable {
     public VisualComponent(ModelInstance modelInstance) {
         this.modelInstance = modelInstance;
         this.modelInstance.userData = this;
+    }
+
+    public void syncFromEntity(Matrix4 transform) {
+        modelInstance.transform.set(transform);
     }
 
     @Override

@@ -29,7 +29,8 @@ public class Lwjgl3Launcher {
 //        config.useVsync(true);
 
         config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
-        config.setForegroundFPS(240);
+        config.setForegroundFPS(10_000);
+        config.useVsync(false);
         Graphics.DisplayMode mode = Lwjgl3ApplicationConfiguration.getDisplayMode();
         config.setWindowedMode(mode.width, mode.height);
         config.setResizable(true);

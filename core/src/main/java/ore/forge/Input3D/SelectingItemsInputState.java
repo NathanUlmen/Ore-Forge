@@ -47,7 +47,7 @@ public class SelectingItemsInputState extends InputState {
         //remove selected items
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             for (EntityInstance item : selectedItems) {
-                ctx.entityManager.stageRemove(item);
+                context.entityManager.stageRemove(item);
 
             }
             selectedItems.clear();
@@ -69,8 +69,11 @@ public class SelectingItemsInputState extends InputState {
             RayResultCallback rayCallback = rayCastForItem();
             if (rayCallback.hasHit() && rayCallback.getCollisionObject() != null) { //If Ray-Cast returns an item add to selectedItem
                 var collisionObject = rayCallback.getCollisionObject();
-                PhysicsBodyData hitBodyData = (PhysicsBodyData) collisionObject.userData;
-                addToSelectedItems(hitBodyData.parentEntityInstance);
+                if (collisionObject.userData != null) {
+                    PhysicsBodyData hitBodyData = (PhysicsBodyData) collisionObject.userData;
+                    addToSelectedItems(hitBodyData.parentEntityInstance);
+                }
+
 //            } else { //if Ray-Cast returns no item exit
 //                inputHandler.setInputState(defaultState);
 //                cleanUpSelectedItems();
@@ -78,7 +81,6 @@ public class SelectingItemsInputState extends InputState {
 //                return;
             }
             rayCallback.dispose();
-            return;
         } else {
             isHeld = false;
         }

@@ -6,6 +6,7 @@ import ore.forge.Player.Player;
 import ore.forge.Strategies.Updatable;
 
 public class GameContext {
+    public static final GameContext INSTANCE = new GameContext();
     public final AssetManager assetManager;
     public final EntityManager entityManager;
     public final EventManager eventManager;
@@ -27,7 +28,12 @@ public class GameContext {
 
     public void update(float delta) {
         //update our physics step
-        physicsWorld.dynamicsWorld().stepSimulation(delta);
+        physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
+
+        //update transforms
+        for (EntityInstance entity : entityManager) {
+            entity.syncFromPhysics();
+        }
 
         collisionManager.updateTouchingEntities(delta);
 
@@ -37,10 +43,10 @@ public class GameContext {
         }
 
         //update our event manager here if we decide to rework it
-        //eventManager.update();
 
         //update our entity lists
         flush();
+
     }
 
     public void addUpdatable(Updatable updatable) {

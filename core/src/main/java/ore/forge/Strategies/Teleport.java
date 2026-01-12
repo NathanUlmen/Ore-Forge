@@ -14,12 +14,12 @@ public class Teleport implements BodyLogic, GameEventListener<ItemPlacedGameEven
     private String type;
 
     @Override
-    public void register() {
+    public void register(GameContext context) {
 
     }
 
     @Override
-    public void unregister() {
+    public void unregister(GameContext context) {
 
     }
 

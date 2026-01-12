@@ -28,12 +28,12 @@ public class Move implements BodyLogic {
     }
 
     @Override
-    public void register() {
+    public void register(GameContext context) {
 
     }
 
     @Override
-    public void unregister() {
+    public void unregister(GameContext context) {
 
     }
 
@@ -61,7 +61,7 @@ public class Move implements BodyLogic {
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
         assert subject.specificData instanceof Ore;
-        btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.entityPhysicsBodies.getFirst();
+        btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.physicsComponent.getRigidBody();
 
         // Get conveyor direction in world space
         ItemUserData itemUserData = (ItemUserData) source.specificData;

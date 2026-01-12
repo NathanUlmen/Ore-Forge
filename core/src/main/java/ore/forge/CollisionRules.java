@@ -16,6 +16,7 @@ public enum CollisionRules {
     }
 
     public static int combineBits(CollisionRules... rules) {
+        if (rules == null) return -1;
         int combined = 0;
         for (CollisionRules rule : rules) {
             combined |= rule.getBit();

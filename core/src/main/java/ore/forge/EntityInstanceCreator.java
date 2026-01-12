@@ -1,6 +1,7 @@
 package ore.forge;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
@@ -15,18 +16,25 @@ import ore.forge.Strategies.BodyLogic;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ore.forge.CollisionRules.*;
+
 public class EntityInstanceCreator {
 
     public static EntityInstance createInstance(ItemDefinition itemDefinition) {
         VisualComponent visualComponent = new VisualComponent(new ModelInstance(itemDefinition.model()));
-        List<btCollisionObject> collisionObjects = new ArrayList<>();
-        EntityInstance instance = new EntityInstance(collisionObjects, visualComponent);
+
+        List<PhysicsBody> physicsComponents = new ArrayList<>();
+        PhysicsComponent physicsComponent = new PhysicsComponent(physicsComponents);
+        EntityInstance instance = new EntityInstance(physicsComponent, visualComponent);
         for (btCollisionShape collisionShape : itemDefinition.collisionShapes()) {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
+                System.out.println("Created Static Geometry");
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
-                //rigidBody.setCollisionFlags(rigidBody.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY));
                 rigidBody.userData = new PhysicsBodyData(instance, itemDefinition, null, rigidBody.getWorldTransform());
-                collisionObjects.add(rigidBody);
+                //---------------
+                PhysicsBody body = new PhysicsBody(rigidBody, null, CollisionRules.combineBits(WORLD_GEOMETRY), CollisionRules.combineBits(ORE));
+                //---------------
+                physicsComponents.add(body);
             } else {
                 //The rest will be sensor
                 NodeInfo nodeInfo = itemDefinition.shapeMap().get(collisionShape);
@@ -39,7 +47,10 @@ public class EntityInstanceCreator {
                 ghostObject.userData = new PhysicsBodyData(instance, itemUserData, bodyLogic, nodeInfo.transform());
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
-                collisionObjects.add(ghostObject);
+                //--------
+                physicsComponents.add(new PhysicsBody(ghostObject, null, CollisionRules.combineBits(ORE_PROCESSOR), CollisionRules.combineBits(ORE)));
+                //--------
+//                collisionObjects.add(ghostObject);
             }
         }
         return instance;
@@ -50,11 +61,15 @@ public class EntityInstanceCreator {
         //Visual Setup
         VisualComponent visualComponent = new VisualComponent(new ModelInstance(oreDefinition.model()));
         //Physics Setup
-        btRigidBody oreBody = new btRigidBody(10, new btDefaultMotionState(), oreDefinition.oreShape());
-        var tempList = new ArrayList<btCollisionObject>(1);
-        tempList.add(oreBody);
-        //Create oru instance
-        EntityInstance instance = new EntityInstance(tempList, visualComponent);
+        Vector3 inertia = new Vector3();
+        oreDefinition.oreShape().calculateLocalInertia(10f, inertia);
+        btRigidBody oreBody = new btRigidBody(10f, new btDefaultMotionState(), oreDefinition.oreShape(), inertia);
+
+        var tempList = new ArrayList<PhysicsBody>(1);
+
+        tempList.add(new PhysicsBody(oreBody, null, CollisionRules.combineBits(ORE), CollisionRules.combineBits(ORE, WORLD_GEOMETRY, ORE_PROCESSOR)));
+        //Create our instance
+        EntityInstance instance = new EntityInstance(new PhysicsComponent(tempList), visualComponent);
 
         Ore ore = new Ore();
         ore.setOreValue(oreDefinition.oreValue());

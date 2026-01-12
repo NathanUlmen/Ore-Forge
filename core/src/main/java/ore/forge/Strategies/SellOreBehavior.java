@@ -31,12 +31,12 @@ public class SellOreBehavior implements BodyLogic {
     }
 
     @Override
-    public void register() {
+    public void register(GameContext context) {
 
     }
 
     @Override
-    public void unregister() {
+    public void unregister(GameContext context) {
 
     }
 
