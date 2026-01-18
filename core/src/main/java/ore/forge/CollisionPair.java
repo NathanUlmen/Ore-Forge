@@ -28,6 +28,10 @@ public class CollisionPair {
         return b;
     }
 
+    public boolean contains(EntityInstance entity) {
+        return a.parentEntityInstance == entity ||  b.parentEntityInstance == entity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -42,9 +46,18 @@ public class CollisionPair {
     public int hashCode() {
         int h1 = a.hashCode();
         int h2 = b.hashCode();
-        return h1 <= h2
-            ? Objects.hash(h1, h2)
-            : Objects.hash(h2, h1);
+
+        if (h1 > h2) {
+            int tmp = h1;
+            h1 = h2;
+            h2 = tmp;
+        }
+
+        int result = 17;
+        result = 31 * result + h1;
+        result = 31 * result + h2;
+        return result;
     }
+
 
 }

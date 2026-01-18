@@ -1,12 +1,14 @@
 package ore.forge.Strategies.DropperStrategies;
 
+import ore.forge.Utils.CoolDown;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.CoolDown;
 
 @SuppressWarnings("unused")
 public class BurstDrop implements DropStrategy {
     private final float orePerMinute;
     private final float burstCount;
+    private float dropAccumulator;
+    private float burstAccumulator;
     private int currentOreInBurst;
     private boolean isDropping;
 
@@ -32,6 +34,8 @@ public class BurstDrop implements DropStrategy {
         intervalBetween = new CoolDown(intervalPerOre);
         isDropping = false;
 
+        dropAccumulator = 0;
+        burstAccumulator = 0;
     }
 
     // oreCooldown, burstCount, ore per minute.
@@ -51,6 +55,8 @@ public class BurstDrop implements DropStrategy {
         intervalPerOre /= 2f;
         intervalBetween = new CoolDown(intervalPerOre);
         isDropping = false;
+        dropAccumulator = 0;
+        burstAccumulator = 0;
     }
 
     public BurstDrop(BurstDrop toBeCloned) {
@@ -58,25 +64,90 @@ public class BurstDrop implements DropStrategy {
     }
 
 
+//    @Override
+//    public int drop(float delta) {
+//        if (!isDropping) {
+//            if (burstCooldown.update(delta) > 0) {
+//                isDropping = true;
+//                currentOreInBurst = 0;
+//            }
+//        } else {
+//            int activationCount = intervalBetween.update(delta);
+
+    /// /            if (intervalBetween.update(delta) && currentOreInBurst < burstCount) {
+//            if (activationCount > 0 && currentOreInBurst < burstCount) {
+//                currentOreInBurst += activationCount;
+//                if (currentOreInBurst == burstCount) {
+//                    isDropping = false;
+//                }
+//                return currentOreInBurst;
+//            }
+//        }
+//        return 0;
+//    }
     @Override
-    public boolean drop(float delta) {
-        if (!isDropping) {
-            if (burstCooldown.update(delta)) {
+    public int drop(float delta) {
+        int produced = 0;
+
+        while (delta > 0f) {
+            // ===========================
+            // IDLE / COOLDOWN STATE
+            // ===========================
+            if (!isDropping) {
+                float timeToBurstStart = burstCooldown.getFinishTime() - burstAccumulator;
+
+                if (delta < timeToBurstStart) {
+                    burstAccumulator += delta;
+                    return produced;
+                }
+
+                // We reach burst start this frame
+                delta -= timeToBurstStart;
+
+                // Start burst
+                burstAccumulator = 0f;
                 isDropping = true;
                 currentOreInBurst = 0;
+                dropAccumulator = 0f;
+
+                // IMPORTANT: continue loop with remaining delta,
+                // which now belongs to the burst.
+                continue;
             }
-        } else {
-            if (intervalBetween.update(delta) && currentOreInBurst < burstCount) {
-                currentOreInBurst++;
-                if (currentOreInBurst == burstCount) {
-                    burstCooldown.resetCurrentTime();
-                    isDropping = false;
-                }
-                intervalBetween.resetCurrentTime();
-                return true;
+
+            // ===========================
+            // BURST DROPPING STATE
+            // ===========================
+            if (currentOreInBurst >= burstCount) {
+                // Burst is done; switch back to cooldown.
+                isDropping = false;
+                // cooldown starts now; keep looping so leftover delta counts toward cooldown
+                continue;
+            }
+
+            float timeToNextDrop = intervalBetween.getFinishTime() - dropAccumulator;
+
+            if (delta < timeToNextDrop) {
+                dropAccumulator += delta;
+                return produced;
+            }
+
+            // We hit a drop boundary this frame
+            delta -= timeToNextDrop;
+
+            // Emit exactly one drop
+            dropAccumulator = 0f;
+            currentOreInBurst++;
+            produced++;
+
+            // If that was the last ore in burst, loop continues and
+            // leftover delta will start cooldown immediately.
+            if (currentOreInBurst >= burstCount) {
+                isDropping = false;
+                burstAccumulator = 0f; // start cooldown timing fresh *after* burst completion
             }
         }
-        return false;
+        return produced;
     }
 
 

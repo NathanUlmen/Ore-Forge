@@ -14,6 +14,8 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.Items.Acquisition.AcquisitionInfo;
+import ore.forge.Items.Properties.BundledProperties;
 import ore.forge.Items.Properties.DropperProperties;
 import ore.forge.Items.Properties.ItemProperties;
 import ore.forge.Items.Properties.UpgraderProperties;
@@ -35,14 +37,13 @@ public class ItemDefinition {
 
     //Visual
     protected Model model;
+    protected String modelFilePath;
 
     //Physics
     protected List<btCollisionShape> collisionShapes;
 
     //Gameplay Logic/Behavior
     protected HashMap<String, BodyLogic> behaviors;
-
-
 
     protected HashMap<btCollisionShape, NodeInfo> shapeMap;
 
@@ -61,8 +62,6 @@ public class ItemDefinition {
         for (int i = 0; i < roles.length; i++) {
             roles[i] = ItemRole.valueOf(json.get("role").get(i).toString());
         }
-
-
         GeneralItemData generalItemData = new GeneralItemData(name, id, description, roles, acquisitionInfo);
 
         HashMap<String, NodeInfo> nodeInfoHashMap = new HashMap<>();
@@ -75,27 +74,28 @@ public class ItemDefinition {
 
         ItemBehaviorData behaviorData = new ItemBehaviorData(behaviors, collisionShapeMap);
 
-
         //TODO: finish this so that it handles multiple properties correctly.
-        ItemProperties itemProperties = null;
-        JsonValue propertiesJson = json.get("properties");
-        temp : {
-            for (JsonValue propertyJson : propertiesJson) {
-                switch (propertyJson.getString("type")) {
-                    case "UpgradeTag" -> {
-                        itemProperties = new UpgraderProperties(new UpgradeTag(propertyJson));
-                        break temp;
-                    }
-                    case "OreDefinition" -> {
-                        itemProperties = new DropperProperties(OreDefinition.fromJson(propertyJson));
-                        break temp;
-                    }
-                    case null, default -> throw new IllegalArgumentException("Unknown property type: " + propertyJson.getString("type"));
-                }
+        ItemProperties itemProperties;
+        JsonValue propertiesJson = json.get("properties"); //grab our list of properties
+        if (propertiesJson.size > 1) { //if more than one we make a bundled list of properties
+            List<ItemProperties> properties = new ArrayList<>(json.size);
+            itemProperties = new BundledProperties(properties);
+            for (JsonValue value :  propertiesJson) {
+                properties.add(createProperty(value));
             }
+        } else {
+            itemProperties = createProperty(propertiesJson.get(0));
         }
 
         return new ItemDefinition(generalItemData, model, collisionShapes, behaviorData, itemProperties);
+    }
+
+    private static ItemProperties createProperty(JsonValue json) {
+        return switch (json.getString("type")) {
+            case "UpgradeTag" -> new UpgraderProperties(new UpgradeTag(json));
+            case "OreDefinition" -> new DropperProperties(OreDefinition.fromJson(json));
+            default -> throw new IllegalArgumentException("Unknown property type: " + json.getString("type"));
+        };
     }
 
     private static HashMap<String, BodyLogic> loadBehaviors(JsonValue jsonValue) {
@@ -254,6 +254,12 @@ public class ItemDefinition {
     public <E extends ItemProperties> E itemProperties(Class<E> target) {
         if (target.isInstance(itemProperties)) {
             return target.cast(itemProperties);
+        } else if (itemProperties instanceof BundledProperties bundledProperties) {
+            for (ItemProperties property : bundledProperties) {
+                if (target.isInstance(property)) {
+                    return target.cast(property);
+                }
+            }
         }
         throw new ClassCastException(
             "ItemProperties type mismatch. Expected: " + target.getName() +

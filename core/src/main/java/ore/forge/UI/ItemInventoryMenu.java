@@ -4,6 +4,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Items.ItemRole;
+import ore.forge.UI.Widgets.FilterTab;
+import ore.forge.UI.Widgets.Icon;
+import ore.forge.UI.Widgets.SearchBar;
+import ore.forge.UI.Widgets.WidgetGrid;
 
 import java.util.ArrayList;
 import java.util.Comparator;

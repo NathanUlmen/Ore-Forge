@@ -1,8 +1,7 @@
 package ore.forge;
 
-import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.graphics.g3d.ModelCache;
 import com.badlogic.gdx.math.Vector2;
-import ore.forge.Experimental.PhysicsObject;
 import ore.forge.Expressions.Operands.ValueOfInfluence;
 import ore.forge.Strategies.OreEffects.BundledOreEffect;
 import ore.forge.Strategies.OreEffects.Burning;
@@ -16,7 +15,7 @@ import java.util.Stack;
 /**
  * @author Nathan Ulmen
  */
-public class Ore extends PhysicsObject {
+public class Ore {
     //Ore can be classified by name, id, type. Ores can have multiple types.
     private final HashMap<String, UpgradeTag> tagMap;
     private final Vector2 position, destination;
@@ -45,9 +44,6 @@ public class Ore extends PhysicsObject {
     private HashMap<UpgradeTag, UpgradeCooldown> cooldownLookup;
 
     public Ore() {
-        super(new Polygon(VERTICES));
-        this.setIsStatic(false);
-        this.setCollisionEnabled(true);
         this.oreValue = 0;
         this.oreTemperature = 0;
         this.oreName = "";

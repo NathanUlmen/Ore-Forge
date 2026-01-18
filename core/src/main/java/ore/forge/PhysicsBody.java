@@ -68,6 +68,9 @@ public class PhysicsBody implements Disposable {
 
     @Override
     public void dispose() {
+        if (body instanceof btRigidBody rb) {
+            rb.getMotionState().dispose();
+        }
         body.dispose();
     }
 }

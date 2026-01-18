@@ -64,12 +64,13 @@
       "enum": ["COMMON", "UNCOMMON", "RARE", "SUPER_RARE", "EPIC", "SPECIAL", "PRESTIGE", "EXOTIC", "PINNACLE"],
       "description": "Tier of the object."
     },
+
     "acquisitionInfo" : {
       "type": "object",
       "required": [
         "unlockMethod",
         "unlockRequirement",
-        "isUnlocked",
+        "unlockedByDefault",
         "canBeSold",
         "isPrestigeProof",
         "currency",
@@ -87,7 +88,7 @@
           "type": "number",
           "description": "The value required to unlock the item, if applicable."
         },
-        "isUnlocked": {
+        "unlockedByDefault": {
           "type": "boolean",
           "description": "Whether the item is already unlocked by default."
         },
@@ -119,30 +120,15 @@
       }
     },
 
-
     "behaviors": {
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {
-          "behaviorName": { "type": "string" },
-          "key": { "type": "string" },
-          "force": { "type": "number" },
-          "upgradeCooldown": { "type": "number" },
-          "upgrade": {
-            "type": "object",
-            "properties": {
-              "upgradeName": { "type": "string" },
-              "valueToModify": { "type": "string" },
-              "operator": { "type": "string" },
-              "modifier": { "type": "number" }
-            },
-            "required": ["upgradeName", "valueToModify", "operator", "modifier"]
-          }
-        },
+        "$comment" : "TODO: Create schemas for all types of behavior",
         "required": ["behaviorName", "key"]
       }
     },
+
     "parts": {
       "type": "array",
       "description": "Each part of the object with physics and rendering info.",
@@ -164,6 +150,7 @@
             "type": "string",
             "description": "Optional path to a custom collision mesh for Bullet. Can be same as renderMesh or a simplified version."
           },
+
           "render": {
             "type": "object",
             "properties": {
@@ -227,6 +214,36 @@
             "maxItems": 3,
             "description": "Direction Relative to parent object that behaviors will use."
           }
+        }
+      }
+    }
+  },
+  "geometry" : {
+    "type" : "array",
+    "description": "List of visual components.",
+    "items" : {
+      "type" : "object",
+      "required" : ["filePath", "transform", "forwardDirection"],
+      "properties" : {
+        "filePath" : { "type" : "string", "description": "filePath to the mesh of this component" },
+        "transform" : {
+          "type" :  "array",
+          "items" : {
+            "type" : "number",
+            "description" : "transform of this mesh relative to the items coordinate space."
+          },
+          "minItems" : 16,
+          "maxItems" : 16
+        },
+
+        "forwardDirection": {
+          "type" : "array",
+          "items" : {
+            "type" : "number",
+            "description": "Vector indicating the direction this mesh is facing relative to coordinate space of this item for gameplay purposes"
+          },
+          "minItems" : 3,
+          "maxItems" : 3
         }
       }
     }

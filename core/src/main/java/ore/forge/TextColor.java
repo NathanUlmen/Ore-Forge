@@ -1,6 +1,6 @@
 package ore.forge;
 
-public enum Color {
+public enum TextColor {
     NONE("\u001B[0m"),
     RED("\u001B[31m"),
     GREEN("\u001B[32m"),
@@ -12,12 +12,12 @@ public enum Color {
 
     public final String colorId;
 
-    Color(String colorId) {
+    TextColor(String colorId) {
         this.colorId = colorId;
     }
 
-    public static String highlightString(String string, Color color) {
-        return color + string + NONE;
+    public static String highlightString(String string, TextColor textColor) {
+        return textColor + string + NONE;
     }
 
     public String toString() {

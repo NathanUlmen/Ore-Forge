@@ -1,10 +1,10 @@
 package ore.forge.EventSystem.Events;
 
-import ore.forge.Currency;
+import ore.forge.CurrencyType;
 import ore.forge.FontColors;
 import ore.forge.Items.ItemDefinition;
 
-public record PurchaseGameEvent(ItemDefinition item, Currency currency, int amountPurchased) implements GameEvent {
+public record PurchaseGameEvent(ItemDefinition item, CurrencyType currencyType, int amountPurchased) implements GameEvent {
 
     @Override
     public Class getEventType() {
@@ -18,7 +18,7 @@ public record PurchaseGameEvent(ItemDefinition item, Currency currency, int amou
 
     @Override
     public String getBriefInfo() {
-        return "Purchased " + amountPurchased + " " + item.name() + " for " + (item.getAcquisitionInfo().itemValue() * amountPurchased) + " " + currency;
+        return "Purchased " + amountPurchased + " " + item.name() + " for " + (item.getAcquisitionInfo().itemValue() * amountPurchased) + " " + currencyType;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ore.forge;
 
+import com.badlogic.gdx.utils.Array;
 import com.mongodb.lang.NonNull;
 
 import java.util.*;
@@ -65,6 +66,10 @@ public class StagedCollection<E> implements Iterable<E> {
     @Override
     public Iterator<E> iterator() {
         return elements.iterator();
+    }
+
+    public String toString() {
+        return "Size: " + size() +  "\tToAdd: " + toAdd.size()  + "\tToRemove: " + toRemove.size();
     }
 
 }

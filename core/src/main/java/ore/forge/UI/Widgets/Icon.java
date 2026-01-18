@@ -1,11 +1,15 @@
-package ore.forge.UI;
+package ore.forge.UI.Widgets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+import ore.forge.UI.UIHelper;
 
 public class Icon<E> extends Table {
     private final E data; //Links to our item blueprint/data.
@@ -92,7 +96,9 @@ public class Icon<E> extends Table {
         setTouchable(Touchable.enabled);
     }
 
+    public void setEventListener(EventListener eventListener) {
 
+    }
 
     @Override
     public void layout() {

@@ -42,11 +42,11 @@ public class GameContext {
             updatable.update(delta, this);
         }
 
+
         //update our event manager here if we decide to rework it
 
         //update our entity lists
         flush();
-
     }
 
     public void addUpdatable(Updatable updatable) {

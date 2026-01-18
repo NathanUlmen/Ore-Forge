@@ -1,10 +1,11 @@
-package ore.forge.UI;
+package ore.forge.UI.Widgets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import ore.forge.UI.UIHelper;
 
 import java.util.List;
 

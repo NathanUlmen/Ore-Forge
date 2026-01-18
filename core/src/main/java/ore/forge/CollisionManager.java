@@ -64,15 +64,11 @@ public class CollisionManager extends ContactListener {
     }
 
     public void removeAllPairsWith(EntityInstance entity) {
-
+        touchingEntities.removeIf(pair -> pair.contains(entity));
     }
 
     public int getNumTouchingEntities() {
         return touchingEntities.size();
-    }
-
-    public void removePhysicsBody() {
-
     }
 
 }

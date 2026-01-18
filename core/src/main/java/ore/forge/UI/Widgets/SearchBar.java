@@ -1,10 +1,12 @@
-package ore.forge.UI;
+package ore.forge.UI.Widgets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import ore.forge.UI.ButtonType;
+import ore.forge.UI.UIHelper;
 
 import java.util.function.Consumer;
 

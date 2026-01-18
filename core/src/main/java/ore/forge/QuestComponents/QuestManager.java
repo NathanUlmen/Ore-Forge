@@ -17,7 +17,7 @@ public class QuestManager implements GameEventListener<QuestCompletedGameEvent> 
 
     public QuestManager() {
         JsonReader reader = new JsonReader();
-        JsonValue allQuestData = reader.parse(Gdx.files.local("ore.forge.Player.Player/Quests.json"));
+        JsonValue allQuestData = reader.parse(Gdx.files.local("Player/Quests.json"));
         allQuests = new HashMap<>();
         lockedQuests = new ArrayList<>();
         completedQuests = new ArrayList<>();

@@ -87,13 +87,13 @@ public class IsometricCameraController implements CameraController {
 
         zoomValue = MathUtils.clamp(zoomValue, MIN_DISTANCE, MAX_DISTANCE);
 
-        // Direction from target to camera in XZ
+        //Direction from target to camera in XZ
         Vector3 dir = camera.position.cpy().sub(viewTarget);
         dir.y = 0;
         if (dir.len2() == 0) dir.set(0, 0, 1);
         dir.nor();
 
-        // Apply zoom radius + height
+        //Apply zoom radius + height
         camera.position.set(viewTarget)
             .add(dir.scl(computeXZDistance(zoomValue)))
             .add(0f, computeY(zoomValue), 0f).add(0, 1, 0);
@@ -128,7 +128,7 @@ public class IsometricCameraController implements CameraController {
     private float computeXZDistance(float zoomValue) {
         float n = MathUtils.norm(MIN_DISTANCE, MAX_DISTANCE, zoomValue);
         n = MathUtils.clamp(n, 0f, 1f);
-        n = (3 * n * n) - (2 * n * n * n); // smoothstep
+        n = (3 * n * n) - (2 * n * n * n);
         return MathUtils.lerp(MIN_DISTANCE, MAX_DISTANCE, n);
     }
 

@@ -241,7 +241,7 @@ Terra, Geo,
 
 - **The Great Crystal**
     - Effects:
-        - Upgrades ore based on the number of prestige currency you have
+        - Upgrades ore based on the number of prestige currencyType you have
         - (PRESTIGE_CURRENCY/20 + 2)
 
 

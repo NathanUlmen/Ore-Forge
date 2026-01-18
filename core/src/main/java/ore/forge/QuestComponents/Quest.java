@@ -3,7 +3,7 @@ package ore.forge.QuestComponents;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Queue;
-import ore.forge.Color;
+import ore.forge.TextColor;
 import ore.forge.EventSystem.EventManager;
 import ore.forge.EventSystem.Events.QuestCompletedGameEvent;
 import ore.forge.Listener;
@@ -95,7 +95,7 @@ public class Quest {
         if (!incompleteSteps.isEmpty()) {
             completedSteps.add(incompleteSteps.removeFirst());
         } else {
-            Gdx.app.log("Quest", Color.highlightString("Bug Triggered", Color.YELLOW));
+            Gdx.app.log("Quest", TextColor.highlightString("Bug Triggered", TextColor.YELLOW));
         }
 
         if (!incompleteSteps.isEmpty()) {

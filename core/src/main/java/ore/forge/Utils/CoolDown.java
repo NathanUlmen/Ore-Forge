@@ -1,4 +1,4 @@
-package ore.forge;
+package ore.forge.Utils;
 
 /**
  * @author Nathan Ulmen
@@ -34,14 +34,15 @@ public class CoolDown {
      * @param deltaTime The time in seconds that has passed since the last update.
      * @return {@code true} if the cooldown period has elapsed and the cooldown has "activated", {@code false} otherwise.
      */
-    public boolean update(float deltaTime) {
+    public int update(float deltaTime) {
         currentTime += deltaTime;
-        if (currentTime >= finishTime) {
+        int count = 0;
+        while (currentTime >= finishTime) {
             activationCount++;
+            count++;
             currentTime -= finishTime;
-            return true;
         }
-        return false;
+        return count;
     }
 
     /**

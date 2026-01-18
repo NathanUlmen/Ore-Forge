@@ -89,5 +89,5 @@
       "behaviorKey": "b1",
       "bulletCollisionType": "btGhostObject"
     }
-  ],
+  ]
 }

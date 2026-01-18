@@ -3,6 +3,7 @@ package ore.forge.Player;
 import ore.forge.Items.ItemDefinition;
 
 public class ItemInventoryNode {
+    private boolean isUnlocked;
     private final ItemDefinition heldItem;
     private int totalOwned;
     private int stored;
@@ -13,6 +14,7 @@ public class ItemInventoryNode {
         this.totalOwned = totalOwned;
         this.stored = totalOwned;
         this.placed = 0;
+        this.isUnlocked = false;
     }
 
     public String name() {
@@ -87,5 +89,9 @@ public class ItemInventoryNode {
         return String.format(
                 "%s [stored=%d, placed=%d, total=%d]",
                 name(), stored, placed, totalOwned);
+    }
+
+    public boolean isUnlocked() {
+        return isUnlocked;
     }
 }

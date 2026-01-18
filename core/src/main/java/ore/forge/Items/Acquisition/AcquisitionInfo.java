@@ -1,16 +1,18 @@
-package ore.forge.Items;
+package ore.forge.Items.Acquisition;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.Currency;
+import ore.forge.CurrencyType;
+import ore.forge.Items.Tier;
+import ore.forge.Items.UnlockMethod;
 
 public record AcquisitionInfo(
     Tier tier,
     UnlockMethod unlockMethod,
     double unlockRequirement,
-    boolean isUnlocked, //whether or not unlocked by default.
+    boolean unlockedByDefault, //whether or not unlocked by default.
     boolean canBeSold,
     boolean isPrestigeProof,
-    Currency currency,
+    CurrencyType currencyType,
     double itemValue,
     double sellPrice,
     float rarity
@@ -68,12 +70,12 @@ public record AcquisitionInfo(
         };
     }
 
-    private static Currency computeCurrency(Tier tier) {
+    private static CurrencyType computeCurrency(Tier tier) {
         return switch (tier) {
-            case PINNACLE -> Currency.NONE;
-            case EXOTIC, SPECIAL -> Currency.SPECIAL_POINTS;
-            case PRESTIGE -> Currency.PRESTIGE_POINTS;
-            case EPIC, SUPER_RARE, RARE, UNCOMMON, COMMON -> Currency.CASH;
+            case PINNACLE -> CurrencyType.NONE;
+            case EXOTIC, SPECIAL -> CurrencyType.SPECIAL_POINTS;
+            case PRESTIGE -> CurrencyType.PRESTIGE_POINTS;
+            case EPIC, SUPER_RARE, RARE, UNCOMMON, COMMON -> CurrencyType.CASH;
         };
     }
 }

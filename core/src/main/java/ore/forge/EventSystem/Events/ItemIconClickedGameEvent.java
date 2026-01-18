@@ -2,7 +2,7 @@ package ore.forge.EventSystem.Events;
 
 import ore.forge.FontColors;
 import ore.forge.Items.ItemDefinition;
-import ore.forge.UI.Icon;
+import ore.forge.UI.Widgets.Icon;
 
 public record ItemIconClickedGameEvent(Icon<ItemDefinition> itemIcon) implements GameEvent {
     @Override

@@ -1,7 +1,9 @@
 package ore.forge.Strategies;
 
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
 import ore.forge.Items.ItemDefinition;
@@ -52,10 +54,13 @@ public class DropOreBehavior implements BodyLogic, Updatable {
     public void update(float delta, GameContext context) {
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
-        if (dropperStrategy.drop(delta)) {
+        for (int i = 0; i < dropperStrategy.drop(delta); i++) {
+//        if (dropperStrategy.drop(delta) > 0) {
             OreDefinition oreDefinition = dropperProperties.oreDefinition();
             EntityInstance ore = EntityInstanceCreator.createInstance(oreDefinition);
             ore.setTransform(this.parent.getWorldTransform().translate(0, -1f, 0));
+            btRigidBody body = (btRigidBody) ore.physicsComponent.getBodies().getFirst().getRigidBody();
+            body.setLinearVelocity(new Vector3(0, -4, 0));
 
             //Add ore to the world
 //            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperProperties.oreModel));

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title" : "ItemNodeSaveData",
+  "type" : "object",
+  "required": ["itemId", "totalOwned", "isUnlocked"],
+  "properties": {
+    "itemId" : {
+      "type" : "string",
+      "description": ""
+    },
+    "totalOwned" : {
+      "type" : "integer",
+      "description": ""
+    },
+    "isUnlocked" : {
+      "type" : "boolean",
+      "description": ""
+    }
+  }
+}
+

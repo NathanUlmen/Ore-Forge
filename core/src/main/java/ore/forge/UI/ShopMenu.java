@@ -1,0 +1,180 @@
+package ore.forge.UI;
+
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
+import ore.forge.GameContext;
+import ore.forge.Items.Acquisition.AcquisitionInfo;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.Player.ItemInventoryNode;
+import ore.forge.Player.Player;
+import ore.forge.UI.Widgets.Icon;
+import ore.forge.UI.Widgets.WidgetGrid;
+
+import java.util.List;
+
+public class ShopMenu extends Table {
+    private final WidgetGrid grid;
+    private final GameContext context;
+
+    public ShopMenu(List<Icon<ItemDefinition>> allItems, GameContext context) {
+        this.context = context;
+        grid = new WidgetGrid();
+        for (Icon<ItemDefinition> icon : allItems) {
+            //set callback
+            icon.setEventListener(new ClickListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    displayPurchasePopUp(icon);
+                    return true;
+                }
+            });
+        }
+        grid.setElements(allItems);
+        this.add(grid);
+    }
+
+    public void displayPurchasePopUp(Icon<ItemDefinition> icon) {
+        /*
+         * Create Table with following:
+         * Icon of thing to be purchased.
+         * CountTextField,
+         * Increment/Decrement buttons
+         * Purchase Button
+         * Close Button
+         *  */
+    }
+
+
+    public static class PurchasePopUp extends Table {
+        private TextButton purchaseButton;
+        private ImageButton incrementButton, decrementButton;
+        private ImageButton closeButton;
+        private TextField purchaseCount;
+        private Icon<ItemDefinition> purchaseIcon;
+
+        public PurchasePopUp(GameContext context) {
+            super();
+            setVisible(false);
+            TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+            textFieldStyle.font = UIHelper.generateFont(30);
+            textFieldStyle.background = UIHelper.getRoundFull();
+
+            ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
+            imageButtonStyle.up = UIHelper.getRoundFull();
+            imageButtonStyle.down = UIHelper.getRoundFull();
+
+            TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+            textButtonStyle.up = UIHelper.getRoundFull();
+            textButtonStyle.down = UIHelper.getRoundFull();
+            textButtonStyle.font = UIHelper.generateFont(30);
+
+            purchaseCount = new TextField("1", textFieldStyle);
+            incrementButton = new ImageButton(imageButtonStyle);
+            decrementButton = new ImageButton(imageButtonStyle);
+            purchaseButton = new TextButton("Purcahse: 1", textButtonStyle);
+            closeButton = new ImageButton(imageButtonStyle);
+
+            closeButton.addListener(new ClickListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    //Toggle the popup.
+                    return false;
+                }
+            });
+            decrementButton.addListener(new ClickListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    int count = getPurchaseCount();
+                    setPurchaseCount(count - 1); // clamps at 1
+                    return true;
+                }
+            });
+            incrementButton.addListener(new ClickListener() {
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    int count = getPurchaseCount();
+                    setPurchaseCount(count + 1);
+                    return true;
+                }
+            });
+
+            /*
+             * TODO: Configure purchaseCount to check purchaseButton and set its status on text changed
+             * TODO: Configure purchaseButton to purchase items when enabled
+             * TODO: Configure purchaseCount to only allow positive integers.
+             * */
+            purchaseButton.addListener(new ClickListener() {
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    if (purchaseButton.isDisabled()) { return false; }
+                    purchase(context, getPurchaseCount());
+                    return true;
+                }
+            });
+
+            purchaseCount.addListener(new ClickListener() {
+            });
+
+            purchaseCount.setTextFieldListener((textField, c) -> {
+                if (!Character.isDigit(c) && c != '\b') {
+                    textField.setText(textField.getText().replace(String.valueOf(c), ""));
+                }
+            });
+
+            purchaseCount.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    TextField field = (TextField) actor;
+                    if (field.getText().isEmpty() || field.getText().equals("0")) {
+                        field.setText("1");
+                    }
+                    purchaseButton.setDisabled(context.player.canPurchase(purchaseIcon.getData(), getPurchaseCount()));
+                }
+            });
+
+        }
+
+        public void toggle() {
+            this.setVisible(!this.isVisible());
+            this.purchaseCount.setText("1");
+            //logic to move it into position and out of position
+        }
+
+        public void purchase(GameContext context, int count) {
+            ItemDefinition toPurchase = purchaseIcon.getData();
+            ItemInventoryNode node = context.player.inventory.getNode(toPurchase.id());
+            Player player = context.player;
+
+            assert player.canPurchase(toPurchase, count);
+            AcquisitionInfo info = toPurchase.getAcquisitionInfo();
+
+            player.removeCurrency(info.currencyType(), info.itemValue() * count);
+
+            context.eventManager.notifyListeners(new InventoryNodeGameEvent(node));
+
+            //logic to see if we can purchase.
+            node.addNew(count);
+        }
+
+        private int getPurchaseCount() {
+            try {
+                return Integer.parseInt(purchaseCount.getText());
+            } catch (NumberFormatException e) {
+                return 1;
+            }
+        }
+
+        private void setPurchaseCount(int value) {
+            purchaseCount.setText(String.valueOf(Math.max(1, value)));
+        }
+
+
+    }
+
+}

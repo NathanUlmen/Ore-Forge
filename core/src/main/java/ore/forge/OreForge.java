@@ -4,6 +4,8 @@
 package ore.forge;
 
 import com.badlogic.gdx.Game;
+import ore.forge.QuestComponents.QuestManager;
+import ore.forge.Screens.Gameplay3D;
 
 /**
  * @author Nathan Ulmen
@@ -18,16 +20,12 @@ public class OreForge extends Game {
 		* Create the Objects for elements like the map and UI.
 		* */
 
-        GameScreen gameScreen = new GameScreen();
-        setScreen(gameScreen);
-
-//
-//
+//        GameScreen gameScreen = new GameScreen();
 //		ItemInventory itemInventory = new ItemInventory(null);
-//        Gameplay3D gameplay3D = new Gameplay3D();
-//		setScreen(mainMenuScreen); commented out so we can experiment with rework 2D
-//      setScreen(gameplayScreen); commented out so we can experiment with rework 3D
-//        setScreen(gameplay3D);
+        QuestManager manager = new  QuestManager();
+        Gameplay3D gameplay3D = new Gameplay3D();
+        setScreen(gameplay3D);
+
 
 	}
 

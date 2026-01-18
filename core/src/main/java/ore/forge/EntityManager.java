@@ -50,7 +50,6 @@ public class EntityManager implements Iterable<EntityInstance> {
 
         }
 
-
         entities.flush();
     }
 

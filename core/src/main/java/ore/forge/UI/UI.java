@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import ore.forge.GameContext;
 import ore.forge.Input3D.OpenedMenuState;
 import ore.forge.Items.ItemDefinition;
+import ore.forge.UI.Widgets.Icon;
 import ore.forge.VisualComponent;
 
 import java.util.ArrayList;
@@ -38,6 +40,15 @@ public class UI extends Stage {
         inventoryMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
         inventoryMenu.setVisible(false);
 
+//        allIcons.clear();
+//        for(ItemDefinition item : allItems){
+//            AtlasRegion region = iconAtlas.findRegion(item.id());
+//            allIcons.add(new Icon<>(region, item));
+//        }
+//        ShopMenu shopMenu = new ShopMenu(allIcons, GameContext.INSTANCE);
+//        shopMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
+//        shopMenu.setVisible(true);
+//        this.addActor(shopMenu);
 
         this.addActor(inventoryMenu);
     }

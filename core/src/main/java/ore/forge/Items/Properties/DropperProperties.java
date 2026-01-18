@@ -17,4 +17,5 @@ public class DropperProperties implements ItemProperties {
     public OreDefinition oreDefinition() {
         return oreDefinition;
     }
+
 }
