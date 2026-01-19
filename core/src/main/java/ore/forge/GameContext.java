@@ -2,8 +2,11 @@ package ore.forge;
 
 import com.badlogic.gdx.assets.AssetManager;
 import ore.forge.EventSystem.EventManager;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.Player.Player;
 import ore.forge.Strategies.Updatable;
+
+import java.util.List;
 
 public class GameContext {
     public static final GameContext INSTANCE = new GameContext();
@@ -23,6 +26,9 @@ public class GameContext {
         collisionManager = new CollisionManager(this);
         player = new Player();
         updatables = new StagedCollection<>();
+    }
+
+    public GameContext(List<ItemDefinition> allItems) {
 
     }
 
@@ -77,6 +83,7 @@ public class GameContext {
     }
 
     public void load() {
+        player.inventory.load();
 
     }
 

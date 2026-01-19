@@ -20,13 +20,11 @@ public class OreForge extends Game {
 		* Create the Objects for elements like the map and UI.
 		* */
 
-//        GameScreen gameScreen = new GameScreen();
-//		ItemInventory itemInventory = new ItemInventory(null);
+        GameContext context = new GameContext();
+        context.load();
         QuestManager manager = new  QuestManager();
         Gameplay3D gameplay3D = new Gameplay3D();
         setScreen(gameplay3D);
-
-
 	}
 
 	public void render() {

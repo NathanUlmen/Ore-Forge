@@ -4,7 +4,7 @@ import ore.forge.CurrencyType;
 import ore.forge.Items.ItemDefinition;
 
 public class Player {
-    public ore.forge.Player.ItemInventory inventory;
+    public ItemInventory inventory;
     private int prestigeLevel;
     //Currencies
     private double cash;
@@ -14,6 +14,16 @@ public class Player {
 
     public Player() {
 
+    }
+
+    public boolean tryPurchase(ItemDefinition item, int count) {
+        assert count > 1;
+        if (canPurchase(item, count)) {
+            removeCurrency(item.getAcquisitionInfo().currencyType(), item.getAcquisitionInfo().itemValue() * count);
+            inventory.getNode(item.id()).addNew(count);
+            return true;
+        }
+        return false;
     }
 
     public boolean canPurchase(ItemDefinition definition,  int count) {

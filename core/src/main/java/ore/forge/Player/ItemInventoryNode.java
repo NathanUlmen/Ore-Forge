@@ -25,6 +25,14 @@ public class ItemInventoryNode {
         return heldItem.id();
     }
 
+    public void setTotalOwned(int totalOwned) {
+        this.totalOwned = totalOwned;
+    }
+
+    public void setIsUnlocked(boolean isUnlocked) {
+        this.isUnlocked = isUnlocked;
+    }
+
     public int getTotalOwned() {
         return totalOwned;
     }

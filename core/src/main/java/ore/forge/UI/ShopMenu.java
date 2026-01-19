@@ -8,12 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
 import ore.forge.GameContext;
-import ore.forge.Items.Acquisition.AcquisitionInfo;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Player.ItemInventoryNode;
-import ore.forge.Player.Player;
 import ore.forge.UI.Widgets.Icon;
 import ore.forge.UI.Widgets.WidgetGrid;
 
@@ -149,17 +146,10 @@ public class ShopMenu extends Table {
         public void purchase(GameContext context, int count) {
             ItemDefinition toPurchase = purchaseIcon.getData();
             ItemInventoryNode node = context.player.inventory.getNode(toPurchase.id());
-            Player player = context.player;
+            if (context.player.tryPurchase(toPurchase, count)) {
+                //check our buttons again
 
-            assert player.canPurchase(toPurchase, count);
-            AcquisitionInfo info = toPurchase.getAcquisitionInfo();
-
-            player.removeCurrency(info.currencyType(), info.itemValue() * count);
-
-            context.eventManager.notifyListeners(new InventoryNodeGameEvent(node));
-
-            //logic to see if we can purchase.
-            node.addNew(count);
+            }
         }
 
         private int getPurchaseCount() {
