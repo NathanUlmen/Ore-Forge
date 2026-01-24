@@ -3,7 +3,8 @@ package ore.forge;
 public enum CollisionRules {
     ORE(0),
     ORE_PROCESSOR(1),
-    WORLD_GEOMETRY(2);
+    WORLD_GEOMETRY(2),
+    PREVIEW(3);
 
     public final int mask;
 

@@ -28,26 +28,21 @@ public class GameContext {
         updatables = new StagedCollection<>();
     }
 
-    public GameContext(List<ItemDefinition> allItems) {
-
-    }
-
     public void update(float delta) {
         //update our physics step
         physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
+
+        collisionManager.updateTouchingEntities(delta);
 
         //update transforms
         for (EntityInstance entity : entityManager) {
             entity.syncFromPhysics();
         }
 
-        collisionManager.updateTouchingEntities(delta);
-
         //update our time based updates
         for(final Updatable updatable : updatables) {
             updatable.update(delta, this);
         }
-
 
         //update our event manager here if we decide to rework it
 
@@ -61,12 +56,6 @@ public class GameContext {
 
     public void removeUpdatable(Updatable updatable) {
         this.updatables.stageRemoval(updatable);
-    }
-
-    public void addEntity(EntityInstance entity) {
-    }
-
-    public void removeEntity(EntityInstance entity) {
     }
 
     /**
@@ -83,7 +72,7 @@ public class GameContext {
     }
 
     public void load() {
-        player.inventory.load();
+//        player.inventory.load();
 
     }
 

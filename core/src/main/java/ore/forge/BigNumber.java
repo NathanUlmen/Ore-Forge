@@ -126,7 +126,7 @@ public class BigNumber implements Comparable<BigNumber> {
         return new BigNumber(9.99999999999999999D, Long.MAX_VALUE);
     }
 
-    /* Modulo is: a - (b * int(a/b))
+    /* Modulo is: a % b == a - (b * floor(a/b))
      * but we run into issues when the number is outside the range of the Significant digits.
      * Might look into using a method inspired by this video??? https://www.youtube.com/watch?v=skUuFzPUhIc
      * */

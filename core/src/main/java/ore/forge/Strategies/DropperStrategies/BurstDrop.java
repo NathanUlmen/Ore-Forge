@@ -51,7 +51,6 @@ public class BurstDrop implements DropStrategy {
         burstCooldown = new CoolDown(cooldownInterval);
         currentOreInBurst = 0;
 
-
         intervalPerOre /= 2f;
         intervalBetween = new CoolDown(intervalPerOre);
         isDropping = false;

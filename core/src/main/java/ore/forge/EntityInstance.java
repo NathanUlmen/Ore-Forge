@@ -10,13 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EntityInstance implements Disposable {
+    private final Object definition;
     public final List<Updatable> updatables;
     public final List<GameEventListener<?>> listeners;
     public final PhysicsComponent physicsComponent;
     public VisualComponent visualComponent;
     private final Matrix4 worldTransform;
 
-    public EntityInstance(PhysicsComponent physicsComponent, VisualComponent visualComponent) {
+    public EntityInstance(Object definition, PhysicsComponent physicsComponent, VisualComponent visualComponent) {
+        this.definition = definition;
         worldTransform = new Matrix4();
         this.physicsComponent = physicsComponent;
         this.updatables = new ArrayList<>();
@@ -25,14 +27,13 @@ public class EntityInstance implements Disposable {
         visualComponent.modelInstance.transform = worldTransform;
     }
 
+    public Object getDefinition() {
+        return definition;
+    }
 
     public void addToWorld(btDynamicsWorld dynamicsWorld) {
         physicsComponent.addToWorld(dynamicsWorld);
         syncFromPhysics();
-//        for (btCollisionObject collisionObject : entityPhysicsBodies) {
-//            collisionObject.setWorldTransform(worldTransform);
-//            dynamicsWorld.addCollisionObject(collisionObject);
-//        }
     }
 
     public void removeFromWorld(btDynamicsWorld dynamicsWorld) {
@@ -41,7 +42,9 @@ public class EntityInstance implements Disposable {
 
     public void setTransform(Matrix4 worldTransform) {
         this.worldTransform.set(worldTransform);
-        physicsComponent.setWorldTransform(worldTransform);
+        if (physicsComponent != null) {
+            physicsComponent.setWorldTransform(worldTransform);
+        }
         visualComponent.modelInstance.transform.set(worldTransform);
     }
 
@@ -49,39 +52,6 @@ public class EntityInstance implements Disposable {
         physicsComponent.syncToEntity(worldTransform);
         visualComponent.syncFromEntity(worldTransform);
     }
-
-//    public void place(Matrix4 transform) {
-//        setTransform(transform);
-//        for (btCollisionObject body : entityPhysicsBodies) {
-//            if (body.userData instanceof PhysicsBodyData data && data.bodyLogic != null) {
-//                data.bodyLogic.register();
-//            }
-//        }
-//    }
-//
-//    public void setTransform(Matrix4 transform) {
-//        worldTransform.set(transform);
-//
-//        for (btCollisionObject body : entityPhysicsBodies) {
-//            if (body instanceof btRigidBody) {
-//                body.setWorldTransform(worldTransform);
-//            }
-//        }
-//
-//        visualComponent.modelInstance.transform.set(worldTransform);
-//        visualComponent.modelInstance.calculateTransforms();
-//
-//        for (btCollisionObject body : entityPhysicsBodies) {
-//            if (body instanceof btGhostObject && body.userData instanceof PhysicsBodyData data) {
-//                Matrix4 ghostWorld = new Matrix4(worldTransform).mul(data.localTransform);
-//                body.setWorldTransform(ghostWorld);
-//            }
-//            if (body instanceof btRigidBody rigid) {
-//                rigid.setWorldTransform(worldTransform);
-//                rigid.getMotionState().setWorldTransform(worldTransform);
-//            }
-//        }
-//    }
 
     public Matrix4 transform() {
         return worldTransform;

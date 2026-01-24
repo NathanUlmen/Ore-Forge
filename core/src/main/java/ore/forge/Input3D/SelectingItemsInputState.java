@@ -2,8 +2,10 @@ package ore.forge.Input3D;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
 import ore.forge.EntityInstance;
+import ore.forge.Items.ItemDefinition;
 import ore.forge.PhysicsBodyData;
 
 import java.util.ArrayList;
@@ -32,23 +34,28 @@ public class SelectingItemsInputState extends InputState {
         cameraController.update(delta);
         //Transition to Building State with selected Items
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            List<ItemDefinition> defs = new ArrayList<>(selectedItems.size());
+            List<Matrix4> transforms = new ArrayList<>(selectedItems.size());
+            for (EntityInstance item : selectedItems) {
+                inputHandler.context.entityManager.stageRemove(item);
+                defs.add((ItemDefinition) item.getDefinition());
+                transforms.add(item.transform());
+            }
             inputHandler.setInputState(buildingState);
-            buildingState.setActive(selectedItems);
+            buildingState.setActiveFromDef(defs, transforms);
             cleanUpSelectedItems();
             return;
         }
 
-        //sell selected items
+        //Sell selected items
         if (Gdx.input.isKeyJustPressed(Input.Keys.X)) {
-
 
         }
 
         //remove selected items
         if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
             for (EntityInstance item : selectedItems) {
-                context.entityManager.stageRemove(item);
-
+                inputHandler.context.entityManager.stageRemove(item);
             }
             selectedItems.clear();
             inputHandler.setInputState(defaultState);
@@ -69,9 +76,10 @@ public class SelectingItemsInputState extends InputState {
             RayResultCallback rayCallback = rayCastForItem();
             if (rayCallback.hasHit() && rayCallback.getCollisionObject() != null) { //If Ray-Cast returns an item add to selectedItem
                 var collisionObject = rayCallback.getCollisionObject();
-                if (collisionObject.userData != null) {
-                    PhysicsBodyData hitBodyData = (PhysicsBodyData) collisionObject.userData;
-                    addToSelectedItems(hitBodyData.parentEntityInstance);
+                if (collisionObject.userData instanceof PhysicsBodyData data) {
+                    if (data.parentEntityInstance.getDefinition() instanceof ItemDefinition) {
+                        addToSelectedItems(data.parentEntityInstance);
+                    }
                 }
 
 //            } else { //if Ray-Cast returns no item exit
@@ -79,6 +87,7 @@ public class SelectingItemsInputState extends InputState {
 //                cleanUpSelectedItems();
 //                rayCallback.dispose();
 //                return;
+
             }
             rayCallback.dispose();
         } else {

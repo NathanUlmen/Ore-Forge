@@ -6,15 +6,15 @@
   "properties": {
     "itemId" : {
       "type" : "string",
-      "description": ""
+      "description": "Identifier of the item that this node corresponds to / holds."
     },
     "totalOwned" : {
       "type" : "integer",
-      "description": ""
+      "description": "The total number of copies this node holds of the item."
     },
     "isUnlocked" : {
       "type" : "boolean",
-      "description": ""
+      "description": "Whether or not this item is able to be obtained from other systems."
     }
   }
 }

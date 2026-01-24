@@ -9,6 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import ore.forge.GameContext;
 import ore.forge.Input3D.OpenedMenuState;
 import ore.forge.Items.ItemDefinition;
+import ore.forge.Player.ItemInventory;
+import ore.forge.Player.ItemInventoryNode;
 import ore.forge.UI.Widgets.Icon;
 import ore.forge.VisualComponent;
 
@@ -19,11 +21,12 @@ public class UI extends Stage {
     private ItemInventoryMenu inventoryMenu;
     private TextureAtlas iconAtlas;
 
-    public UI(List<ItemDefinition> allItems) {
+    public UI(ItemInventory inventory) {
         super();
         // Create our texture atlas of icon images
         IconRenderer iconRenderer = new IconRenderer();
-        for (ItemDefinition item : allItems) {
+        for (ItemInventoryNode node : inventory.nodes()) {
+            ItemDefinition item = node.getHeldItem();
             VisualComponent vc = new VisualComponent(new ModelInstance(item.model()));
             iconRenderer.renderIcon(item.id(), vc);
             vc.dispose();
@@ -31,10 +34,14 @@ public class UI extends Stage {
         iconAtlas = iconRenderer.buildAtlas();
 
         //Create our Icons for Inventory
-        List<Icon<ItemDefinition>> allIcons = new ArrayList<>();
-        for (ItemDefinition item : allItems) {
+        List<Icon<ItemInventoryNode>> allIcons = new ArrayList<>();
+        for (ItemInventoryNode node : inventory.nodes()) {
+            ItemDefinition item = node.getHeldItem();
             AtlasRegion region = iconAtlas.findRegion(item.id());
-            allIcons.add(new Icon<>(region, item));
+            Icon<ItemInventoryNode> icon = new Icon<>(region, node);
+            icon.setTopText("Stored: " + node.getStored());
+            icon.setBottomText(node.name());
+            allIcons.add(icon);
         }
         inventoryMenu = new ItemInventoryMenu(allIcons);
         inventoryMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
@@ -51,6 +58,10 @@ public class UI extends Stage {
 //        this.addActor(shopMenu);
 
         this.addActor(inventoryMenu);
+    }
+
+    public void setBuildListener(BuildListener listener) {
+        this.inventoryMenu.setBuildListener(listener);
     }
 
     public void toggleMenu(UIMenu menu) {
@@ -104,7 +115,5 @@ public class UI extends Stage {
     public void toggleSelecting() {
         // TODO
     }
-
-    public void configOpenedInventory(OpenedMenuState openedInventory) {}
 
 }

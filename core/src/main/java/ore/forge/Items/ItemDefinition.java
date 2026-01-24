@@ -70,14 +70,16 @@ public class ItemDefinition {
 
         HashMap<String, BodyLogic> behaviors = loadBehaviors(json);
         HashMap<btCollisionShape, NodeInfo> collisionShapeMap = new HashMap<>();
-        var collisionShapes = createShapes(model, nodeInfoHashMap, collisionShapeMap);
+        List<btCollisionShape> collisionShapes = createShapes(model, nodeInfoHashMap, collisionShapeMap);
 
         ItemBehaviorData behaviorData = new ItemBehaviorData(behaviors, collisionShapeMap);
 
         //TODO: finish this so that it handles multiple properties correctly.
         ItemProperties itemProperties;
         JsonValue propertiesJson = json.get("properties"); //grab our list of properties
-        if (propertiesJson.size > 1) { //if more than one we make a bundled list of properties
+        if (propertiesJson.isEmpty()) {
+            itemProperties = null;
+        } else if (propertiesJson.size > 1) { //if more than one we make a bundled list of properties
             List<ItemProperties> properties = new ArrayList<>(json.size);
             itemProperties = new BundledProperties(properties);
             for (JsonValue value :  propertiesJson) {
@@ -164,6 +166,7 @@ public class ItemDefinition {
 
         for (Node part : model.nodes) {
             NodeInfo info = nodeInfoMap.get(part.id);
+            System.out.println(info);
             btCollisionShape bulletShape = Bullet.obtainStaticNodeShape(part, false);
             switch (info.collisionType()) {
                 case "both": {

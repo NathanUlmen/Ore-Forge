@@ -56,7 +56,7 @@ public class Gameplay3D implements Screen {
 
     private float rotationAngle = 0;
 
-    public Gameplay3D() {
+    public Gameplay3D(UI ui) {
         context = GameContext.INSTANCE;
         // Config ModelBatch
         modelBatch = new ModelBatch(new CustomShaderProvider());
@@ -83,9 +83,9 @@ public class Gameplay3D implements Screen {
         // visualComponent.attributes = new GridAttribute(GridAttribute.ID);
 
         var rigidBodies = new ArrayList<PhysicsBody>();
-        rigidBodies.add(new PhysicsBody(groundRigidBody, null, CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
+        rigidBodies.add(new PhysicsBody(groundRigidBody, new Matrix4(), CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
         PhysicsComponent physicsComponent = new PhysicsComponent(rigidBodies);
-        EntityInstance planeInstance = new EntityInstance(physicsComponent, visualComponent);
+        EntityInstance planeInstance = new EntityInstance(null, physicsComponent, visualComponent);
         BodyLogic bodyLogic = new BodyLogic() {
             @Override
             public void register(GameContext context) {
@@ -149,7 +149,7 @@ public class Gameplay3D implements Screen {
         List<ItemDefinition> allItems = new ArrayList<>();
         allItems.add(dropperSpawner);
         allItems.add(spawner);
-        ui = new UI(allItems);
+        this.ui = ui;
         Gdx.input.setInputProcessor(ui);
 
         // Config camera
@@ -161,7 +161,7 @@ public class Gameplay3D implements Screen {
 
 
         // Configure Input Handler
-        inputHandler = new InputHandler(new IsometricCameraController(camera), ui);
+        inputHandler = new InputHandler(new IsometricCameraController(camera), ui, context);
 
     }
 
@@ -176,25 +176,26 @@ public class Gameplay3D implements Screen {
         inputHandler.update(delta);
         camera.update();
 
+
         // Process input
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {// rotate item
-            rotationAngle += 90;
-        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {// rotate item
+//            rotationAngle += 90;
+//        }
         // Place item
-        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            Vector3 position = getMouseGroundPosition(camera);
+//        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+//            Vector3 position = getMouseGroundPosition(camera);
             // Spawn an instance of the item and add it to the physics simulation
-            EntityInstance instance = EntityInstanceCreator.createInstance(spawner);
-            Matrix4 transform = new Matrix4().setToTranslation(position);
-            transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
-            instance.setTransform(transform);
+//            EntityInstance instance = EntityInstanceCreator.createInstance(spawner);
+//            Matrix4 transform = new Matrix4().setToTranslation(position);
+//            transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
+//            instance.setTransform(transform);
             // modelInstances.add(instance.visualComponent.modelInstance);
 //                physicsWorld.dynamicsWorld().addCollisionObject(object,
 //                        object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY)
 //                                : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
-            context.entityManager.stageAdd(instance);
-        }
-
+//            context.entityManager.stageAdd(instance);
+//        }
+//
         context.update(delta);
 
         // Physics simulation Step
@@ -213,12 +214,12 @@ public class Gameplay3D implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
-        modelBatch.begin(camera);
-        for (var instance : context.entityManager) {
-            var modelInstance = instance.visualComponent.modelInstance;
-            modelBatch.render(modelInstance, environment);
-        }
-        modelBatch.end();
+//        modelBatch.begin(camera);
+//        for (EntityInstance instance : context.entityManager.allEntities()) {
+//            ModelInstance modelInstance = instance.visualComponent.modelInstance;
+//            modelBatch.render(modelInstance, environment);
+//        }
+//        modelBatch.end();
 
         ui.act();
         ui.getViewport().apply();
@@ -227,8 +228,7 @@ public class Gameplay3D implements Screen {
 //        collisionManager.updateTouchingEntities(delta);
 //        TimerUpdater.update(delta);
 
-//        context.physicsWorld.drawDebug(camera);
-        // physicsWorld.drawDebug(camera);
+        context.physicsWorld.drawDebug(camera);
     }
 
     @Override

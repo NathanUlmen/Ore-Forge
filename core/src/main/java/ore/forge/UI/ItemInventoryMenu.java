@@ -1,9 +1,15 @@
 package ore.forge.UI;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ore.forge.Input3D.BuildingInputState;
+import ore.forge.Input3D.InputHandler;
+import ore.forge.Input3D.OpenedMenuState;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Items.ItemRole;
+import ore.forge.Player.ItemInventoryNode;
 import ore.forge.UI.Widgets.FilterTab;
 import ore.forge.UI.Widgets.Icon;
 import ore.forge.UI.Widgets.SearchBar;
@@ -15,17 +21,18 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ItemInventoryMenu extends Table {
-    private List<Icon<ItemDefinition>> allIcons; // All itemIcons
-    private List<Icon<ItemDefinition>> currentIcons;
+    private List<Icon<ItemInventoryNode>> allIcons; // All itemIcons
+    private List<Icon<ItemInventoryNode>> currentIcons;
     private SearchBar searchBar;
     private FilterTab filterTab;
     private WidgetGrid iconGrid;
-    private HashMap<String, List<Icon<ItemDefinition>>> filteredLists;
+    private HashMap<String, List<Icon<ItemInventoryNode>>> filteredLists;
 
-    public ItemInventoryMenu(List<Icon<ItemDefinition>> allIcons) {
+    private BuildListener buildListener;
+
+    public ItemInventoryMenu(List<Icon<ItemInventoryNode>> allIcons) {
         super();
         this.top().left();
-
         this.allIcons = allIcons;
         this.currentIcons = new ArrayList<>();
 
@@ -41,11 +48,18 @@ public class ItemInventoryMenu extends Table {
         var filterOptions = new ArrayList<FilterTab.FilterOption>();
         for (ItemRole itemRole : ItemRole.values()) {
             // Create list of all items of our current type.
-            List<Icon<ItemDefinition>> category = new ArrayList<>();
-            for (Icon<ItemDefinition> icon : this.allIcons) {
-                ItemRole[] roles = icon.getData().type();
+            List<Icon<ItemInventoryNode>> category = new ArrayList<>();
+            for (Icon<ItemInventoryNode> icon : this.allIcons) {
+                ItemRole[] roles = icon.getData().getHeldItem().type();
                 if ((ItemRole.combineBits(roles) & itemRole.mask) != 0) {
                     category.add(icon);
+                    icon.setEventListener(new ClickListener() {
+                        @Override
+                        public void clicked(InputEvent event, float x, float y) {
+                            assert buildListener != null;
+                            buildListener.initiateBuild(icon.getData().getHeldItem());
+                        }
+                    });
                 }
             }
             filteredLists.put(itemRole.name(), category);
@@ -75,8 +89,12 @@ public class ItemInventoryMenu extends Table {
         this.debugAll();
     }
 
+    public void setBuildListener(BuildListener buildListener) {
+        this.buildListener = buildListener;
+    }
+
     public void updateFilters() {
-        var filteredIcons = new ArrayList<Icon<ItemDefinition>>();
+        var filteredIcons = new ArrayList<Icon<ItemInventoryNode>>();
         for (FilterTab.FilterOption option : filterTab.getOptions()) {
             if (option.isChecked()) {
                 filteredIcons.addAll(filteredLists.get(option.getFilterId()));
@@ -96,8 +114,8 @@ public class ItemInventoryMenu extends Table {
 
     public void applySearch(String s) {
         System.out.println(s);
-        var newIcons = new ArrayList<Icon<ItemDefinition>>();
-        for (Icon<ItemDefinition> icon : allIcons) {
+        var newIcons = new ArrayList<Icon<ItemInventoryNode>>();
+        for (Icon<ItemInventoryNode> icon : allIcons) {
             if (icon.getData().name().contains(s)) {
                 newIcons.add(icon);
             }

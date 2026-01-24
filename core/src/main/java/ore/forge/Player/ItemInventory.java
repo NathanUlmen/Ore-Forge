@@ -5,6 +5,8 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.*;
 import ore.forge.Items.ItemDefinition;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -16,7 +18,7 @@ public class ItemInventory {
 
         // Create all our nodes
         for (ItemDefinition definition : definitions) {
-            var node = new ItemInventoryNode(definition, 99);
+            var node = new ItemInventoryNode(definition, 999);
             nodes.put(node.id(), node);
         }
 
@@ -25,19 +27,22 @@ public class ItemInventory {
 
     }
 
-
     public void load() {
         JsonReader reader = new JsonReader();
-        JsonValue json = reader.parse(Gdx.files.local("itemSaveData.json"));
-        if (json == null) {
+        JsonValue json;
+        //Handle if no save file is present.
+        try {
+            json = reader.parse(Gdx.files.local("itemSaveData.json"));
+        } catch (Exception e) {
             configDefault();
             return;
         }
+
+        //Configure inventory from save data.
         for (JsonValue value : json) {
-            final String id = value.getString("id");
+            final String id = value.getString("itemId");
             final int totalOwned = value.getInt("totalOwned");
             final boolean isUnlocked = value.getBoolean("isUnlocked");
-
             ItemInventoryNode inventoryNode = nodes.get(id);
             if (inventoryNode == null) { throw new IllegalArgumentException("Cant find item with id of " + value.getString("id")); }
             inventoryNode.setIsUnlocked(isUnlocked);
@@ -53,10 +58,13 @@ public class ItemInventory {
         FileHandle file = Gdx.files.local("itemSaveData.json");
 
         // Convert collection to something serializable
-        Array<ItemInventoryNode> nodeList = new Array<>();
+        Array<ItemNodeSaveData> nodeList = new Array<>();
 
         for (ItemInventoryNode node : nodes.values()) {
-            nodeList.add(node);
+            final String id = node.id();
+            final int totalOwned = node.getTotalOwned();
+            final boolean isUnlocked = node.isUnlocked();
+            nodeList.add(new ItemNodeSaveData(id, totalOwned, isUnlocked));
         }
 
         file.writeString(json.prettyPrint(nodeList), false);
@@ -66,8 +74,14 @@ public class ItemInventory {
 
     }
 
+    public Iterable<ItemInventoryNode> nodes() {
+        return nodes.values();
+    }
+
     public ItemInventoryNode getNode(String targetId) {
         return nodes.get(targetId);
     }
+
+    private record ItemNodeSaveData(String itemId, int totalOwned, boolean isUnlocked) {}
 
 }

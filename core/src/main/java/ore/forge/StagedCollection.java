@@ -1,38 +1,40 @@
 package ore.forge;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.mongodb.lang.NonNull;
 
 import java.util.*;
 
 public class StagedCollection<E> implements Iterable<E> {
-    private final List<E> elements;
-    private final Set<E> toAdd, toRemove;
+    private final Array<E> elements;
+    private final ObjectSet<E> toAdd, toRemove;
 
     public StagedCollection() {
-        elements = new ArrayList<>();
-        toAdd = new HashSet<>();
-        toRemove = new HashSet<>();
+        this(1_000);
     }
 
     public StagedCollection(int startSize) {
-        elements = new ArrayList<>(startSize);
-        toAdd = new HashSet<>(startSize / 2);
-        toRemove = new HashSet<>(startSize / 2);
+        elements = new Array<>(false, startSize);
+        toAdd = new ObjectSet<>(startSize / 2);
+        toRemove = new ObjectSet<>(startSize / 2);
+
     }
 
     public void flush() {
-        if (!toRemove.isEmpty()) {
-            if (toRemove.size() <= 40) {
-                elements.removeAll(toRemove);
-            } else {
-                elements.removeIf(toRemove::contains);
+        if (toRemove.size > 0) {
+            for (int i = elements.size - 1; i >= 0; i--) {
+                if (toRemove.contains(elements.get(i))) {
+                    elements.removeIndex(i);
+                }
             }
             toRemove.clear();
         }
 
-        if (!toAdd.isEmpty()) {
-            elements.addAll(toAdd);
+        if (toAdd.size > 0) {
+            for (E e : toAdd) {
+                elements.add(e);
+            }
             toAdd.clear();
         }
     }
@@ -52,7 +54,7 @@ public class StagedCollection<E> implements Iterable<E> {
     }
 
     public int size() {
-        return elements.size();
+        return elements.size;
     }
 
     public Iterable<E> toAdd() {
@@ -69,7 +71,7 @@ public class StagedCollection<E> implements Iterable<E> {
     }
 
     public String toString() {
-        return "Size: " + size() +  "\tToAdd: " + toAdd.size()  + "\tToRemove: " + toRemove.size();
+        return "Size: " + size() +  "\tToAdd: " + toAdd.size  + "\tToRemove: " + toRemove.size;
     }
 
 }

@@ -97,13 +97,21 @@ public class Icon<E> extends Table {
     }
 
     public void setEventListener(EventListener eventListener) {
-
+        this.addListener(eventListener);
     }
 
     @Override
     public void layout() {
         super.layout();
         this.setSize(getWidth(), getHeight());
+    }
+
+    public void setTopText(String text) {
+        topText.setText(text);
+    }
+
+    public void setBottomText(String text) {
+        bottomText.setText(text);
     }
 
     @Override

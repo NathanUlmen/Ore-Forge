@@ -2,6 +2,8 @@ package ore.forge.Input3D;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import ore.forge.Items.ItemDefinition;
+import ore.forge.UI.BuildListener;
 import ore.forge.UI.UI;
 import ore.forge.UI.UIMenu;
 
@@ -20,7 +22,7 @@ import java.util.EnumSet;
  * On building Ui.setMode(building);
  *
  */
-public class OpenedMenuState extends InputState {
+public class OpenedMenuState extends InputState implements BuildListener {
     private EnumSet<UIMenu> menuStates;
     private BuildingInputState buildingInputState;
     private DefaultInputState defaultInputState;
@@ -32,6 +34,7 @@ public class OpenedMenuState extends InputState {
         menuStates = EnumSet.noneOf(UIMenu.class);
         isSearching = false;
         this.ui = ui;
+        ui.setBuildListener(this::goToBuildMode);
     }
 
     @Override
@@ -51,7 +54,7 @@ public class OpenedMenuState extends InputState {
 
         //Close all tabs
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && !isSearching) {
-            for (var menu : menuStates) {
+            for (UIMenu menu : menuStates) {
                 ui.toggleMenu(menu);
             }
             menuStates.clear();
@@ -67,8 +70,21 @@ public class OpenedMenuState extends InputState {
 
     public void setActive(UIMenu menu) {
         assert menuStates.isEmpty();
-        System.out.println("Active now!!!");
         updateMenuStates(menu);
+    }
+
+    @Override
+    public void initiateBuild(ItemDefinition item) {
+        goToBuildMode(item);
+    }
+
+    /*
+    * From Our Inventory
+    * */
+    public void goToBuildMode(ItemDefinition item) {
+        inputHandler.setInputState(buildingInputState);
+        ui.toggleMenu(UIMenu.INVENTORY);
+        buildingInputState.setActive(item);
     }
 
     private void updateMenuStates(UIMenu menu) {
@@ -91,5 +107,7 @@ public class OpenedMenuState extends InputState {
     public void setSearching(boolean isSearching) {
         this.isSearching = isSearching;
     }
+
+
 
 }

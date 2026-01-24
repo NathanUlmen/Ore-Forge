@@ -1,5 +1,7 @@
 package ore.forge.Player;
 
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.Items.ItemDefinition;
 
 public class ItemInventoryNode {
@@ -15,6 +17,10 @@ public class ItemInventoryNode {
         this.stored = totalOwned;
         this.placed = 0;
         this.isUnlocked = false;
+    }
+
+    public ItemDefinition getHeldItem() {
+        return heldItem;
     }
 
     public String name() {
@@ -102,4 +108,5 @@ public class ItemInventoryNode {
     public boolean isUnlocked() {
         return isUnlocked;
     }
+
 }

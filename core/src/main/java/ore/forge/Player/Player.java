@@ -61,4 +61,12 @@ public class Player {
         };
     }
 
+    public void load() {
+
+    }
+
+    public void save() {
+
+    }
+
 }

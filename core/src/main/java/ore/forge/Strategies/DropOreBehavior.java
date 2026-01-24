@@ -60,7 +60,7 @@ public class DropOreBehavior implements BodyLogic, Updatable {
             EntityInstance ore = EntityInstanceCreator.createInstance(oreDefinition);
             ore.setTransform(this.parent.getWorldTransform().translate(0, -1f, 0));
             btRigidBody body = (btRigidBody) ore.physicsComponent.getBodies().getFirst().getRigidBody();
-            body.setLinearVelocity(new Vector3(0, -4, 0));
+            body.setLinearVelocity(new Vector3(0, -20, 0));
 
             //Add ore to the world
 //            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperProperties.oreModel));
@@ -73,26 +73,13 @@ public class DropOreBehavior implements BodyLogic, Updatable {
 //            oreBody.setSleepingThresholds(1, 0);
 
 
-
 //            oreBody.applyCentralImpulse(new Vector3(0, -150f, 0)); //Make it look like its "spitting" the ore out
 
 //            oreBody.setSleepingThresholds(1, 1);
 //            oreBody.setCcdMotionThreshold(0);
 //            oreBody.setCcdMotionThreshold(0);
 
-
-
             context.entityManager.stageAdd(ore);
-
-
-            //Legacy will remove once port over
-//            Gameplay3D.modelInstances.add(ore.visualComponent.modelInstance);
-//            Gameplay3D.entityInstances.add(ore);
-//            for (var object : ore.entityPhysicsBodies) {
-//                PhysicsWorld.instance().dynamicsWorld().addRigidBody((btRigidBody) object,
-//                    CollisionRules.combineBits(CollisionRules.ORE),
-//                    CollisionRules.combineBits(CollisionRules.ORE, CollisionRules.ORE_PROCESSOR, CollisionRules.WORLD_GEOMETRY));
-//            }
         }
     }
 

@@ -4,11 +4,8 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.GameContext;
+import ore.forge.*;
 import ore.forge.Items.ItemDefinition;
-import ore.forge.Ore;
-import ore.forge.PhysicsBodyData;
-import ore.forge.ReflectionLoader;
 import ore.forge.Strategies.UpgradeStrategies.UpgradeStrategy;
 
 public class SellOreBehavior implements BodyLogic {
@@ -68,28 +65,15 @@ public class SellOreBehavior implements BodyLogic {
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
         if (subject.specificData instanceof Ore ore && timeTouching > 0.5f) {
             upgradeStrategy.applyTo(ore);
-//            var player = ore.forge.Player.Player.getSingleton();
-//            var eventManager = EventManager.getSingleton();
-//            player.addToWallet(ore.getOreValue() * ore.getMultiOre());
 //            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
 
             //Compute and Reward Special points
-//            spRewardProgress += ore.getMultiOre();
-//            player.addSpecialPoints(spRewardAmount * (spRewardProgress / spRewardThreshold));
-//            spRewardProgress %= spRewardThreshold;
+            spRewardProgress += ore.getMultiOre();
+            context.player.addCurrency(CurrencyType.SPECIAL_POINTS, spRewardAmount * (spRewardProgress / spRewardThreshold));
+            spRewardProgress %= spRewardThreshold;
 
-
-            /*
-             * TODO: Despawn Ore
-             * Remove from touching objects safely
-             * Remove form physics Simulation
-             * Remove from render list
-             *
-             * */
-//            ore.rigidBody.setWorldTransform(ore.rigidBody.getWorldTransform().translate(0, 10000, 0));
-//            PhysicsWorld.instance().dynamicsWorld().removeRigidBody(ore.rigidBody);
+            context.entityManager.stageRemove(subject.parentEntityInstance);
         }
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

@@ -5,23 +5,29 @@ import ore.forge.Strategies.Updatable;
 import java.util.Iterator;
 
 public class EntityManager implements Iterable<EntityInstance> {
-    private final StagedCollection<EntityInstance> entities;
+    private final StagedCollection<EntityInstance> activeEntities;
+    private final StagedCollection<EntityInstance> previewEntities;
 
     public EntityManager() {
-        entities = new StagedCollection<>();
+        activeEntities = new StagedCollection<>();
+        previewEntities = new StagedCollection<>();
     }
 
     public void stageAdd(EntityInstance entityInstance) {
-        entities.stageAddition(entityInstance);
+        activeEntities.stageAddition(entityInstance);
     }
 
     public void stageRemove(EntityInstance entityInstance) {
-        entities.stageRemoval(entityInstance);
+        activeEntities.stageRemoval(entityInstance);
     }
+
+    public void addPreviewEntity(EntityInstance entityInstance) { previewEntities.stageAddition(entityInstance); }
+
+    public void removePreviewEntity(EntityInstance entityInstance) { previewEntities.stageRemoval(entityInstance); }
 
     public void flush(GameContext ctx) {
         //Remove entities
-        for (EntityInstance e : entities.toRemove()) {
+        for (EntityInstance e : activeEntities.toRemove()) {
             //Remove from collisionManager
             ctx.collisionManager.removeAllPairsWith(e);
 
@@ -39,7 +45,7 @@ public class EntityManager implements Iterable<EntityInstance> {
         }
 
         //Add entities
-        for (EntityInstance e : entities.toAdd()) {
+        for (EntityInstance e : activeEntities.toAdd()) {
             //add to physics
             e.addToWorld(ctx.physicsWorld.dynamicsWorld());
 
@@ -50,11 +56,30 @@ public class EntityManager implements Iterable<EntityInstance> {
 
         }
 
-        entities.flush();
+        activeEntities.flush();
+        previewEntities.flush();
     }
 
     @Override
     public Iterator<EntityInstance> iterator() {
-        return entities.iterator();
+        return activeEntities.iterator();
     }
+
+    public Iterable<EntityInstance> allEntities() {
+        return () -> new Iterator<>() {
+            private final Iterator<EntityInstance> activeIt = activeEntities.iterator();
+            private final Iterator<EntityInstance> previewIt = previewEntities.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return activeIt.hasNext() || previewIt.hasNext();
+            }
+
+            @Override
+            public EntityInstance next() {
+                return activeIt.hasNext() ? activeIt.next() : previewIt.next();
+            }
+        };
+    }
+
 }

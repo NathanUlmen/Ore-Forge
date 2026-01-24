@@ -8,21 +8,24 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import ore.forge.GameContext;
 import ore.forge.UI.UI;
 
 public class InputHandler {
     protected CameraController cameraController;
+    protected final GameContext context;
     private InputState inputState;
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
 
-    public InputHandler(CameraController controller3D, UI ui) {
+    public InputHandler(CameraController controller3D, UI ui, GameContext context) {
+        this.context = context;
         cameraController = controller3D;
         var defaultInput = new DefaultInputState(this);
         var selectingInput = new SelectingItemsInputState(this);
         var buildingInput = new BuildingInputState(this);
         var openedInventory = new OpenedMenuState(this, ui);
-        ui.configOpenedInventory(openedInventory);
+
 
         //Setup Default
         defaultInput.setSelecting(selectingInput);
@@ -40,7 +43,6 @@ public class InputHandler {
         openedInventory.setDefaultInputState(defaultInput);
 
         setInputState(defaultInput);
-
     }
 
     public void update(float delta) {
