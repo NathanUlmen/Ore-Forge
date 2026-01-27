@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import ore.forge.EntityInstance;
 import ore.forge.EntityInstanceCreator;
 import ore.forge.GameContext;
@@ -26,7 +27,7 @@ import java.util.List;
  * */
 public class BuildingInputState extends InputState {
     private static final float ROTATION_ANGLE = 90f;
-    private final List<EntityInstance> previewEntities;
+    private final Array<EntityInstance> previewEntities;
     private final List<ItemDefinition> definitions;
     private final List<Vector3> offsets;
     private final Deque<List<EntityInstance>> undoActions;
@@ -36,7 +37,7 @@ public class BuildingInputState extends InputState {
     public BuildingInputState(InputHandler inputHandler) {
         super(inputHandler);
         definitions = new ArrayList<>();
-        previewEntities = new ArrayList<>();
+        previewEntities = new Array<>(false, 24);
         offsets = new ArrayList<>();
         undoActions = new ArrayDeque<>();
         context = inputHandler.context;
@@ -47,7 +48,7 @@ public class BuildingInputState extends InputState {
         cameraController.update(delta);
         Vector3 mouseWorld = inputHandler.getMouseGroundPosition(cameraController.getCamera());
 
-        for (int i = 0; i < previewEntities.size(); i++) {
+        for (int i = 0; i < previewEntities.size; i++) {
             Vector3 offset = offsets.get(i);
             EntityInstance item = previewEntities.get(i);
 
@@ -61,7 +62,7 @@ public class BuildingInputState extends InputState {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             //Rotate all items 90 degrees around center point and rotate around their relative direction too.
-            for (int i = 0; i < previewEntities.size(); i++) {
+            for (int i = 0; i < previewEntities.size; i++) {
                 Vector3 offset = offsets.get(i);
                 offset.rotate(Vector3.Y, ROTATION_ANGLE); //rotate relative to center
 
@@ -74,7 +75,6 @@ public class BuildingInputState extends InputState {
             }
         }
 
-        System.out.println(previewEntities.size());
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             //place the items
             placeItems();
@@ -92,7 +92,7 @@ public class BuildingInputState extends InputState {
             ItemDefinition definition = (ItemDefinition) item.getDefinition();
             ItemInventory inventory = context.player.inventory;
             inventory.getNode(definition.id()).giveBack();
-            context.entityManager.removePreviewEntity(item);
+            context.previewManager.removePreviewEntity(item);
         }
         //Stage exit of build mode?
         this.cleanUp();
@@ -103,7 +103,7 @@ public class BuildingInputState extends InputState {
         //1. Place all currently held items
         for (EntityInstance item : previewEntities) {
             context.entityManager.stageAdd(item);
-            context.entityManager.removePreviewEntity(item);
+            context.previewManager.removePreviewEntity(item);
         }
 
         previewEntities.clear();
@@ -117,7 +117,7 @@ public class BuildingInputState extends InputState {
             }
             EntityInstance instance = EntityInstanceCreator.createInstance(definition);
             previewEntities.add(instance);
-            context.entityManager.addPreviewEntity(instance);
+            context.previewManager.addPreviewEntity(instance);
         }
     }
 
@@ -147,7 +147,7 @@ public class BuildingInputState extends InputState {
     public void setActive(List<EntityInstance> items) {
         assert items != null && !items.isEmpty();
         for (EntityInstance item : items) {
-            context.entityManager.addPreviewEntity(item);
+            context.previewManager.addPreviewEntity(item);
         }
 
         for (EntityInstance instance : items) {
@@ -179,7 +179,9 @@ public class BuildingInputState extends InputState {
     }
 
     private void setPreviewEntities(List<EntityInstance> items) {
-        previewEntities.addAll(items);
+        for (EntityInstance item : items) {
+            previewEntities.add(item);
+        }
 
         for (EntityInstance item : items) {
             //TODO apply shader to each entity
@@ -190,7 +192,7 @@ public class BuildingInputState extends InputState {
 //        Gameplay3D.entityInstances.getFirst().visualComponent.attributes = null;
         for (EntityInstance item : previewEntities) {
             //TODO: Remove building Shader
-            context.entityManager.removePreviewEntity(item);
+            context.previewManager.removePreviewEntity(item);
         }
         previewEntities.clear();
         definitions.clear();

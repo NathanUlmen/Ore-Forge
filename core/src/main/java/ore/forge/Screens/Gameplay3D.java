@@ -36,10 +36,6 @@ public class Gameplay3D implements Screen {
     private final PerspectiveCamera camera;
     private final ModelBatch modelBatch;
     private final Environment environment;
-//    public static final ArrayList<ModelInstance> modelInstances = new ArrayList<>();
-//    public static final ArrayList<EntityInstance> entityInstances = new ArrayList<>();
-//    private final PhysicsWorld physicsWorld = PhysicsWorld.instance();
-//    private final CollisionManager collisionManager;
     private GameContext context;
     private ItemDefinition spawner;
     private InputHandler inputHandler;
@@ -51,10 +47,6 @@ public class Gameplay3D implements Screen {
 
     private final Plane groundPlane = new Plane(new Vector3(0, 1, 0), 0); // y=0 plane
     private final Vector3 intersection = new Vector3();
-    private final Vector3 rayFrom = new Vector3();
-    private final Vector3 rayTo = new Vector3();
-
-    private float rotationAngle = 0;
 
     public Gameplay3D(UI ui) {
         context = GameContext.INSTANCE;
@@ -68,22 +60,19 @@ public class Gameplay3D implements Screen {
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, .8f, .8f, .8f, 1f));
         environment.add(new DirectionalLight().set(1f, 1f, 1f, -1f, -0.8f, -0.2f));
 
-        // Initialize collision Manager
-//        collisionManager = new CollisionManager(null);
-
         // Create Plane:
         Matrix4 planeTransform = new Matrix4();
         planeTransform.setTranslation(0, -0.5f, 0);
-        Model model = createBox(100, 1f, 100);
+        Model model = createBox(100, 3f, 100);
         ModelInstance groundModelInstance = new ModelInstance(model);
-        btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 0.5f, 50f));
+        btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 1.5f, 50f));
         btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
         groundRigidBody.setFriction(100);
         VisualComponent visualComponent = new VisualComponent(groundModelInstance);
         // visualComponent.attributes = new GridAttribute(GridAttribute.ID);
 
         var rigidBodies = new ArrayList<PhysicsBody>();
-        rigidBodies.add(new PhysicsBody(groundRigidBody, new Matrix4(), CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
+        rigidBodies.add(new PhysicsBody(groundRigidBody, new Matrix4().translate(0, -.75f, 0), CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
         PhysicsComponent physicsComponent = new PhysicsComponent(rigidBodies);
         EntityInstance planeInstance = new EntityInstance(null, physicsComponent, visualComponent);
         BodyLogic bodyLogic = new BodyLogic() {
@@ -143,7 +132,6 @@ public class Gameplay3D implements Screen {
         transform.setTranslation(0, 8, 0);
         instance1.setTransform(transform.cpy());
         context.entityManager.stageAdd(instance1);
-//        entityInstances.add(instance1);
 
         // Config UI
         List<ItemDefinition> allItems = new ArrayList<>();
@@ -159,10 +147,8 @@ public class Gameplay3D implements Screen {
         camera.position.set(0, 10, 10);
         camera.lookAt(0, 0, 0);
 
-
         // Configure Input Handler
         inputHandler = new InputHandler(new IsometricCameraController(camera), ui, context);
-
     }
 
     @Override
@@ -176,59 +162,28 @@ public class Gameplay3D implements Screen {
         inputHandler.update(delta);
         camera.update();
 
-
-        // Process input
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {// rotate item
-//            rotationAngle += 90;
-//        }
-        // Place item
-//        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-//            Vector3 position = getMouseGroundPosition(camera);
-            // Spawn an instance of the item and add it to the physics simulation
-//            EntityInstance instance = EntityInstanceCreator.createInstance(spawner);
-//            Matrix4 transform = new Matrix4().setToTranslation(position);
-//            transform.rotate(Vector3.Y, rotationAngle % 360); // Bound it to 360
-//            instance.setTransform(transform);
-            // modelInstances.add(instance.visualComponent.modelInstance);
-//                physicsWorld.dynamicsWorld().addCollisionObject(object,
-//                        object instanceof btRigidBody ? CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY)
-//                                : CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR));
-//            context.entityManager.stageAdd(instance);
-//        }
-//
         context.update(delta);
 
-        // Physics simulation Step
-//        physicsWorld.dynamicsWorld().stepSimulation(delta, 0);
-//
-//        for (var instance : entityInstances) {
-//            var modelInstance = instance.visualComponent.modelInstance;
-//            for (int i = 0; i < instance.entityPhysicsBodies.size(); i++) {
-//                if (instance.entityPhysicsBodies.get(i) instanceof btRigidBody rb) {
-//                    rb.getMotionState().getWorldTransform(modelInstance.transform);
-//                }
-//            }
-//        }
-
-        // Render
+        //Render
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glClearColor(0, 0, 0, 1);
 
-//        modelBatch.begin(camera);
-//        for (EntityInstance instance : context.entityManager.allEntities()) {
-//            ModelInstance modelInstance = instance.visualComponent.modelInstance;
-//            modelBatch.render(modelInstance, environment);
-//        }
-//        modelBatch.end();
+        modelBatch.begin(camera);
+        //Render all our entities
+        for (EntityInstance instance : context.entityManager) {
+            ModelInstance modelInstance = instance.visualComponent.modelInstance;
+            modelBatch.render(modelInstance, environment);
+        }
+        //Render preview entities
+        for (EntityInstance instance : context.previewManager) {
+            ModelInstance  modelInstance = instance.visualComponent.modelInstance;
+            modelBatch.render(modelInstance, environment);
+        }
+        modelBatch.end();
 
         ui.act();
         ui.getViewport().apply();
         ui.draw();
-
-//        collisionManager.updateTouchingEntities(delta);
-//        TimerUpdater.update(delta);
-
-        context.physicsWorld.drawDebug(camera);
     }
 
     @Override
@@ -308,6 +263,12 @@ public class Gameplay3D implements Screen {
             // No intersection (looking up at sky)
             return new Vector3(ray.origin);
         }
+    }
+
+    private void logTickRate(float deltaT) {
+        tickCount++;
+        totalTime +=  deltaT;
+        System.out.println("Tick count over total time: " + tickCount / totalTime);
     }
 
 }

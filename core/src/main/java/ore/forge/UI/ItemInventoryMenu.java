@@ -113,10 +113,10 @@ public class ItemInventoryMenu extends Table {
     }
 
     public void applySearch(String s) {
-        System.out.println(s);
+        String target =  s.toLowerCase();
         var newIcons = new ArrayList<Icon<ItemInventoryNode>>();
         for (Icon<ItemInventoryNode> icon : allIcons) {
-            if (icon.getData().name().contains(s)) {
+            if (icon.getData().name().toLowerCase().contains(target)) {
                 newIcons.add(icon);
             }
         }

@@ -20,10 +20,10 @@ public class ShopMenu extends Table {
     private final WidgetGrid grid;
     private final GameContext context;
 
-    public ShopMenu(List<Icon<ItemDefinition>> allItems, GameContext context) {
+    public ShopMenu(List<Icon<ItemInventoryNode>> allItems, GameContext context) {
         this.context = context;
         grid = new WidgetGrid();
-        for (Icon<ItemDefinition> icon : allItems) {
+        for (Icon<ItemInventoryNode> icon : allItems) {
             //set callback
             icon.setEventListener(new ClickListener() {
                 @Override
@@ -37,7 +37,7 @@ public class ShopMenu extends Table {
         this.add(grid);
     }
 
-    public void displayPurchasePopUp(Icon<ItemDefinition> icon) {
+    public void displayPurchasePopUp(Icon<ItemInventoryNode> icon) {
         /*
          * Create Table with following:
          * Icon of thing to be purchased.
@@ -147,7 +147,7 @@ public class ShopMenu extends Table {
             ItemDefinition toPurchase = purchaseIcon.getData();
             ItemInventoryNode node = context.player.inventory.getNode(toPurchase.id());
             if (context.player.tryPurchase(toPurchase, count)) {
-                //check our buttons again
+                //check our buttons again to see if still valid and what not
 
             }
         }

@@ -20,7 +20,6 @@ public class PhysicsBody implements Disposable {
 
     public void syncFromEntity(Matrix4 entityTransform) {
         tmp.set(entityTransform).mul(localTransform);
-
         if (body instanceof btRigidBody rb) {
             rb.setWorldTransform(tmp);
             rb.getMotionState().setWorldTransform(tmp);
@@ -37,7 +36,6 @@ public class PhysicsBody implements Disposable {
     }
 
     public void add(btDynamicsWorld world) {
-        System.out.println(localTransform);
         if (body instanceof btRigidBody rb) {
             world.addRigidBody(rb);
         } else {

@@ -166,7 +166,6 @@ public class ItemDefinition {
 
         for (Node part : model.nodes) {
             NodeInfo info = nodeInfoMap.get(part.id);
-            System.out.println(info);
             btCollisionShape bulletShape = Bullet.obtainStaticNodeShape(part, false);
             switch (info.collisionType()) {
                 case "both": {

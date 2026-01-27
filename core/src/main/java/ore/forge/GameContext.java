@@ -10,8 +10,8 @@ import java.util.List;
 
 public class GameContext {
     public static final GameContext INSTANCE = new GameContext();
-    public final AssetManager assetManager;
     public final EntityManager entityManager;
+    public final PreviewManager previewManager;
     public final EventManager eventManager;
     public final PhysicsWorld physicsWorld;
     public final CollisionManager collisionManager;
@@ -19,7 +19,7 @@ public class GameContext {
     public final Player player;
 
     public GameContext() {
-        assetManager = new AssetManager();
+        previewManager = new PreviewManager();
         entityManager = new EntityManager();
         eventManager = new EventManager();
         physicsWorld = PhysicsWorld.instance();
@@ -40,7 +40,7 @@ public class GameContext {
         }
 
         //update our time based updates
-        for(final Updatable updatable : updatables) {
+        for (final Updatable updatable : updatables) {
             updatable.update(delta, this);
         }
 
@@ -58,11 +58,9 @@ public class GameContext {
         this.updatables.stageRemoval(updatable);
     }
 
-    /**
-     *
-     * */
     public void flush() {
         entityManager.flush(this);
+        previewManager.flush();
 
         updatables.flush();
     }

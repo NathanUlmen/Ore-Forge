@@ -52,7 +52,7 @@ public class UI extends Stage {
 //            AtlasRegion region = iconAtlas.findRegion(item.id());
 //            allIcons.add(new Icon<>(region, item));
 //        }
-//        ShopMenu shopMenu = new ShopMenu(allIcons, GameContext.INSTANCE);
+        ShopMenu shopMenu = new ShopMenu(allIcons, GameContext.INSTANCE);
 //        shopMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
 //        shopMenu.setVisible(true);
 //        this.addActor(shopMenu);

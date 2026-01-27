@@ -4,13 +4,15 @@ import ore.forge.Strategies.Updatable;
 
 import java.util.Iterator;
 
+/**
+ * Entity Manager tracks the lifetime of entities as they are added and removed from the world.
+ * Systems can listen in to see when entities are removed or added and update themselves based on the entity in the event.
+ * */
 public class EntityManager implements Iterable<EntityInstance> {
     private final StagedCollection<EntityInstance> activeEntities;
-    private final StagedCollection<EntityInstance> previewEntities;
 
     public EntityManager() {
         activeEntities = new StagedCollection<>();
-        previewEntities = new StagedCollection<>();
     }
 
     public void stageAdd(EntityInstance entityInstance) {
@@ -20,10 +22,6 @@ public class EntityManager implements Iterable<EntityInstance> {
     public void stageRemove(EntityInstance entityInstance) {
         activeEntities.stageRemoval(entityInstance);
     }
-
-    public void addPreviewEntity(EntityInstance entityInstance) { previewEntities.stageAddition(entityInstance); }
-
-    public void removePreviewEntity(EntityInstance entityInstance) { previewEntities.stageRemoval(entityInstance); }
 
     public void flush(GameContext ctx) {
         //Remove entities
@@ -57,29 +55,16 @@ public class EntityManager implements Iterable<EntityInstance> {
         }
 
         activeEntities.flush();
-        previewEntities.flush();
+    }
+
+    @Override
+    public String toString() {
+        return  activeEntities.toString();
     }
 
     @Override
     public Iterator<EntityInstance> iterator() {
         return activeEntities.iterator();
-    }
-
-    public Iterable<EntityInstance> allEntities() {
-        return () -> new Iterator<>() {
-            private final Iterator<EntityInstance> activeIt = activeEntities.iterator();
-            private final Iterator<EntityInstance> previewIt = previewEntities.iterator();
-
-            @Override
-            public boolean hasNext() {
-                return activeIt.hasNext() || previewIt.hasNext();
-            }
-
-            @Override
-            public EntityInstance next() {
-                return activeIt.hasNext() ? activeIt.next() : previewIt.next();
-            }
-        };
     }
 
 }

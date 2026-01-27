@@ -65,7 +65,7 @@ public class EntityInstanceCreator {
 
         var tempList = new ArrayList<PhysicsBody>(1);
 
-        tempList.add(new PhysicsBody(oreBody, new Matrix4(), CollisionRules.combineBits(ORE), CollisionRules.combineBits(ORE, WORLD_GEOMETRY, ORE_PROCESSOR)));
+        tempList.add(new PhysicsBody(oreBody, new Matrix4(), CollisionRules.combineBits(ORE), CollisionRules.combineBits(WORLD_GEOMETRY, ORE_PROCESSOR)));
         //Create our instance
         EntityInstance instance = new EntityInstance(oreDefinition, new PhysicsComponent(tempList), visualComponent);
 

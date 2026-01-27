@@ -14,19 +14,16 @@ public class StagedCollection<E> implements Iterable<E> {
         this(1_000);
     }
 
-    public StagedCollection(int startSize) {
-        elements = new Array<>(false, startSize);
-        toAdd = new ObjectSet<>(startSize / 2);
-        toRemove = new ObjectSet<>(startSize / 2);
-
+    public StagedCollection(int initialCapacity) {
+        elements = new Array<>(false, initialCapacity);
+        toAdd = new ObjectSet<>(initialCapacity / 2);
+        toRemove = new ObjectSet<>(initialCapacity / 2);
     }
 
     public void flush() {
         if (toRemove.size > 0) {
-            for (int i = elements.size - 1; i >= 0; i--) {
-                if (toRemove.contains(elements.get(i))) {
-                    elements.removeIndex(i);
-                }
+            for (E e : toRemove) {
+                elements.removeValue(e, true);
             }
             toRemove.clear();
         }
@@ -41,15 +38,17 @@ public class StagedCollection<E> implements Iterable<E> {
 
     @NonNull
     public void stageAddition(E element) {
-        if (element == null) {throw new NullPointerException("Element cannot be null.");}
-        toRemove.remove(element);
+        assert !toRemove.contains(element);
+        if (element == null) { throw new NullPointerException("Element cannot be null."); }
+        if (toRemove.contains(element)) { throw new IllegalStateException("Element already exists." + element); }
         toAdd.add(element);
     }
 
     @NonNull
     public void stageRemoval(E element) {
-        if (element == null) {throw new NullPointerException("Element cannot be null.");}
-        toAdd.remove(element);
+        assert !toAdd.contains(element);
+        if (element == null) { throw new NullPointerException("Element cannot be null."); }
+        if (toAdd.contains(element)) { throw new IllegalStateException("Element already exists." + element); }
         toRemove.add(element);
     }
 
@@ -71,7 +70,7 @@ public class StagedCollection<E> implements Iterable<E> {
     }
 
     public String toString() {
-        return "Size: " + size() +  "\tToAdd: " + toAdd.size  + "\tToRemove: " + toRemove.size;
+        return "Size: " + size() + "\tToAdd: " + toAdd.size + "\tToRemove: " + toRemove.size;
     }
 
 }

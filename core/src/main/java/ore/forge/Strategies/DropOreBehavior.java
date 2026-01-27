@@ -3,6 +3,8 @@ package ore.forge.Strategies;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.*;
@@ -10,6 +12,7 @@ import ore.forge.Items.ItemDefinition;
 import ore.forge.Items.Properties.DropperProperties;
 import ore.forge.Strategies.DropperStrategies.BurstDrop;
 import ore.forge.Strategies.DropperStrategies.DropStrategy;
+import ore.forge.Utils.CoolDown;
 
 @SuppressWarnings("unused")
 public class DropOreBehavior implements BodyLogic, Updatable {
@@ -62,7 +65,30 @@ public class DropOreBehavior implements BodyLogic, Updatable {
             btRigidBody body = (btRigidBody) ore.physicsComponent.getBodies().getFirst().getRigidBody();
             body.setLinearVelocity(new Vector3(0, -20, 0));
 
-            //Add ore to the world
+            ore.updatables.add(new Updatable() {
+                private final CoolDown cd = new CoolDown(2f);
+                private boolean done = false;
+
+                @Override
+                public void update(float delta, GameContext context) {
+                    if (!done && cd.update(delta) > 0) {
+                        btRigidBody body = (btRigidBody) ore.physicsComponent
+                            .getBodies()
+                            .getFirst()
+                            .getRigidBody();
+
+                        btDynamicsWorld world = context.physicsWorld.dynamicsWorld();
+
+                        world.removeRigidBody(body);
+
+                        int newMask = CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR , CollisionRules.ORE, CollisionRules.WORLD_GEOMETRY);
+
+                        world.addRigidBody(body, CollisionRules.combineBits(CollisionRules.ORE), newMask);
+
+                        done = true;
+                    }
+                }
+            });            //Add ore to the world
 //            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperProperties.oreModel));
 //            Ore oreInfo = new Ore();
 
