@@ -3,6 +3,7 @@ package ore.forge.lwjgl3;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import ore.forge.GLTFQuickStartExample;
 import ore.forge.OreForge;
 
 /**
@@ -17,6 +18,7 @@ public class Lwjgl3Launcher {
 
     private static void createApplication() {
         new Lwjgl3Application(new OreForge(), getDefaultConfiguration());
+//        new Lwjgl3Application(new GLTFQuickStartExample(), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {

@@ -25,7 +25,7 @@ public class IconRenderer {
 
     public IconRenderer() {
         renderResolution = 8192;
-        saveResolution = 512;
+        saveResolution = 256;
         packer = new PixmapPacker(
                 4096,
                 4096,

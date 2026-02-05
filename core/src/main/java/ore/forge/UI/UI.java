@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import ore.forge.GameContext;
-import ore.forge.Input3D.OpenedMenuState;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Player.ItemInventory;
 import ore.forge.Player.ItemInventoryNode;
@@ -18,8 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UI extends Stage {
-    private ItemInventoryMenu inventoryMenu;
+    private TestInventory inventoryMenu;
+    private ShopMenu shopMenu;
     private TextureAtlas iconAtlas;
+    private CurrencyLabel<?> cashLabel;
 
     public UI(ItemInventory inventory) {
         super();
@@ -34,34 +35,46 @@ public class UI extends Stage {
         iconAtlas = iconRenderer.buildAtlas();
 
         //Create our Icons for Inventory
-        List<Icon<ItemInventoryNode>> allIcons = new ArrayList<>();
+        List<Icon<ItemInventoryNode>> inventoryIcons = new ArrayList<>();
         for (ItemInventoryNode node : inventory.nodes()) {
             ItemDefinition item = node.getHeldItem();
             AtlasRegion region = iconAtlas.findRegion(item.id());
             Icon<ItemInventoryNode> icon = new Icon<>(region, node);
             icon.setTopText("Stored: " + node.getStored());
             icon.setBottomText(node.name());
-            allIcons.add(icon);
+            inventoryIcons.add(icon);
         }
-        inventoryMenu = new ItemInventoryMenu(allIcons);
+        inventoryMenu = new TestInventory(inventoryIcons, new BuildListener() {
+            @Override
+            public void initiateBuild(ItemDefinition item) {
+
+            }
+        });
         inventoryMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
         inventoryMenu.setVisible(false);
 
-//        allIcons.clear();
-//        for(ItemDefinition item : allItems){
-//            AtlasRegion region = iconAtlas.findRegion(item.id());
-//            allIcons.add(new Icon<>(region, item));
-//        }
-        ShopMenu shopMenu = new ShopMenu(allIcons, GameContext.INSTANCE);
-//        shopMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
-//        shopMenu.setVisible(true);
+        var shopIcons = new ArrayList<Icon<ItemInventoryNode>>();
+        for (ItemInventoryNode node : inventory.nodes()) {
+            ItemDefinition item = node.getHeldItem();
+            AtlasRegion region = iconAtlas.findRegion(item.id());
+            Icon<ItemInventoryNode> icon = new Icon<>(region, node);
+            icon.setTopText("Stored: " + node.getStored());
+            icon.setBottomText(node.name());
+            shopIcons.add(icon);
+        }
+        shopMenu = new ShopMenu(shopIcons, GameContext.INSTANCE);
+        shopMenu.setSize(Gdx.graphics.getWidth() * 0.76f, Gdx.graphics.getHeight() * .8f);
+        shopMenu.setVisible(true);
 //        this.addActor(shopMenu);
 
         this.addActor(inventoryMenu);
+
+        //Setup currency Label
+
     }
 
     public void setBuildListener(BuildListener listener) {
-        this.inventoryMenu.setBuildListener(listener);
+//        this.inventoryMenu.setBuildListener(listener);
     }
 
     public void toggleMenu(UIMenu menu) {
@@ -95,7 +108,16 @@ public class UI extends Stage {
     }
 
     public void toggleShop() {
-        // TODO
+        boolean visible = shopMenu.isVisible();
+        shopMenu.clearActions();
+        if (!visible) {
+            inventoryMenu.addAction(Actions.sequence(Actions.show(),
+                Actions.moveTo(Gdx.graphics.getWidth() * .240f, Gdx.graphics.getHeight() * .1f, 0.13f)));
+        } else {
+            inventoryMenu.addAction(Actions.sequence(
+                Actions.moveTo(Gdx.graphics.getWidth() * 1f, Gdx.graphics.getHeight() * .1f, 0.13f),
+                Actions.hide()));
+        }
     }
 
     public void toggleBuilding() {

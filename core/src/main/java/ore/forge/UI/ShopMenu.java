@@ -1,5 +1,6 @@
 package ore.forge.UI;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -12,29 +13,23 @@ import ore.forge.GameContext;
 import ore.forge.Items.ItemDefinition;
 import ore.forge.Player.ItemInventoryNode;
 import ore.forge.UI.Widgets.Icon;
-import ore.forge.UI.Widgets.WidgetGrid;
 
 import java.util.List;
 
 public class ShopMenu extends Table {
-    private final WidgetGrid grid;
     private final GameContext context;
+    private final ItemGridPanel panel;
+    public final PurchasePopUp purchasePopUp;
 
     public ShopMenu(List<Icon<ItemInventoryNode>> allItems, GameContext context) {
         this.context = context;
-        grid = new WidgetGrid();
-        for (Icon<ItemInventoryNode> icon : allItems) {
-            //set callback
-            icon.setEventListener(new ClickListener() {
-                @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                    displayPurchasePopUp(icon);
-                    return true;
-                }
-            });
-        }
-        grid.setElements(allItems);
-        this.add(grid);
+        purchasePopUp = new PurchasePopUp(context);
+        purchasePopUp.setSize(800, 600);
+        panel = new ItemGridPanel(allItems, this::displayPurchasePopUp);
+
+        add(panel).growX().row();
+        add(purchasePopUp).grow().right();
+        this.debugAll();
     }
 
     public void displayPurchasePopUp(Icon<ItemInventoryNode> icon) {
@@ -46,22 +41,27 @@ public class ShopMenu extends Table {
          * Purchase Button
          * Close Button
          *  */
+        purchasePopUp.toggle(icon);
+        panel.setVisible(false);
+        purchasePopUp.setVisible(true);
     }
 
 
     public static class PurchasePopUp extends Table {
-        private TextButton purchaseButton;
-        private ImageButton incrementButton, decrementButton;
-        private ImageButton closeButton;
-        private TextField purchaseCount;
-        private Icon<ItemDefinition> purchaseIcon;
+        private final TextButton purchaseButton;
+        private final ImageButton incrementButton, decrementButton;
+        private final ImageButton closeButton;
+        private final TextField purchaseCount;
+        private Icon<ItemInventoryNode> purchaseIcon;
 
         public PurchasePopUp(GameContext context) {
             super();
+            this.setBackground(UIHelper.getRoundFull());
             setVisible(false);
             TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
             textFieldStyle.font = UIHelper.generateFont(30);
             textFieldStyle.background = UIHelper.getRoundFull();
+            textFieldStyle.fontColor = Color.BLACK;
 
             ImageButton.ImageButtonStyle imageButtonStyle = new ImageButton.ImageButtonStyle();
             imageButtonStyle.up = UIHelper.getRoundFull();
@@ -71,12 +71,19 @@ public class ShopMenu extends Table {
             textButtonStyle.up = UIHelper.getRoundFull();
             textButtonStyle.down = UIHelper.getRoundFull();
             textButtonStyle.font = UIHelper.generateFont(30);
+            textButtonStyle.fontColor = Color.RED;
 
             purchaseCount = new TextField("1", textFieldStyle);
             incrementButton = new ImageButton(imageButtonStyle);
             decrementButton = new ImageButton(imageButtonStyle);
-            purchaseButton = new TextButton("Purcahse: 1", textButtonStyle);
+            purchaseButton = new TextButton("Purchase: 1", textButtonStyle);
             closeButton = new ImageButton(imageButtonStyle);
+
+            this.add(closeButton).top().right().row();
+            this.add(decrementButton);
+            this.add(purchaseCount);
+            this.add(incrementButton).row();
+            this.add(purchaseButton);
 
             closeButton.addListener(new ClickListener() {
                 @Override
@@ -108,6 +115,7 @@ public class ShopMenu extends Table {
              * TODO: Configure purchaseCount to only allow positive integers.
              * */
             purchaseButton.addListener(new ClickListener() {
+
                 public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                     if (purchaseButton.isDisabled()) { return false; }
                     purchase(context, getPurchaseCount());
@@ -131,33 +139,28 @@ public class ShopMenu extends Table {
                     if (field.getText().isEmpty() || field.getText().equals("0")) {
                         field.setText("1");
                     }
-                    purchaseButton.setDisabled(context.player.canPurchase(purchaseIcon.getData(), getPurchaseCount()));
+                    purchaseButton.setDisabled(context.player.canPurchase(purchaseIcon.getData().getHeldItem(), getPurchaseCount()));
                 }
             });
 
         }
 
-        public void toggle() {
+        public void toggle(Icon<ItemInventoryNode> icon) {
             this.setVisible(!this.isVisible());
             this.purchaseCount.setText("1");
+            this.purchaseIcon = icon;
             //logic to move it into position and out of position
         }
 
         public void purchase(GameContext context, int count) {
-            ItemDefinition toPurchase = purchaseIcon.getData();
-            ItemInventoryNode node = context.player.inventory.getNode(toPurchase.id());
+            ItemDefinition toPurchase = purchaseIcon.getData().getHeldItem();
             if (context.player.tryPurchase(toPurchase, count)) {
                 //check our buttons again to see if still valid and what not
-
             }
         }
 
         private int getPurchaseCount() {
-            try {
-                return Integer.parseInt(purchaseCount.getText());
-            } catch (NumberFormatException e) {
-                return 1;
-            }
+            return Integer.parseInt(purchaseCount.getText());
         }
 
         private void setPurchaseCount(int value) {

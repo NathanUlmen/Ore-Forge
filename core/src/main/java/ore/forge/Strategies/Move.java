@@ -40,7 +40,6 @@ public class Move implements BodyLogic {
     @Override
     public void attach(ItemDefinition definition, btCollisionObject parentObject) {
         this.sensor = parentObject;
-
     }
 
     @Override

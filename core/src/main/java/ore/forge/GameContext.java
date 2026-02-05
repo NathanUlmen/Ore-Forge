@@ -1,12 +1,12 @@
 package ore.forge;
 
-import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.Gdx;
 import ore.forge.EventSystem.EventManager;
-import ore.forge.Items.ItemDefinition;
 import ore.forge.Player.Player;
 import ore.forge.Strategies.Updatable;
 
-import java.util.List;
+import java.nio.Buffer;
+
 
 public class GameContext {
     public static final GameContext INSTANCE = new GameContext();
@@ -66,7 +66,8 @@ public class GameContext {
     }
 
     public void save() {
-
+        player.save();
+        System.out.println("Saving...(Unimplemented as of Now)");
     }
 
     public void load() {

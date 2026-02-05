@@ -1,13 +1,11 @@
 package ore.forge;
 
-import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 
 public class VisualComponent implements Disposable {
-    public Mesh mesh = null;
     public ModelInstance modelInstance;
     public Attribute attributes;
 

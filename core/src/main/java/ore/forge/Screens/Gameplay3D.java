@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
@@ -39,6 +40,7 @@ public class Gameplay3D implements Screen {
     private GameContext context;
     private ItemDefinition spawner;
     private InputHandler inputHandler;
+    private GLProfiler profiler;
 
     private int tickCount;
     private float totalTime;
@@ -158,6 +160,7 @@ public class Gameplay3D implements Screen {
 
     @Override
     public void render(float delta) {
+
         // Process Input
         inputHandler.update(delta);
         camera.update();
@@ -184,6 +187,11 @@ public class Gameplay3D implements Screen {
         ui.act();
         ui.getViewport().apply();
         ui.draw();
+//        System.out.println("Draw calls: " + profiler.getDrawCalls());
+//        System.out.println("Shader switches: " + profiler.getShaderSwitches());
+//        System.out.println("Texture bindings: " + profiler.getTextureBindings());
+//        profiler.reset();
+
     }
 
     @Override

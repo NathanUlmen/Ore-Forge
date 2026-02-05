@@ -49,6 +49,7 @@ public class EntityInstance implements Disposable {
     }
 
     public void syncFromPhysics() {
+        //Could implement a dirty flag to avoid work
         physicsComponent.syncToEntity(worldTransform);
         visualComponent.syncFromEntity(worldTransform);
     }
