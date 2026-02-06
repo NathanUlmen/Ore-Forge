@@ -243,7 +243,7 @@ public class AssetHandler {
 
             mesh.instanceVBO = gl.glGenBuffer();
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, mesh.instanceVBO);
-            gl.glBufferData(GL30.GL_ARRAY_BUFFER, 1000 * 16 * Float.BYTES, null, GL30.GL_STREAM_DRAW);
+            gl.glBufferData(GL30.GL_ARRAY_BUFFER, Renderer.MAX_INSTANCED_DRAW * 16 * Float.BYTES, null, GL30.GL_STREAM_DRAW);
 
             for (int i = 0; i < 4; i++) {
                 int loc = 2 + i;

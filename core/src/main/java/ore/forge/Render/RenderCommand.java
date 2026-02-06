@@ -21,7 +21,6 @@ public class RenderCommand {
         this.mesh = part.mesh;
         this.material = part.material;
 
-        System.out.println(part.transform.cpy());
         this.worldTransform = part.transform.cpy();
 
         this.tint = new Vector4(

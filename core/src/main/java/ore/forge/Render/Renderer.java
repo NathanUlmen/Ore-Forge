@@ -5,18 +5,22 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.OrientedBoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
+import ore.forge.Stopwatch;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Is responsible For sorting, batching, and instancing draw calls. *
  */
 public class Renderer {
+    public static final int MAX_INSTANCED_DRAW = 10_000;
     public final AssetHandler assetHandler;
     public final ArrayList<RenderPass> renderPasses = new ArrayList<>();
     public final FloatBuffer instanceBuffer;
@@ -24,7 +28,7 @@ public class Renderer {
 
     public Renderer(AssetHandler assetHandler) {
         this.assetHandler = assetHandler;
-        instanceBuffer = BufferUtils.newFloatBuffer(10000);
+        instanceBuffer = BufferUtils.newFloatBuffer(10_000_000);
         instanceVbo = Gdx.gl30.glGenBuffer();
 
         Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
@@ -37,6 +41,7 @@ public class Renderer {
     }
 
     public void render(List<RenderPart> toRender, Camera camera) {
+        toRender = vectorizedFrustumCull(camera, toRender);
         for (RenderPass pass : renderPasses) {
             ArrayList<RenderCommand> commands = new ArrayList<>();
             for (RenderPart part : toRender) {
@@ -47,7 +52,6 @@ public class Renderer {
 
             if (!commands.isEmpty()) {
                 pass.sort(commands);
-                System.out.println("Draw Commands Size: " + commands.size());
 
                 pass.begin(camera);
 
@@ -85,10 +89,9 @@ public class Renderer {
 
             int count = endIndex - startIndex;
             if (count > 1) {
-                System.out.println("Drawing Multiple Instances");
+                System.out.println("Draw Commands Size: " + count +  "\nFPS: " + Gdx.graphics.getFramesPerSecond());
                 drawInstanced(commands, startIndex, endIndex);
             } else {
-                System.out.println("Drawing One Instance");
                 drawInstanced(commands, startIndex, startIndex + 1);
             }
 
@@ -128,7 +131,6 @@ public class Renderer {
             instanceBuffer
         );
 
-//        gl.glDrawElements(GL30.GL_TRIANGLES, mesh.indexCount, GL30.GL_UNSIGNED_SHORT, mesh.indexOffsetBytes);
         gl.glBindVertexArray(mesh.vao);
 
         //instanced draw call
@@ -153,9 +155,64 @@ public class Renderer {
                 culled.add(part);
             }
         }
-        System.out.println("Culled: " + (toCull.size() - culled.size()) + " elements.");
         return culled;
     }
+
+    public List<RenderPart> vectorizedFrustumCull(Camera camera, List<RenderPart> toCull) {
+        var visible = new ArrayList<RenderPart>(toCull.size());
+
+        // 2 corners per AABB (min + max)
+        float[] aabbData = new float[toCull.size() * 6];
+
+        // pack all AABBs contiguously
+        for (int i = 0; i < toCull.size(); i++) {
+            var bb = toCull.get(i).mesh.boundingBox;
+            int base = i * 6;
+
+            aabbData[base]     = bb.min.x;
+            aabbData[base + 1] = bb.min.y;
+            aabbData[base + 2] = bb.min.z;
+
+            aabbData[base + 3] = bb.max.x;
+            aabbData[base + 4] = bb.max.y;
+            aabbData[base + 5] = bb.max.z;
+        }
+
+        Vector3 center = new Vector3();
+        Vector3 extent = new Vector3();
+
+        for (int i = 0; i < toCull.size(); i++) {
+            RenderPart part = toCull.get(i);
+            int base = i * 6;
+
+            // reconstruct AABB
+            Vector3 min = center.set(
+                aabbData[base],
+                aabbData[base + 1],
+                aabbData[base + 2]
+            );
+
+            Vector3 max = extent.set(
+                aabbData[base + 3],
+                aabbData[base + 4],
+                aabbData[base + 5]
+            );
+
+            // center + half extents
+            center.set(min).add(max).scl(0.5f);
+            extent.set(max).sub(min).scl(0.5f);
+
+            // transform center into world space
+            center.mul(part.transform);
+
+            if (camera.frustum.boundsInFrustum(center, extent)) {
+                visible.add(part);
+            }
+        }
+
+        return visible;
+    }
+
 
 
 }
