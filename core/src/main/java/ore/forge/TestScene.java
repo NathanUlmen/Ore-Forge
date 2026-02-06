@@ -2,8 +2,16 @@ package ore.forge;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
+import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import ore.forge.Input3D.CameraController;
 import ore.forge.Input3D.FreeCamController;
@@ -14,6 +22,7 @@ import java.util.ArrayList;
 public class TestScene implements Screen {
     private Renderer renderer;
     private CameraController cameraController;
+    private Camera camera;
     private RenderPart renderPart;
     private BasicRenderPass basicRenderPass;
     GLProfiler profiler;
@@ -30,12 +39,16 @@ public class TestScene implements Screen {
         renderer = new Renderer(handler);
 
         renderer.renderPasses.add(basicRenderPass);
-        cameraController = new FreeCamController(new PerspectiveCamera());
-        var cam = cameraController.getCamera();
-        cam.near = 0.1f;
-        cam.position.set(0,0,10);
-        cam.lookAt(0,0,0);
-        cam.update();
+        camera = new  PerspectiveCamera();
+        camera = new PerspectiveCamera(67f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.position.set(0f, 0f, 5f);
+        camera.lookAt(0f, 0f, 0f);
+        camera.near = 0.1f;
+        camera.far = 1000f;
+        camera.up.set(0f, 1f, 0f);
+        camera.update(true);
+        cameraController = new FreeCamController((PerspectiveCamera) camera);
+
 
 
         renderPart = RenderPart.defaultRenderPart(handle);
@@ -44,7 +57,6 @@ public class TestScene implements Screen {
         materialHandle.shader = renderer.renderPasses.getFirst().currentShader;
         renderPart.material = materialHandle;
 
-        cameraController.getCamera().lookAt(0,0,0);
     }
 
     @Override
@@ -55,7 +67,7 @@ public class TestScene implements Screen {
     @Override
     public void render(float delta) {
         cameraController.update(delta);
-        cameraController.getCamera().update();
+        camera.update(true);
         ArrayList<RenderPart> renderParts = new ArrayList<>();
         renderParts.add(renderPart);
 
@@ -65,7 +77,8 @@ public class TestScene implements Screen {
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
 
-        renderer.render(renderParts, cameraController.getCamera());
+
+        renderer.render(renderParts, camera);
     }
 
     @Override

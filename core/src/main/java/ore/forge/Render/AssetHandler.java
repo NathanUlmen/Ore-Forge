@@ -101,7 +101,7 @@ public class AssetHandler {
         gl.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, masterEBO);
         gl.glBufferData(
             GL30.GL_ELEMENT_ARRAY_BUFFER,
-            totalIndices * Integer.BYTES,
+            totalIndices * Short.BYTES,
             null,
             GL30.GL_STATIC_DRAW
         );
@@ -210,10 +210,10 @@ public class AssetHandler {
 
         for (MeshHandle mesh : meshes) {
             // 1. Allocate buffer for 1 VAO id
-            IntBuffer vaoBuffer = BufferUtils.newIntBuffer(1);
+            IntBuffer vaoBuffer = BufferUtils.newIntBuffer(8);
             vaoBuffer.clear();
             // 2. Generate VAO
-            gl.glGenVertexArrays(1, vaoBuffer);
+            gl.glGenVertexArrays(8, vaoBuffer);
 
             // 3. Read the generated ID
             mesh.vao = vaoBuffer.get(0);

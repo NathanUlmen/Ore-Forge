@@ -5,6 +5,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import ore.forge.GLTFQuickStartExample;
 import ore.forge.OreForge;
+import org.lwjgl.opengl.ARBInstancedArrays;
 
 /**
  * Launches the desktop (LWJGL3) application.
@@ -29,7 +30,7 @@ public class Lwjgl3Launcher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("Ore Forge");
 
-        config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
+        config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 3);
         config.setForegroundFPS(10_000);
         config.useVsync(true);
         Graphics.DisplayMode mode = Lwjgl3ApplicationConfiguration.getDisplayMode();

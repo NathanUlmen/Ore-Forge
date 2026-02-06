@@ -16,6 +16,7 @@ public abstract class RenderPass {
 
     public void begin(Camera camera) {
         currentShader.bind();
+        System.out.println(camera.combined);
         currentShader.setUniformMatrix("u_projView", camera.combined);
         configureState();
     }
