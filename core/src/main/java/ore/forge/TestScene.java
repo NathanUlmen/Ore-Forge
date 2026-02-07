@@ -53,7 +53,7 @@ public class TestScene implements Screen {
         // ---- Build 1000 parts in a grid ----
         final int cols = 10;             // 40 * 25 = 1000
         final int rows = 10;
-        final float spacing = 2.0f;      // distance between instances
+        final float spacing = 3.0f;      // distance between instances
         final float scale = 1.0f;
 
         // Center the grid around (0,0)
@@ -92,7 +92,7 @@ public class TestScene implements Screen {
         cameraController.update(delta);
         camera.update(true);
 
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+        Gdx.gl.glClearColor(1f, 1f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 

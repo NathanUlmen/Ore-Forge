@@ -3,20 +3,28 @@
 in vec3 normal;
 in vec4 tangent;
 in vec2 uv;
+
 out vec4 fragColor;
 
 void main() {
     vec3 n = normalize(normal);
+    vec3 normalColor = n * 0.5 + 0.5;
 
-    // Use tangent + uv in a tiny, stable way so they’re considered “live”
     vec3 t = normalize(tangent.xyz);
+    float handed = tangent.w;
 
-    float u = uv.x * 0.001;
-    float v = uv.y * 0.001;
+    // float-safe "xor" checker
+    float a = step(0.5, fract(uv.x * 8.0));
+    float b = step(0.5, fract(uv.y * 8.0));
+    float checker = abs(a - b);          // 0 or 1
 
-    // Slightly perturb n using t and a uv-derived scalar (very small effect)
-    vec3 finalN = normalize(n + t * (u - v));
+    float tInfluence = 0.08 * handed;
+    float uvInfluence = mix(-0.03, 0.03, checker);
 
-    fragColor = vec4(finalN * 0.5 + 0.5, 1.0);
+    vec3 combined = normalColor + t * tInfluence + vec3(uvInfluence);
+
+    fragColor = vec4(clamp(combined, 0.0, 1.0), 1.0);
 }
+
+
 

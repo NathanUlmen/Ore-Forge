@@ -1,5 +1,6 @@
 package ore.forge.Render;
 
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.collision.BoundingBox;
 
 import java.nio.FloatBuffer;
@@ -10,5 +11,5 @@ public record PackedMesh(FloatBuffer vertices,
                          IntBuffer indices,
                          int vertexCount,
                          int indexCount,
-                         BoundingBox boundingBox) {
+                         BoundingBox boundingBox, VertexAttributes attributes) {
 }

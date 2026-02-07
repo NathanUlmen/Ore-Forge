@@ -18,6 +18,10 @@ public class MeshHandle {
 
     // Topology
     public int primitiveType = GL20.GL_TRIANGLES;
+    public int strideBytes = 0;
+
+    public VertexAttributes vertexAttributes;
+
 
     public BoundingBox boundingBox;
 

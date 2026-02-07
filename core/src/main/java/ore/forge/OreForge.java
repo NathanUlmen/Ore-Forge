@@ -55,7 +55,7 @@ public class OreForge extends Game {
         GameContext context = GameContext.INSTANCE;
         Runtime.getRuntime().addShutdownHook(new Thread(context::save)); //Save progress before exit
         Profiler instance = Profiler.INSTANCE;
-        Runtime.getRuntime().addShutdownHook(new Thread(instance::dumpToFile));
+//        Runtime.getRuntime().addShutdownHook(new Thread(instance::dumpToFile));
 
         var allItems = loadItemDefinitions();
 

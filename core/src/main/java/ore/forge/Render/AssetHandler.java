@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.model.NodePart;
 import com.badlogic.gdx.utils.BufferUtils;
@@ -15,6 +17,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.*;
+
+import static java.nio.file.Files.find;
 
 
 /**
@@ -158,6 +162,8 @@ public class AssetHandler {
             handle.indexCount = packedMesh.indexCount();
             handle.indexOffsetBytes = indexOffsetBytes;
             handle.boundingBox = packedMesh.boundingBox();
+            handle.vertexAttributes = packedMesh.attributes();
+            handle.strideBytes = STRIDE_BYTES;
 
             handles.add(handle);
 
@@ -169,10 +175,14 @@ public class AssetHandler {
 
     private PackedMesh extractToPackedMesh(Mesh mesh) {
         final int vertexCount = mesh.getNumVertices();
-        final int indexCount  = mesh.getNumIndices();
+        final int indexCount = mesh.getNumIndices();
 
         final int strideBytes = mesh.getVertexSize();
         STRIDE_BYTES = strideBytes;
+
+        Gdx.app.log("ATTR", mesh.getVertexAttributes().toString());
+        Gdx.app.log("STRIDE", "" + mesh.getVertexSize());
+
 
         // ---- vertices ----
         FloatBuffer vb = mesh.getVerticesBuffer(false).duplicate();
@@ -206,7 +216,8 @@ public class AssetHandler {
             indices,
             vertexCount,
             indexCount,
-            mesh.calculateBoundingBox()
+            mesh.calculateBoundingBox(),
+            mesh.getVertexAttributes()
         );
     }
 
@@ -235,34 +246,37 @@ public class AssetHandler {
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, masterVBO);
             gl.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, masterEBO);
 
-            //position
-            int offset = 0;
-            gl.glVertexAttribPointer(index, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
+            // You need the original mesh's VertexAttributes here.
+            // Store them into your PackedMesh or MeshHandle when extracting.
+            VertexAttributes attrs = mesh.vertexAttributes;
+            int stride = mesh.strideBytes;
+
+            VertexAttribute pos = find(attrs, VertexAttributes.Usage.Position, 0);
+            VertexAttribute nor = find(attrs, VertexAttributes.Usage.Normal, 0);
+            VertexAttribute tan = find(attrs, VertexAttributes.Usage.Tangent, 0);
+            VertexAttribute uv0 = find(attrs, VertexAttributes.Usage.TextureCoordinates, 0);
+
+            if (pos == null || nor == null || tan == null || uv0 == null)
+                throw new IllegalStateException("Missing required attributes");
+
             gl.glEnableVertexAttribArray(0);
-            offset += 3 *  Float.BYTES;
-            index++;
+            gl.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, stride, pos.offset);
 
-            //normal
-            gl.glVertexAttribPointer(index, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
             gl.glEnableVertexAttribArray(1);
-            offset += 3 *  Float.BYTES;
-            index++;
+            gl.glVertexAttribPointer(1, 3, GL30.GL_FLOAT, false, stride, nor.offset);
 
-            //tangent
-            gl.glVertexAttribPointer(index, 4, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
-            offset += 4 * Float.BYTES;
-            index++;
+            gl.glEnableVertexAttribArray(2);
+            gl.glVertexAttribPointer(2, 4, GL30.GL_FLOAT, false, stride, tan.offset);
 
-            //uv
-            gl.glVertexAttribPointer(index, 2, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
-            offset += 2 * Float.BYTES;
-            index++;
+            gl.glEnableVertexAttribArray(3);
+            gl.glVertexAttribPointer(3, 2, GL30.GL_FLOAT, false, stride, uv0.offset);
+
 
             mesh.instanceVBO = gl.glGenBuffer();
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, mesh.instanceVBO);
             gl.glBufferData(GL30.GL_ARRAY_BUFFER, Renderer.MAX_INSTANCED_DRAW * 16 * Float.BYTES, null, GL30.GL_STREAM_DRAW);
             for (int i = 0; i < 4; i++) {
-                int loc = index + i;
+                int loc = 4 + i;
                 gl.glEnableVertexAttribArray(loc);
                 gl.glVertexAttribPointer(loc, 4, GL30.GL_FLOAT, false, 16 * Float.BYTES, i * 4 * Float.BYTES);
                 gl.glVertexAttribDivisor(loc, 1);
@@ -273,5 +287,14 @@ public class AssetHandler {
 
         }
     }
+
+    private static VertexAttribute find(VertexAttributes attrs, int usage, int unit) {
+        for (int i = 0; i < attrs.size(); i++) {
+            VertexAttribute a = attrs.get(i);
+            if (a.usage == usage && a.unit == unit) return a;
+        }
+        return null;
+    }
+
 
 }
