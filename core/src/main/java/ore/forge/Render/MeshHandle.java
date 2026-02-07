@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 /**
  * Mesh Handle stores the index range for the target mesh that is to be drawn*/
 public class MeshHandle {
-    public Mesh mesh; // transitional, OK for now
 
     // Geometry binding
     public int vao; //pointer to

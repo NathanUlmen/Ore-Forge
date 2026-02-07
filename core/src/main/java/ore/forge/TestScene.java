@@ -5,19 +5,13 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
-import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import ore.forge.Input3D.CameraController;
 import ore.forge.Input3D.FreeCamController;
 import ore.forge.Render.*;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 public class TestScene implements Screen {
     private Renderer renderer;
@@ -25,20 +19,22 @@ public class TestScene implements Screen {
     private Camera camera;
     private BasicRenderPass basicRenderPass;
     private GLProfiler profiler;
+    private Stopwatch stopwatch;
 
     // Keep all parts around (don’t recreate every frame)
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(1000);
 
     public TestScene() {
+        stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
         profiler = new GLProfiler(Gdx.graphics);
         profiler.enable();
 
         basicRenderPass = new BasicRenderPass();
 
         AssetHandler handler = new AssetHandler();
-        MeshHandle handle = handler.loadTestMesh();
-        renderer = new Renderer(handler);
-        renderer.renderPasses.add(basicRenderPass);
+        MeshHandle handle = handler.meshHandles.getFirst();
+        renderer = new Renderer();
+        renderer.addRenderPass(basicRenderPass);
 
         camera = new PerspectiveCamera(67f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.position.set(0f, 0f, 60f); // pull back so you can see the grid
@@ -52,11 +48,11 @@ public class TestScene implements Screen {
 
         // Shared material (same shader)
         MaterialHandle materialHandle = new MaterialHandle();
-        materialHandle.shader = renderer.renderPasses.getFirst().currentShader;
+        materialHandle.shader = renderer.renderPasses().getFirst().currentShader;
 
         // ---- Build 1000 parts in a grid ----
-        final int cols = 100;             // 40 * 25 = 1000
-        final int rows = 100;
+        final int cols = 10;             // 40 * 25 = 1000
+        final int rows = 10;
         final float spacing = 2.0f;      // distance between instances
         final float scale = 1.0f;
 
@@ -92,17 +88,18 @@ public class TestScene implements Screen {
 
     @Override
     public void render(float delta) {
+        stopwatch.restart();
         cameraController.update(delta);
         camera.update(true);
 
-        Gdx.gl.glClearColor(1f, 0f, 0f, 1f);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
         renderer.render(renderParts, camera);
-        System.out.println("Draw Calls: " + profiler.getDrawCalls());
-        System.out.println("Calls: " + profiler.getCalls());
-        profiler.reset();
+        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
+        stopwatch.stop();
+        Profiler.INSTANCE.log(stopwatch.getElapsedTime(), Gdx.graphics.getFramesPerSecond());
     }
 
     @Override public void resize(int width, int height) {
@@ -120,7 +117,6 @@ public class TestScene implements Screen {
     @Override
     public void dispose() {
         profiler.disable();
-        // dispose anything your Renderer/AssetHandler requires
     }
 }
 

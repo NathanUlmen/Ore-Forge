@@ -1,6 +1,7 @@
 package ore.forge.Render;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.model.Node;
@@ -42,38 +43,60 @@ import java.util.*;
  */
 public class AssetHandler {
     // floats per vertex
-    // position (3) + normal (3) + uv (2) + tangent (4) + color (4)
-    static final int FLOATS_PER_VERTEX = 6;
+    // position (3) + normal (3) + uv (2) + tangent (4)
+    static final int FLOATS_PER_VERTEX = 12;
     static int STRIDE_BYTES;
     public int masterVBO, masterEBO;
-    public ArrayList<MeshHandle> meshHandles;
-    public final Map<String, MeshHandle> meshes = new HashMap<>();
-    public final Map<String, TextureHandle> textures = new HashMap<>();
-    public final Map<String, MaterialHandle> materials = new HashMap<>();
+    public List<MeshHandle> meshHandles;
 
     public AssetHandler() {
-
+        var sceneAssets = gatherMeshesFromDirectory("assets/models");
+        Gdx.app.log("AssetHandler", "Gathered Meshes From Directory");
+        List<PackedMesh> packedMeshes = extractMeshes(sceneAssets);
+        Gdx.app.log("AssetHandler", "Extracted Meshes into packedMeshes");
+        this.meshHandles = populateBuffers(packedMeshes);
+        Gdx.app.log("AssetHandler", "Populated Buffers");
+        createVaos(this.meshHandles);
+        Gdx.app.log("AssetHandler", "Created VAOs");
     }
 
-    public MeshHandle loadTestMesh() {
-        //first load our test asset using gltfloader
+    private List<SceneAsset> gatherMeshesFromDirectory(String dirName) {
         GLTFLoader loader = new GLTFLoader();
-        SceneAsset sceneAsset = loader.load(Gdx.files.internal("models/myModel.gltf"));
-        var nodes = sceneAsset.scene.model.nodes;
-        //assert that the scene asset is only one mesh
-        if (nodes.size != 1 || nodes.first().parts.size != 1) {
-            Gdx.app.error("Mesh Loading Error", "More than one node in a model.");
-            Gdx.app.exit();
-        }
+        List<SceneAsset> sceneAssets = new ArrayList<>();
 
-        //extract mesh into packed mesh.
-        ArrayList<PackedMesh> packedMeshes = new ArrayList<>();
-        for (Node node : sceneAsset.scene.model.nodes) {
-            for (NodePart part : node.parts) {
-                packedMeshes.add(extractMesh(part.meshPart.mesh));
+        FileHandle dir = Gdx.files.internal(dirName);
+        System.out.println(dir);
+        for (FileHandle file : dir.list()) {
+            if (file.extension().equals("gltf")) {
+                sceneAssets.add(loader.load(file));
             }
         }
 
+        return sceneAssets;
+    }
+
+
+    private List<PackedMesh> extractMeshes(List<SceneAsset> sceneAssets) {
+        ArrayList<PackedMesh> packedMeshes = new ArrayList<>();
+        for (SceneAsset sceneAsset : sceneAssets) {
+            for (Node node : sceneAsset.scene.model.nodes) {
+                var nodes = sceneAsset.scene.model.nodes;
+                //Assert that each node is only one mesh
+                if (nodes.size != 1 || nodes.first().parts.size != 1) {
+                    Gdx.app.error("Mesh Loading Error", "More than one node in a model.");
+                    Gdx.app.exit();
+                }
+                for (NodePart part : node.parts) {
+                    //extract mesh into packed mesh.
+                    packedMeshes.add(extractToPackedMesh(part.meshPart.mesh));
+                }
+            }
+        }
+
+        return packedMeshes;
+    }
+
+    public List<MeshHandle> populateBuffers(List<PackedMesh> packedMeshes) {
         //Figure out how large of a buffer we need to allocate
         int totalVertices = 0;
         int totalIndices = 0;
@@ -86,7 +109,6 @@ public class AssetHandler {
         GL30 gl = Gdx.gl30;
         masterVBO = gl.glGenBuffer();
         masterEBO = gl.glGenBuffer();
-
 
         //bind vbo
         gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, masterVBO);
@@ -101,7 +123,7 @@ public class AssetHandler {
         gl.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, masterEBO);
         gl.glBufferData(
             GL30.GL_ELEMENT_ARRAY_BUFFER,
-            totalIndices * Short.BYTES,
+            totalIndices * Integer.BYTES,
             null,
             GL30.GL_STATIC_DRAW
         );
@@ -109,22 +131,18 @@ public class AssetHandler {
         //load all our data into masterEBO and masterVBO and create a handle for each mesh.
         int vertexOffset = 0;
         int indexOffsetBytes = 0;
-        meshHandles = new ArrayList<>(packedMeshes.size());
+        List<MeshHandle> handles = new ArrayList<>(packedMeshes.size());
         for (PackedMesh packedMesh : packedMeshes) {
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, masterVBO);
             gl.glBufferSubData(GL30.GL_ARRAY_BUFFER, vertexOffset * STRIDE_BYTES, packedMesh.vertices().remaining() * Float.BYTES, packedMesh.vertices());
 
-            ShortBuffer baked = BufferUtils.newShortBuffer(packedMesh.indexCount());
-            ShortBuffer src = packedMesh.indices().duplicate();
+            IntBuffer baked = BufferUtils.newIntBuffer(packedMesh.indexCount());
+            IntBuffer src = packedMesh.indices().duplicate();
             src.clear();
 
             while (src.hasRemaining()) {
-                int idx = (src.get() & 0xFFFF) + vertexOffset;
-                // For now, this must fit in 0..65535 or you’ll overflow.
-                if (idx > 0xFFFF) {
-                    throw new IllegalStateException("Index overflow: " + idx + " (too many vertices for ushort)");
-                }
-                baked.put((short) idx);
+                int idx = src.get() + vertexOffset;
+                baked.put(idx);
             }
             baked.flip();
 
@@ -132,35 +150,24 @@ public class AssetHandler {
             gl.glBufferSubData(
                 GL30.GL_ELEMENT_ARRAY_BUFFER,
                 indexOffsetBytes,
-                baked.remaining() * Short.BYTES,
+                baked.remaining() * Integer.BYTES,
                 baked
             );
-
-
 
             MeshHandle handle = new MeshHandle();
             handle.indexCount = packedMesh.indexCount();
             handle.indexOffsetBytes = indexOffsetBytes;
             handle.boundingBox = packedMesh.boundingBox();
 
-            meshHandles.add(handle);
+            handles.add(handle);
 
             vertexOffset += packedMesh.vertexCount();
-            indexOffsetBytes += packedMesh.indexCount() * Short.BYTES;
+            indexOffsetBytes += packedMesh.indexCount() * Integer.BYTES;
         }
-        createVaos(meshHandles);
-        System.out.println(meshHandles.size());
-        System.out.println(meshHandles.getFirst().toString());
-
-        //dispose of our old allocations now that everything is in one big buffer
-//        for (SceneAsset asset : assets) {
-//            asset.dispose();
-//        }
-        return meshHandles.getFirst();
+        return handles;
     }
 
-
-    private PackedMesh extractMesh(Mesh mesh) {
+    private PackedMesh extractToPackedMesh(Mesh mesh) {
         final int vertexCount = mesh.getNumVertices();
         final int indexCount  = mesh.getNumIndices();
 
@@ -180,17 +187,17 @@ public class AssetHandler {
         vertices.put(vb).flip();
         vb.limit(oldLimit);
 
-        // ---- indices as SHORT ----
         Buffer ib = mesh.getIndicesBuffer(false);
         if (!(ib instanceof ShortBuffer sb)) {
             throw new IllegalStateException("Expected ShortBuffer indices, got: " + ib.getClass().getName());
         }
 
         ShortBuffer src = sb.duplicate();
+        src.clear();
 
-        ShortBuffer indices = BufferUtils.newShortBuffer(indexCount);
+        IntBuffer indices = BufferUtils.newIntBuffer(indexCount);
         for (int i = 0; i < indexCount; i++) {
-            indices.put(src.get()); // keep as-is
+            indices.put(src.get() & 0xFFFF);
         }
         indices.flip();
 
@@ -203,17 +210,15 @@ public class AssetHandler {
         );
     }
 
-
-
-    void createVaos(List<MeshHandle> meshes) {
+    private void createVaos(List<MeshHandle> meshes) {
         final GL30 gl = Gdx.gl30;
 
         for (MeshHandle mesh : meshes) {
             // 1. Allocate buffer for 1 VAO id
-            IntBuffer vaoBuffer = BufferUtils.newIntBuffer(8);
+            IntBuffer vaoBuffer = BufferUtils.newIntBuffer(1);
             vaoBuffer.clear();
             // 2. Generate VAO
-            gl.glGenVertexArrays(8, vaoBuffer);
+            gl.glGenVertexArrays(1, vaoBuffer);
 
             // 3. Read the generated ID
             mesh.vao = vaoBuffer.get(0);
@@ -222,6 +227,7 @@ public class AssetHandler {
                 throw new IllegalStateException("Failed to create VAO");
             }
 
+            int index = 0;
             // 4. Bind VAO
             gl.glBindVertexArray(mesh.vao);
 
@@ -229,24 +235,34 @@ public class AssetHandler {
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, masterVBO);
             gl.glBindBuffer(GL30.GL_ELEMENT_ARRAY_BUFFER, masterEBO);
 
-            // position (offset 0)
+            //position
             int offset = 0;
-            gl.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
+            gl.glVertexAttribPointer(index, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
             gl.glEnableVertexAttribArray(0);
             offset += 3 *  Float.BYTES;
+            index++;
 
-            // normal (offset = 3 floats = 12 bytes)
-            gl.glVertexAttribPointer(1, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
+            //normal
+            gl.glVertexAttribPointer(index, 3, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
             gl.glEnableVertexAttribArray(1);
             offset += 3 *  Float.BYTES;
+            index++;
 
+            //tangent
+            gl.glVertexAttribPointer(index, 4, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
+            offset += 4 * Float.BYTES;
+            index++;
+
+            //uv
+            gl.glVertexAttribPointer(index, 2, GL30.GL_FLOAT, false, STRIDE_BYTES, offset);
+            offset += 2 * Float.BYTES;
+            index++;
 
             mesh.instanceVBO = gl.glGenBuffer();
             gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, mesh.instanceVBO);
             gl.glBufferData(GL30.GL_ARRAY_BUFFER, Renderer.MAX_INSTANCED_DRAW * 16 * Float.BYTES, null, GL30.GL_STREAM_DRAW);
-
             for (int i = 0; i < 4; i++) {
-                int loc = 2 + i;
+                int loc = index + i;
                 gl.glEnableVertexAttribArray(loc);
                 gl.glVertexAttribPointer(loc, 4, GL30.GL_FLOAT, false, 16 * Float.BYTES, i * 4 * Float.BYTES);
                 gl.glVertexAttribDivisor(loc, 1);

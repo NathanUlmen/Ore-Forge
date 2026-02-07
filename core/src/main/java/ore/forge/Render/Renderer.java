@@ -5,31 +5,35 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.OrientedBoundingBox;
 import com.badlogic.gdx.utils.BufferUtils;
-import ore.forge.Stopwatch;
+import com.badlogic.gdx.utils.Pool;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
+ * @author Nathan Ulmen
  * Is responsible For sorting, batching, and instancing draw calls. *
  */
 public class Renderer {
     public static final int MAX_INSTANCED_DRAW = 10_000;
-    public final AssetHandler assetHandler;
-    public final ArrayList<RenderPass> renderPasses = new ArrayList<>();
-    public final FloatBuffer instanceBuffer;
+    private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
+    private final FloatBuffer instanceBuffer;
     private final int instanceVbo;
+    private final Pool<RenderCommand> renderCommandPool;
 
-    public Renderer(AssetHandler assetHandler) {
-        this.assetHandler = assetHandler;
+    public Renderer() {
         instanceBuffer = BufferUtils.newFloatBuffer(10_000_000);
         instanceVbo = Gdx.gl30.glGenBuffer();
+        renderCommandPool = new Pool<>(10_000) {
+            @Override
+            protected RenderCommand newObject() {
+                return new RenderCommand();
+            }
+        };
 
         Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
         Gdx.gl30.glBufferData(
@@ -41,12 +45,14 @@ public class Renderer {
     }
 
     public void render(List<RenderPart> toRender, Camera camera) {
-        toRender = vectorizedFrustumCull(camera, toRender);
+//        toRender = frustumCull(camera, toRender);
         for (RenderPass pass : renderPasses) {
             ArrayList<RenderCommand> commands = new ArrayList<>();
             for (RenderPart part : toRender) {
                 if (pass.accepts(part)) {
-                    commands.add(new RenderCommand(part));
+                    RenderCommand command = renderCommandPool.obtain();
+                    command.init(part);
+                    commands.add(command);
                 }
             }
 
@@ -59,7 +65,9 @@ public class Renderer {
 
                 pass.end();
             }
-
+            for (RenderCommand command : commands) {
+                renderCommandPool.free(command);
+            }
         }
     }
 
@@ -79,17 +87,16 @@ public class Renderer {
                 endIndex++;
             }
 
-            MaterialHandle material = first.material;
+            MaterialHandle material = first.materialHandle;
             pass.bindShader(material.shader, camera);
 
             material.bind();
 
-            MeshHandle mesh = first.mesh;
+            MeshHandle mesh = first.meshHandle;
             Gdx.gl30.glBindVertexArray(mesh.vao);
 
             int count = endIndex - startIndex;
             if (count > 1) {
-                System.out.println("Draw Commands Size: " + count +  "\nFPS: " + Gdx.graphics.getFramesPerSecond());
                 drawInstanced(commands, startIndex, endIndex);
             } else {
                 drawInstanced(commands, startIndex, startIndex + 1);
@@ -99,19 +106,17 @@ public class Renderer {
         }
     }
 
-
     public boolean canInstance(RenderCommand a, RenderCommand b) {
-        return a.mesh == b.mesh &&
-            a.material == b.material &&
+        return a.meshHandle == b.meshHandle &&
+            a.materialHandle == b.materialHandle &&
             a.flags == b.flags;
     }
-
 
     public void drawInstanced(ArrayList<RenderCommand> commands, int start, int end) {
         final var gl = Gdx.gl30;
 
         int instanceCount = end - start;
-        MeshHandle mesh = commands.get(start).mesh;
+        MeshHandle mesh = commands.get(start).meshHandle;
 
         // 1. Build instance data (CPU loop)
         instanceBuffer.clear();
@@ -131,22 +136,25 @@ public class Renderer {
             instanceBuffer
         );
 
-        gl.glBindVertexArray(mesh.vao);
-
         //instanced draw call
         gl.glDrawElementsInstanced(
             GL20.GL_TRIANGLES,
             mesh.indexCount,
-            GL20.GL_UNSIGNED_SHORT,
+            GL20.GL_UNSIGNED_INT,
             mesh.indexOffsetBytes,
             instanceCount
         );
 
     }
 
+    /*
+    * To make this faster in the future we could:
+    * Break it down so the compiler will vectorize it.
+    * Ensure that toCull is built from an acceleration structure to cut large parts of world out
+    * Have OrientedBoundingBox be a property of RenderPart and update it when it becomes dirty
+    *  */
     public List<RenderPart> frustumCull(Camera camera, List<RenderPart> toCull) {
-        //Could be vectorized but might not be worth it.
-        List<RenderPart> culled = new  ArrayList<>(toCull.size());
+        List<RenderPart> culled = new ArrayList<>(toCull.size());
         for (RenderPart part : toCull) {
             Matrix4 transform = part.transform;
             BoundingBox box = part.mesh.boundingBox;
@@ -158,61 +166,11 @@ public class Renderer {
         return culled;
     }
 
-    public List<RenderPart> vectorizedFrustumCull(Camera camera, List<RenderPart> toCull) {
-        var visible = new ArrayList<RenderPart>(toCull.size());
-
-        // 2 corners per AABB (min + max)
-        float[] aabbData = new float[toCull.size() * 6];
-
-        // pack all AABBs contiguously
-        for (int i = 0; i < toCull.size(); i++) {
-            var bb = toCull.get(i).mesh.boundingBox;
-            int base = i * 6;
-
-            aabbData[base]     = bb.min.x;
-            aabbData[base + 1] = bb.min.y;
-            aabbData[base + 2] = bb.min.z;
-
-            aabbData[base + 3] = bb.max.x;
-            aabbData[base + 4] = bb.max.y;
-            aabbData[base + 5] = bb.max.z;
-        }
-
-        Vector3 center = new Vector3();
-        Vector3 extent = new Vector3();
-
-        for (int i = 0; i < toCull.size(); i++) {
-            RenderPart part = toCull.get(i);
-            int base = i * 6;
-
-            // reconstruct AABB
-            Vector3 min = center.set(
-                aabbData[base],
-                aabbData[base + 1],
-                aabbData[base + 2]
-            );
-
-            Vector3 max = extent.set(
-                aabbData[base + 3],
-                aabbData[base + 4],
-                aabbData[base + 5]
-            );
-
-            // center + half extents
-            center.set(min).add(max).scl(0.5f);
-            extent.set(max).sub(min).scl(0.5f);
-
-            // transform center into world space
-            center.mul(part.transform);
-
-            if (camera.frustum.boundsInFrustum(center, extent)) {
-                visible.add(part);
-            }
-        }
-
-        return visible;
+    public void addRenderPass(RenderPass pass) {
+        renderPasses.add(pass);
     }
 
-
-
+    public List<RenderPass> renderPasses() {
+        return renderPasses;
+    }
 }

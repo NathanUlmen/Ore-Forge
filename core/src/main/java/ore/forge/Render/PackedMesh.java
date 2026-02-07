@@ -7,7 +7,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 public record PackedMesh(FloatBuffer vertices,
-                         ShortBuffer indices,
+                         IntBuffer indices,
                          int vertexCount,
                          int indexCount,
                          BoundingBox boundingBox) {

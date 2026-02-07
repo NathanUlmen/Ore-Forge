@@ -32,9 +32,9 @@ public class Lwjgl3Launcher {
 
         config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 3);
         config.setForegroundFPS(10_000);
-        config.useVsync(true);
+        config.useVsync(false);
         Graphics.DisplayMode mode = Lwjgl3ApplicationConfiguration.getDisplayMode();
-        config.setWindowedMode(mode.width, mode.height);
+        config.setWindowedMode(mode.width/2, mode.height/2);
 //        config.setFullscreenMode(mode);
         config.setResizable(true);
         config.setDecorated(false);
