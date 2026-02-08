@@ -38,14 +38,14 @@ public class BasicRenderPass extends RenderPass {
 
     @Override
     public void sort(ArrayList<RenderCommand> commands) {
-//        commands.sort((a, b) -> {
-//            int r;
-//
-//            r = System.identityHashCode(a.material) - System.identityHashCode(b.material);
-//            if (r != 0) return r;
-//
-//            r = System.identityHashCode(a.mesh) - System.identityHashCode(b.mesh);
-//            return r;
-//        });
+        commands.sort((a, b) -> {
+            int r;
+
+            r = System.identityHashCode(a.materialHandle) - System.identityHashCode(b.materialHandle);
+            if (r != 0) return r;
+
+            r = System.identityHashCode(a.meshHandle) - System.identityHashCode(b.meshHandle);
+            return r;
+        });
     }
 }
