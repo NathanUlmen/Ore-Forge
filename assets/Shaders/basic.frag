@@ -13,7 +13,6 @@ void main() {
     vec3 t = normalize(tangent.xyz);
     float handed = tangent.w;
 
-    // float-safe "xor" checker
     float a = step(0.5, fract(uv.x * 8.0));
     float b = step(0.5, fract(uv.y * 8.0));
     float checker = abs(a - b);          // 0 or 1

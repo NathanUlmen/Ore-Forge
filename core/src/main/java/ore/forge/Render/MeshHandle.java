@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 /**
  * Mesh Handle stores the index range for the target mesh that is to be drawn*/
 public class MeshHandle {
+    public String name;
 
     // Geometry binding
     public int vao; //pointer to
@@ -18,10 +19,10 @@ public class MeshHandle {
 
     // Topology
     public int primitiveType = GL20.GL_TRIANGLES;
-    public int strideBytes = 0;
 
+    //TODO move these to a separate part in AssetHandler, dont need to be stored here.
     public VertexAttributes vertexAttributes;
-
+    public int strideBytes = 0;
 
     public BoundingBox boundingBox;
 

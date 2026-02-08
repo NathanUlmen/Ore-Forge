@@ -55,26 +55,26 @@ public class AssetHandler {
 
     public AssetHandler() {
         var sceneAssets = gatherMeshesFromDirectory("assets/models");
-        Gdx.app.log("AssetHandler", "Gathered Meshes From Directory");
+//        Gdx.app.log("AssetHandler", "Gathered Meshes From Directory");
         List<PackedMesh> packedMeshes = extractMeshes(sceneAssets);
-        Gdx.app.log("AssetHandler", "Extracted Meshes into packedMeshes");
+//        Gdx.app.log("AssetHandler", "Extracted Meshes into packedMeshes");
         this.meshHandles = populateBuffers(packedMeshes);
-        Gdx.app.log("AssetHandler", "Populated Buffers");
+//        Gdx.app.log("AssetHandler", "Populated Buffers");
         createVaos(this.meshHandles);
-        Gdx.app.log("AssetHandler", "Created VAOs");
+//        Gdx.app.log("AssetHandler", "Created VAOs");
     }
 
     private List<SceneAsset> gatherMeshesFromDirectory(String dirName) {
-        GLTFLoader loader = new GLTFLoader();
         List<SceneAsset> sceneAssets = new ArrayList<>();
 
         FileHandle dir = Gdx.files.internal(dirName);
-        System.out.println(dir);
         for (FileHandle file : dir.list()) {
-            if (file.extension().equals("gltf")) {
-                sceneAssets.add(loader.load(file));
+            if (file.extension().equalsIgnoreCase("gltf")) {
+                SceneAsset a = new GLTFLoader().load(file);
+                sceneAssets.add(a);
             }
         }
+
 
         return sceneAssets;
     }
@@ -83,18 +83,11 @@ public class AssetHandler {
     private List<PackedMesh> extractMeshes(List<SceneAsset> sceneAssets) {
         ArrayList<PackedMesh> packedMeshes = new ArrayList<>();
         for (SceneAsset sceneAsset : sceneAssets) {
-            for (Node node : sceneAsset.scene.model.nodes) {
-                var nodes = sceneAsset.scene.model.nodes;
-                //Assert that each node is only one mesh
-                if (nodes.size != 1 || nodes.first().parts.size != 1) {
-                    Gdx.app.error("Mesh Loading Error", "More than one node in a model.");
-                    Gdx.app.exit();
-                }
-                for (NodePart part : node.parts) {
-                    //extract mesh into packed mesh.
-                    packedMeshes.add(extractToPackedMesh(part.meshPart.mesh));
-                }
+            if (sceneAsset.meshes.size != 1) {
+                Gdx.app.error("Mesh Loading Error", "More than one node in a model.");
+                Gdx.app.exit();
             }
+            packedMeshes.add(extractToPackedMesh(sceneAsset.meshes.first()));
         }
 
         return packedMeshes;
@@ -142,7 +135,6 @@ public class AssetHandler {
 
             IntBuffer baked = BufferUtils.newIntBuffer(packedMesh.indexCount());
             IntBuffer src = packedMesh.indices().duplicate();
-            src.clear();
 
             while (src.hasRemaining()) {
                 int idx = src.get() + vertexOffset;
@@ -179,10 +171,6 @@ public class AssetHandler {
 
         final int strideBytes = mesh.getVertexSize();
         STRIDE_BYTES = strideBytes;
-
-        Gdx.app.log("ATTR", mesh.getVertexAttributes().toString());
-        Gdx.app.log("STRIDE", "" + mesh.getVertexSize());
-
 
         // ---- vertices ----
         FloatBuffer vb = mesh.getVerticesBuffer(false).duplicate();
@@ -249,6 +237,7 @@ public class AssetHandler {
             // You need the original mesh's VertexAttributes here.
             // Store them into your PackedMesh or MeshHandle when extracting.
             VertexAttributes attrs = mesh.vertexAttributes;
+            System.out.println(attrs.toString());
             int stride = mesh.strideBytes;
 
             VertexAttribute pos = find(attrs, VertexAttributes.Usage.Position, 0);
@@ -256,8 +245,11 @@ public class AssetHandler {
             VertexAttribute tan = find(attrs, VertexAttributes.Usage.Tangent, 0);
             VertexAttribute uv0 = find(attrs, VertexAttributes.Usage.TextureCoordinates, 0);
 
-            if (pos == null || nor == null || tan == null || uv0 == null)
-                throw new IllegalStateException("Missing required attributes");
+            if (pos == null) Gdx.app.error("VAO", "Missing POSITION");
+            if (nor == null) Gdx.app.error("VAO", "Missing NORMAL");
+            if (tan == null) Gdx.app.error("VAO", "Missing TANGENT");
+            if (uv0 == null) Gdx.app.error("VAO", "Missing TEXCOORD_0");
+
 
             gl.glEnableVertexAttribArray(0);
             gl.glVertexAttribPointer(0, 3, GL30.GL_FLOAT, false, stride, pos.offset);
@@ -295,6 +287,5 @@ public class AssetHandler {
         }
         return null;
     }
-
 
 }

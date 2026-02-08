@@ -15,12 +15,6 @@ public class BasicRenderPass extends RenderPass {
             Gdx.files.internal("Shaders/basic.vert"),
             Gdx.files.internal("Shaders/basic.frag"))
         );
-        System.out.println(currentShader.getLog());
-        int result = Gdx.gl30.glGetAttribLocation(currentShader.getHandle(), "a_VertexPos");
-        System.out.println("a_VertexPos Location: " + result);
-        System.out.println("a_normal location: " + Gdx.gl30.glGetAttribLocation(currentShader.getHandle(), "a_normal"));
-        System.out.println("a_transform location: " + Gdx.gl30.glGetAttribLocation(currentShader.getHandle(), "a_transform"));
-
         if (!currentShader.isCompiled()) {
             throw new GdxRuntimeException(currentShader.getLog());
         }

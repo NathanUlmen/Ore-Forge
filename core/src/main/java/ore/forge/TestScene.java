@@ -32,7 +32,6 @@ public class TestScene implements Screen {
         basicRenderPass = new BasicRenderPass();
 
         AssetHandler handler = new AssetHandler();
-        MeshHandle handle = handler.meshHandles.getFirst();
         renderer = new Renderer();
         renderer.addRenderPass(basicRenderPass);
 
@@ -51,8 +50,8 @@ public class TestScene implements Screen {
         materialHandle.shader = renderer.renderPasses().getFirst().currentShader;
 
         // ---- Build 1000 parts in a grid ----
-        final int cols = 10;             // 40 * 25 = 1000
-        final int rows = 10;
+        final int cols = 50;             // 40 * 25 = 1000
+        final int rows = 50;
         final float spacing = 3.0f;      // distance between instances
         final float scale = 1.0f;
 
@@ -64,7 +63,9 @@ public class TestScene implements Screen {
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                RenderPart part = RenderPart.defaultRenderPart(handle);
+                var meshHandles = handler.meshHandles;
+                MeshHandle meshHandle = meshHandles.get(x % meshHandles.size());
+                RenderPart part = RenderPart.defaultRenderPart(meshHandle);
 
                 // IMPORTANT: don’t mutate an existing transform with translate() chaining if it accumulates
                 // Create a fresh transform per part (setToTranslation + scale)
@@ -99,6 +100,8 @@ public class TestScene implements Screen {
         renderer.render(renderParts, camera);
         System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
         stopwatch.stop();
+        System.out.println("Draw Calls: " + profiler.getDrawCalls());
+        profiler.reset();
         Profiler.INSTANCE.log(stopwatch.getElapsedTime(), Gdx.graphics.getFramesPerSecond());
     }
 
