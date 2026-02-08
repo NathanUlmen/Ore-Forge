@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 /**
  * Mesh Handle stores the index range for the target mesh that is to be drawn*/
 public class MeshHandle {
-    public String name;
+    public String id;
 
     // Geometry binding
     public int vao; //pointer to

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.model.NodePart;
 import com.badlogic.gdx.utils.BufferUtils;
+import net.mgsx.gltf.data.GLTFAsset;
 import net.mgsx.gltf.loaders.gltf.GLTFLoader;
 import net.mgsx.gltf.scene3d.scene.SceneAsset;
 
@@ -52,6 +53,7 @@ public class AssetHandler {
     static int STRIDE_BYTES;
     public int masterVBO, masterEBO;
     public List<MeshHandle> meshHandles;
+    public Hashtable<String, MeshHandle> handleLookup;
 
     public AssetHandler() {
         var sceneAssets = gatherMeshesFromDirectory("assets/models");
@@ -66,7 +68,6 @@ public class AssetHandler {
 
     private List<SceneAsset> gatherMeshesFromDirectory(String dirName) {
         List<SceneAsset> sceneAssets = new ArrayList<>();
-
         FileHandle dir = Gdx.files.internal(dirName);
         for (FileHandle file : dir.list()) {
             if (file.extension().equalsIgnoreCase("gltf")) {
@@ -74,8 +75,6 @@ public class AssetHandler {
                 sceneAssets.add(a);
             }
         }
-
-
         return sceneAssets;
     }
 
@@ -151,6 +150,7 @@ public class AssetHandler {
             );
 
             MeshHandle handle = new MeshHandle();
+            handle.id = packedMesh.id();
             handle.indexCount = packedMesh.indexCount();
             handle.indexOffsetBytes = indexOffsetBytes;
             handle.boundingBox = packedMesh.boundingBox();
@@ -165,7 +165,7 @@ public class AssetHandler {
         return handles;
     }
 
-    private PackedMesh extractToPackedMesh(Mesh mesh) {
+    private PackedMesh extractToPackedMesh(Mesh mesh, String id) {
         final int vertexCount = mesh.getNumVertices();
         final int indexCount = mesh.getNumIndices();
 
@@ -205,7 +205,8 @@ public class AssetHandler {
             vertexCount,
             indexCount,
             mesh.calculateBoundingBox(),
-            mesh.getVertexAttributes()
+            mesh.getVertexAttributes(),
+            id
         );
     }
 
@@ -286,6 +287,10 @@ public class AssetHandler {
             if (a.usage == usage && a.unit == unit) return a;
         }
         return null;
+    }
+
+    public MeshHandle getHandle(String targetId) {
+        return handleLookup.get(targetId);
     }
 
 }

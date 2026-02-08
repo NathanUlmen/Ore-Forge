@@ -11,5 +11,5 @@ public record PackedMesh(FloatBuffer vertices,
                          IntBuffer indices,
                          int vertexCount,
                          int indexCount,
-                         BoundingBox boundingBox, VertexAttributes attributes) {
+                         BoundingBox boundingBox, VertexAttributes attributes, String id) {
 }

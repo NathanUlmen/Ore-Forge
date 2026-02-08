@@ -21,6 +21,7 @@ import ore.forge.Items.Properties.ItemProperties;
 import ore.forge.Items.Properties.UpgraderProperties;
 import ore.forge.OreDefinition;
 import ore.forge.ReflectionLoader;
+import ore.forge.Render.RenderPart;
 import ore.forge.Strategies.BodyLogic;
 import ore.forge.UpgradeTag;
 
@@ -37,7 +38,7 @@ public class ItemDefinition {
 
     //Visual
     protected Model model;
-    protected String modelFilePath;
+    protected List<RenderPart> renderParts;
 
     //Physics
     protected List<btCollisionShape> collisionShapes;

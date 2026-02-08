@@ -47,7 +47,7 @@ public class Renderer {
     public void render(List<RenderPart> toRender, Camera camera) {
 //        toRender = frustumCull(camera, toRender);
         for (RenderPass pass : renderPasses) {
-            ArrayList<RenderCommand> commands = new ArrayList<>();
+            ArrayList<RenderCommand> commands = new ArrayList<>(toRender.size());
             for (RenderPart part : toRender) {
                 if (pass.accepts(part)) {
                     RenderCommand command = renderCommandPool.obtain();
