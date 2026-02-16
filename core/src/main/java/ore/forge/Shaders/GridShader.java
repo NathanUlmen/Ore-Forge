@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import ore.forge.VisualComponent;
+import ore.forge.engine.Components.VisualComponent;
 
 public class GridShader implements Shader, Disposable {
     private ShaderProgram shader;

@@ -17,15 +17,15 @@
   },
   "behaviors": [
     {
-      "behaviorName": "ore.forge.Strategies.Move",
+      "behaviorName": "ore.forge.game.behaviors.Move",
       "force": 5,
       "key": "b1"
     },
     {
-      "behaviorName": "ore.forge.Strategies.UpgradeOreBehavior",
+      "behaviorName": "ore.forge.game.behaviors.UpgradeOreBehavior",
       "upgradeCooldown": 0.1,
       "upgrade": {
-        "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
+        "upgradeName": "ore.forge.game.behaviors.UpgradeStrategies.BasicUpgrade",
         "valueToModify": "ORE_VALUE",
         "modifier": 2,
         "operator": "ADD"

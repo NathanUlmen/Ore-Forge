@@ -20,15 +20,15 @@
     },
     "behaviors": [
       {
-        "behaviorName": "ore.forge.Strategies.Move",
+        "behaviorName": "ore.forge.game.behaviors.Move",
         "force": 5,
         "key": "b1"
       },
       {
-        "behaviorName": "ore.forge.Strategies.UpgradeOreBehavior",
+        "behaviorName": "ore.forge.game.behaviors.UpgradeOreBehavior",
         "upgradeCooldown": 0.1,
         "upgrade": {
-          "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
+          "upgradeName": "ore.forge.game.behaviors.UpgradeStrategies.BasicUpgrade",
           "valueToModify": "ORE_VALUE",
           "modifier": 2,
           "operator": "ADD"
@@ -167,9 +167,9 @@
     },
     "behaviors": [
       {
-        "behaviorName": "ore.forge.Strategies.SellOreBehavior",
+        "behaviorName": "ore.forge.game.behaviors.SellOreBehavior",
         "sellUpgrade": {
-          "upgradeName": "ore.forge.Strategies.UpgradeStrategies.BasicUpgrade",
+          "upgradeName": "ore.forge.game.behaviors.UpgradeStrategies.BasicUpgrade",
           "modifier": 1,
           "valueToModify": "ORE_VALUE",
           "operator": "ADD"
@@ -241,9 +241,9 @@
     ],
     "behaviors": [
       {
-        "behaviorName": "ore.forge.Strategies.DropOreBehavior",
+        "behaviorName": "ore.forge.game.behaviors.DropOreBehavior",
         "dropBehavior": {
-          "dropBehaviorName": "ore.forge.Strategies.DropperStrategies.BurstDrop",
+          "dropBehaviorName": "ore.forge.game.behaviors.DropperStrategies.BurstDrop",
           "orePerMinute": 450,
           "burstCount": 3
         },

@@ -1,0 +1,21 @@
+package ore.forge.game;
+
+public class UpgradeCooldown implements Updatable {
+    private final CoolDown cooldown;
+    private final UpgradeTag tag;
+    private final Ore ore;
+
+    public UpgradeCooldown(float cooldown, Ore ore,  UpgradeTag tag) {
+        this.cooldown = new CoolDown(cooldown);
+        this.ore = ore;
+        this.tag = tag;
+    }
+
+    @Override
+    public void update(float delta, GameContext state) {
+        if (cooldown.update(delta) > 0) {
+            ore.removeUpgradeCooldown(tag);
+        }
+    }
+
+}

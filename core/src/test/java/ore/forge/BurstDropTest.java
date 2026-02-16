@@ -1,6 +1,6 @@
 package ore.forge;
 
-import ore.forge.Strategies.DropperStrategies.BurstDrop;
+import ore.forge.game.behaviors.DropperStrategies.BurstDrop;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

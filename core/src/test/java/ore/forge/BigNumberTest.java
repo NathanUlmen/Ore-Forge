@@ -1,5 +1,7 @@
 package ore.forge;
 
+import ore.forge.engine.profiling.Stopwatch;
+import ore.forge.game.BigNumber;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

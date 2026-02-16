@@ -5,6 +5,8 @@ package ore.forge;//The OreRealm is a stack of max Length 500(Ore limit) and whe
 //The oreRealm also keeps track of the ore that are active in the tycoon, and is used to set ore state to moveable at the end of each tick.
 
 
+import ore.forge.game.Ore;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -17,7 +19,7 @@ public class OreRealm {
 
     private OreRealm() {
         stackOfOre = new ArrayDeque<Ore>();
-        activeOre = new ArrayList<>(Constants.ORE_LIMIT);
+        activeOre = new ArrayList<>(200);
         removalStack = new ArrayDeque<>();
         additionStack = new ArrayDeque<>();
     }
@@ -35,7 +37,7 @@ public class OreRealm {
     }
 
     public Ore giveOre() {
-        stackOfOre.peek().setIsActive(true);
+//        stackOfOre.peek().setIsActive(true);
         activeOre.add(stackOfOre.peek());
         return stackOfOre.pop();
     }
@@ -45,9 +47,9 @@ public class OreRealm {
     }
 
     public void populate() {
-        for (int i = 0; i < Constants.ORE_LIMIT; i++) {
-            stackOfOre.push(new Ore());
-        }
+//        for (int i = 0; i < Constants.ORE_LIMIT; i++) {
+//            stackOfOre.push(new Ore());
+//        }
     }
 
     public void depopulate() {
@@ -67,7 +69,7 @@ public class OreRealm {
             activeOre.remove(removalStack.pop());
         }
         while (!additionStack.isEmpty()) {
-            additionStack.peek().setIsActive(true);
+//            additionStack.peek().setIsActive(true);
             activeOre.add(additionStack.pop());
         }
     }

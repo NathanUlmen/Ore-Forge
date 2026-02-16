@@ -1,9 +1,9 @@
 package ore.forge;
 
-import ore.forge.EventSystem.EventManager;
-import ore.forge.EventSystem.Events.InventoryNodeGameEvent;
-import ore.forge.EventSystem.Events.OreDroppedGameEvent;
-import ore.forge.EventSystem.GameEventListener;
+import ore.forge.game.event.EventManager;
+import ore.forge.game.event.Events.InventoryNodeGameEvent;
+import ore.forge.game.event.Events.OreDroppedGameEvent;
+import ore.forge.game.event.GameEventListener;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

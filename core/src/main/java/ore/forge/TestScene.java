@@ -6,9 +6,12 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
-import ore.forge.Input3D.CameraController;
-import ore.forge.Input3D.FreeCamController;
-import ore.forge.Render.*;
+import com.badlogic.gdx.math.Vector3;
+import ore.forge.engine.profiling.Profiler;
+import ore.forge.engine.render.*;
+import ore.forge.game.input.CameraController;
+import ore.forge.game.input.FreeCamController;
+import ore.forge.engine.profiling.Stopwatch;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -21,8 +24,12 @@ public class TestScene implements Screen {
     private GLProfiler profiler;
     private Stopwatch stopwatch;
 
+    private float rotationDeg = 0f;
+    private float rotationSpeedDegPerSec = 45f; // tweak
+    private final Vector3 rotationAxis = new Vector3(1, 1, 1);
+
     // Keep all parts around (don’t recreate every frame)
-    private final ArrayList<RenderPart> renderParts = new ArrayList<>(1000);
+    private final ArrayList<RenderPart> renderParts = new ArrayList<>(1_000);
 
     public TestScene() {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
@@ -93,6 +100,13 @@ public class TestScene implements Screen {
         cameraController.update(delta);
         camera.update(true);
 
+        rotationDeg = (rotationDeg + rotationSpeedDegPerSec * delta) % 360f;
+
+        // rotate renderParts
+        for (RenderPart part : renderParts) {
+            part.transform.rotate(rotationAxis, rotationSpeedDegPerSec * delta);
+        }
+
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
@@ -102,7 +116,7 @@ public class TestScene implements Screen {
         stopwatch.stop();
         System.out.println("Draw Calls: " + profiler.getDrawCalls());
         profiler.reset();
-        Profiler.INSTANCE.log(stopwatch.getElapsedTime(), Gdx.graphics.getFramesPerSecond());
+        Profiler.INSTANCE.log(stopwatch.elapsed(), Gdx.graphics.getFramesPerSecond());
     }
 
     @Override public void resize(int width, int height) {

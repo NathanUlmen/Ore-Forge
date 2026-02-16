@@ -1,6 +1,7 @@
 package ore.forge;
 
-import ore.forge.Expressions.Function;
+import ore.forge.game.Ore;
+import ore.forge.game.expressions.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
