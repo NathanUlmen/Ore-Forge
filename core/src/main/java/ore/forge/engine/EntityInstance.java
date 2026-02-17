@@ -3,10 +3,11 @@ package ore.forge.engine;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.utils.Disposable;
+import ore.forge.engine.components.PhysicsComp;
 import ore.forge.game.event.GameEventListener;
-import ore.forge.engine.Components.PhysicsComponent;
+import ore.forge.engine.components.PhysicsComponent;
 import ore.forge.game.Updatable;
-import ore.forge.engine.Components.VisualComponent;
+import ore.forge.engine.components.VisualComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +16,14 @@ import java.util.List;
  * @author Nathan Ulmen
  * */
 public class EntityInstance implements Disposable {
-    public enum BodyType { DYNAMIC, STATIC, NONE };
+    public PhysicsComp physicsComp;
     private final Object definition;
-    public final List<Updatable> updatables;
-    public final List<GameEventListener<?>> listeners;
     public final PhysicsComponent physicsComponent;
     public VisualComponent visualComponent;
-    private final Matrix4 worldTransform;
+    private final Matrix4 worldTransform; //central position of entity in world. Root/canonical.
+
+    public final List<Updatable> updatables;
+    public final List<GameEventListener<?>> listeners;
 
     public EntityInstance(Object definition, PhysicsComponent physicsComponent, VisualComponent visualComponent) {
         this.definition = definition;

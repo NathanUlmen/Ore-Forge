@@ -1,4 +1,4 @@
-package ore.forge.engine.Components;
+package ore.forge.engine.components;
 
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;

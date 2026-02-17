@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import ore.forge.engine.Components.VisualComponent;
+import ore.forge.engine.components.VisualComponent;
 
 public class IconRenderer {
     private final ModelBatch modelBatch;

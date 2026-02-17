@@ -1,4 +1,4 @@
-package ore.forge.engine.Components;
+package ore.forge.engine.components;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;

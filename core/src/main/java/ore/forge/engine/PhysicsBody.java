@@ -12,8 +12,21 @@ import ore.forge.game.GameContext;
 
 
 public class PhysicsBody implements Disposable {
+    public enum PhysicsBodyType {DYNAMIC, STATIC, KINEMATIC}
     private static final Matrix4 tmp = new Matrix4();
-    private btCollisionObject body;
+
+    private btCollisionObject bodyHandle; //handle
+    private PhysicsBodyType bodyType;
+    private Matrix4 localFromRoot; //
+
+    public PhysicsBody(PhysicsBodyType bodyType, Matrix4 localFromRoot) {
+        this.bodyType = bodyType;
+        this.localTransform = new Matrix4(localFromRoot);
+
+    }
+
+
+
 
     // current + previous pose (authoritative)
     private final Vector3 prevPos = new Vector3();
@@ -33,7 +46,7 @@ public class PhysicsBody implements Disposable {
     private Matrix4 localTransform; //entity local offset
 
     public PhysicsBody(btCollisionObject body, Matrix4 localTransform, int groupMask, int collideMask) {
-        this.body = body;
+        this.bodyHandle = body;
         this.localTransform = new Matrix4();
         this.localTransform.set(localTransform);
     }
@@ -52,7 +65,7 @@ public class PhysicsBody implements Disposable {
 
     public void readFromBullet() {
         // update curr from bullet after stepping
-        body.getWorldTransform(tmp);
+        bodyHandle.getWorldTransform(tmp);
         tmp.getTranslation(currPos);
         tmp.getRotation(currRot);
         tmp.getScale(currScale);
@@ -71,7 +84,7 @@ public class PhysicsBody implements Disposable {
     }
 
     public void teleport(Matrix4 newWorld) {
-        body.setWorldTransform(newWorld);
+        bodyHandle.setWorldTransform(newWorld);
         newWorld.getTranslation(currPos);
         newWorld.getRotation(currRot);
         newWorld.getScale(currScale);
@@ -81,19 +94,19 @@ public class PhysicsBody implements Disposable {
     }
 
     public void syncToEntity(Matrix4 outEntityTransform) {
-        if (body instanceof btRigidBody rb) {
+        if (bodyHandle instanceof btRigidBody rb) {
             rb.getMotionState().getWorldTransform(outEntityTransform);
         }
     }
 
     public void add(btDynamicsWorld world) {
-        if (body instanceof btRigidBody rb) {
+        if (bodyHandle instanceof btRigidBody rb) {
             world.addRigidBody(rb);
         } else {
-            world.addCollisionObject(body);
+            world.addCollisionObject(bodyHandle);
         }
 
-        if (body.userData instanceof PhysicsBodyData data) {
+        if (bodyHandle.userData instanceof PhysicsBodyData data) {
             if (data.bodyLogic != null) {
                 data.bodyLogic.register(GameContext.INSTANCE);
             }
@@ -101,22 +114,22 @@ public class PhysicsBody implements Disposable {
     }
 
     public void remove(btDynamicsWorld world) {
-        if (body instanceof btRigidBody rb) {
+        if (bodyHandle instanceof btRigidBody rb) {
             world.removeRigidBody(rb);
         } else {
-            world.removeCollisionObject(body);
+            world.removeCollisionObject(bodyHandle);
         }
     }
 
     public btCollisionObject getRigidBody() {
-        return body;
+        return bodyHandle;
     }
 
     @Override
     public void dispose() {
-        if (body instanceof btRigidBody rb) {
+        if (bodyHandle instanceof btRigidBody rb) {
             rb.getMotionState().dispose();
         }
-        body.dispose();
+        bodyHandle.dispose();
     }
 }

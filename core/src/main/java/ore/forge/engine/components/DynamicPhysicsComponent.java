@@ -1,11 +1,11 @@
-package ore.forge.engine.Components;
+package ore.forge.engine.components;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.engine.PhysicsBody;
 
-public class DynamicPhysicsComponent {
+public final class DynamicPhysicsComponent implements PhysicsComp {
     private PhysicsBody physicsBody;
     // current + previous pose (authoritative)
     private final Vector3 prevPos = new Vector3();

@@ -1,11 +1,11 @@
-package ore.forge.engine.Components;
+package ore.forge.engine.components;
 
 import com.badlogic.gdx.math.Matrix4;
 import ore.forge.engine.PhysicsBody;
 
 import java.util.List;
 
-public class StaticPhysicsComponent {
+public final class StaticPhysicsComponent implements PhysicsComp {
     List<PhysicsBody> bodies;
 
     public void place(Matrix4 targetLocation) {

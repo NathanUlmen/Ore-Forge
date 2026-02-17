@@ -8,6 +8,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.TestScene;
 import ore.forge.engine.profiling.Profiler;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.player.ItemInventory;
@@ -64,8 +65,8 @@ public class OreForge extends Game {
         //Create Our UI
         UI ui = new UI(context.player.inventory);
         Gameplay3D gameplay3D = new Gameplay3D(ui);
-        setScreen(gameplay3D);
-//        setScreen(new TestScene());
+//        setScreen(gameplay3D);
+        setScreen(new TestScene());
 	}
 
 	public void render() {

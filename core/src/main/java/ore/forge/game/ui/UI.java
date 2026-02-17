@@ -11,7 +11,7 @@ import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.player.ItemInventory;
 import ore.forge.game.player.ItemInventoryNode;
 import ore.forge.game.ui.Widgets.Icon;
-import ore.forge.engine.Components.VisualComponent;
+import ore.forge.engine.components.VisualComponent;
 
 import java.util.ArrayList;
 import java.util.List;
