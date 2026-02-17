@@ -13,118 +13,97 @@ import ore.forge.game.GameContext;
 
 public class PhysicsBody implements Disposable {
     public enum PhysicsBodyType {DYNAMIC, STATIC, KINEMATIC}
-    private static final Matrix4 tmp = new Matrix4();
 
-    private btCollisionObject bodyHandle; //handle
-    private PhysicsBodyType bodyType;
-    private Matrix4 localFromRoot; //
+    public btCollisionObject bodyHandle; //handle to bullet PhysicsObject
+    public PhysicsBodyType bodyType; //
+    public Matrix4 localFromRoot; //
 
     public PhysicsBody(PhysicsBodyType bodyType, Matrix4 localFromRoot) {
         this.bodyType = bodyType;
-        this.localTransform = new Matrix4(localFromRoot);
-
+        this.localFromRoot = new Matrix4(localFromRoot);
     }
 
 
-
-
-    // current + previous pose (authoritative)
-    private final Vector3 prevPos = new Vector3();
-    private final Vector3 currPos = new Vector3();
-    private final Quaternion prevRot = new Quaternion();
-    private final Quaternion currRot = new Quaternion();
-    private final Vector3 prevScale = new Vector3();
-    private final Vector3 currScale = new Vector3();
-
-    // temp for building transforms
-    private final Vector3 renderPos = new Vector3();
-    private final Quaternion renderRot = new Quaternion();
-    private final Vector3 renderScale = new Vector3();
-    private final Matrix4 renderTransform = new Matrix4();
-
-
-    private Matrix4 localTransform; //entity local offset
-
-    public PhysicsBody(btCollisionObject body, Matrix4 localTransform, int groupMask, int collideMask) {
-        this.bodyHandle = body;
-        this.localTransform = new Matrix4();
-        this.localTransform.set(localTransform);
-    }
-
-    public void syncFromEntity(Matrix4 entityWorld) {
-        tmp.set(entityWorld).mul(localTransform);
-        teleport(tmp);
-    }
-
-    public void snapshotPrev() {
-        // prev = curr (do this once per fixed step, before stepping)
-        prevPos.set(currPos);
-        prevRot.set(currRot);
-        prevScale.set(currScale);
-    }
-
-    public void readFromBullet() {
-        // update curr from bullet after stepping
-        bodyHandle.getWorldTransform(tmp);
-        tmp.getTranslation(currPos);
-        tmp.getRotation(currRot);
-        tmp.getScale(currScale);
-    }
-
-    public Matrix4 getRenderTransform(float alpha) {
-        renderPos.set(prevPos).lerp(currPos, alpha);
-        renderRot.set(prevRot).slerp(currRot, alpha);
-        renderScale.set(prevScale).slerp(currScale, alpha);
-
-        renderTransform.idt();
-        renderTransform.translate(renderPos);
-        renderTransform.rotate(renderRot);
-        renderTransform.scl(renderScale);
-        return renderTransform;
-    }
-
-    public void teleport(Matrix4 newWorld) {
-        bodyHandle.setWorldTransform(newWorld);
-        newWorld.getTranslation(currPos);
-        newWorld.getRotation(currRot);
-        newWorld.getScale(currScale);
-        prevPos.set(currPos);
-        prevRot.set(currRot);
-        prevScale.set(currScale);
-    }
-
-    public void syncToEntity(Matrix4 outEntityTransform) {
-        if (bodyHandle instanceof btRigidBody rb) {
-            rb.getMotionState().getWorldTransform(outEntityTransform);
-        }
-    }
-
-    public void add(btDynamicsWorld world) {
-        if (bodyHandle instanceof btRigidBody rb) {
-            world.addRigidBody(rb);
-        } else {
-            world.addCollisionObject(bodyHandle);
-        }
-
-        if (bodyHandle.userData instanceof PhysicsBodyData data) {
-            if (data.bodyLogic != null) {
-                data.bodyLogic.register(GameContext.INSTANCE);
-            }
-        }
-    }
-
-    public void remove(btDynamicsWorld world) {
-        if (bodyHandle instanceof btRigidBody rb) {
-            world.removeRigidBody(rb);
-        } else {
-            world.removeCollisionObject(bodyHandle);
-        }
-    }
-
-    public btCollisionObject getRigidBody() {
-        return bodyHandle;
-    }
-
+//    public PhysicsBody(btCollisionObject body, Matrix4 localTransform, int groupMask, int collideMask) {
+//        this.bodyHandle = body;
+//        this.localTransform = new Matrix4();
+//        this.localTransform.set(localTransform);
+//    }
+//
+//    public void syncFromEntity(Matrix4 entityWorld) {
+//        tmp.set(entityWorld).mul(localTransform);
+//        teleport(tmp);
+//    }
+//
+//    public void snapshotPrev() {
+//        // prev = curr (do this once per fixed step, before stepping)
+//        prevPos.set(currPos);
+//        prevRot.set(currRot);
+//        prevScale.set(currScale);
+//    }
+//
+//    public void readFromBullet() {
+//        // update curr from bullet after stepping
+//        bodyHandle.getWorldTransform(tmp);
+//        tmp.getTranslation(currPos);
+//        tmp.getRotation(currRot);
+//        tmp.getScale(currScale);
+//    }
+//
+//    public Matrix4 getRenderTransform(float alpha) {
+//        renderPos.set(prevPos).lerp(currPos, alpha);
+//        renderRot.set(prevRot).slerp(currRot, alpha);
+//        renderScale.set(prevScale).slerp(currScale, alpha);
+//
+//        renderTransform.idt();
+//        renderTransform.translate(renderPos);
+//        renderTransform.rotate(renderRot);
+//        renderTransform.scl(renderScale);
+//        return renderTransform;
+//    }
+//
+//    public void teleport(Matrix4 newWorld) {
+//        bodyHandle.setWorldTransform(newWorld);
+//        newWorld.getTranslation(currPos);
+//        newWorld.getRotation(currRot);
+//        newWorld.getScale(currScale);
+//        prevPos.set(currPos);
+//        prevRot.set(currRot);
+//        prevScale.set(currScale);
+//    }
+//
+//    public void syncToEntity(Matrix4 outEntityTransform) {
+//        if (bodyHandle instanceof btRigidBody rb) {
+//            rb.getMotionState().getWorldTransform(outEntityTransform);
+//        }
+//    }
+//
+//    public void add(btDynamicsWorld world) {
+//        if (bodyHandle instanceof btRigidBody rb) {
+//            world.addRigidBody(rb);
+//        } else {
+//            world.addCollisionObject(bodyHandle);
+//        }
+//
+//        if (bodyHandle.userData instanceof PhysicsBodyData data) {
+//            if (data.bodyLogic != null) {
+//                data.bodyLogic.register(GameContext.INSTANCE);
+//            }
+//        }
+//    }
+//
+//    public void remove(btDynamicsWorld world) {
+//        if (bodyHandle instanceof btRigidBody rb) {
+//            world.removeRigidBody(rb);
+//        } else {
+//            world.removeCollisionObject(bodyHandle);
+//        }
+//    }
+//
+//    public btCollisionObject getRigidBody() {
+//        return bodyHandle;
+//    }
+//
     @Override
     public void dispose() {
         if (bodyHandle instanceof btRigidBody rb) {
@@ -132,4 +111,5 @@ public class PhysicsBody implements Disposable {
         }
         bodyHandle.dispose();
     }
+
 }

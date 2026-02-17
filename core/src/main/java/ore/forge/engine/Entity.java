@@ -11,12 +11,15 @@ import ore.forge.game.event.GameEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+/** @author n
+ *
+ * */
 public class Entity implements Disposable {
     public final Object definition; //Definition used to create this Instance.
-    public final Matrix4 rootTransform; //central position of entity in world. Root.
+    public final TransformHistory rootTransform; //central position of entity in world. Root.
     public PhysicsComponent physicsComponent;
     public VisualComponent visualComponent;
-    public AnimationComponent animationComponent;
+//    public AnimationComponent animationComponent;
 
 
     public final List<Updatable> updatables; //Scripts and stuff whose lifetimes are tied to that of this entities
@@ -24,15 +27,21 @@ public class Entity implements Disposable {
 
     public Entity(Object definition) {
         this.definition = definition;
-        this.rootTransform = new Matrix4();
+        this.rootTransform = new TransformHistory(new  Matrix4());
 
         this.updatables = new ArrayList<>();
         this.gameEventListeners = new ArrayList<>();
     }
 
+    public void teleport(Matrix4 targetLocation) {
+        //TODO.
+    }
+
 
     @Override
     public void dispose() {
-
+        physicsComponent.dispose();
+        visualComponent.dispose();
     }
+
 }

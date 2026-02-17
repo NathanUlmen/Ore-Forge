@@ -10,24 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VisualComponent implements Disposable {
-    public List<RenderPart> renderParts = new ArrayList<>();
-    public ModelInstance modelInstance;
+    public ModelInstance modelInstance; //LEGACY, KEPT FOR TEMPORARY REASONS
     public Attribute attributes;
+
+    //Modern Version. Work in Progress.
+    public final List<RenderComponent> renderComponents = new ArrayList<>();
+
+
 
     public VisualComponent(ModelInstance modelInstance) {
         this.modelInstance = modelInstance;
     }
 
-    public void syncFromEntity(Matrix4 transform) {
-        for (RenderPart renderPart : renderParts) {
-            renderPart.transform.set(transform);
-        }
-        modelInstance.transform.set(transform);
-    }
-
-    public void addRenderPart(RenderPart renderPart) {
-        renderParts.add(renderPart);
-    }
 
     @Override
     public void dispose() {
