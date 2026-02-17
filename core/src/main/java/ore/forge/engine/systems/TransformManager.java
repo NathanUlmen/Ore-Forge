@@ -17,26 +17,45 @@ import ore.forge.engine.render.RenderPart;
  *
  */
 public class TransformManager {
-
+    //Thread local mats to avoid allocations
+    private static final ThreadLocal<Matrix4> TMP_A = ThreadLocal.withInitial(Matrix4::new);
+    private static final ThreadLocal<Matrix4> TMP_B = ThreadLocal.withInitial(Matrix4::new);
+    private static final ThreadLocal<Matrix4> TMP_C = ThreadLocal.withInitial(Matrix4::new);
     /**
      * Pre physics tick
-     *
      */
     public static void preTickSync(Entity entity) {
-        PhysicsComponent physicsComponent = entity.physicsComponent;
+        PhysicsComponent physics = entity.physicsComponent;
+        VisualComponent visuals = entity.visualComponent;
         //update root transform if applicable
-        PhysicsBody driverBody = physicsComponent.getDriverBody();
+        PhysicsBody driverBody = physics.getDriverBody();
         if (driverBody != null) {
-            entity.rootTransform.previousTransform.set(driverBody.bodyHandle.getWorldTransform());
+            entity.rootTransform.advance();
         }
 
         //set our previous transforms
-        for (RenderComponent renderComp : entity.visualComponent.renderComponents) {
-            if (renderComp.drivenByBody != -1) {
-                PhysicsBody drivenBy = physicsComponent.bodies.get(renderComp.drivenByBody);
-                renderComp.localFromBody.previousTransform.set(drivenBy.bodyHandle.getWorldTransform());
+        if (visuals != null) {
+            for (RenderComponent renderComp : visuals.renderComponents) {
+                if (renderComp.drivenByBody != -1) { //if driven by render
+                    renderComp.localFromBody.advance();
+                }
             }
         }
+
+//        if (physics == null || visuals == null) return;
+//
+//        //sync bodies with root transform.
+//        for (PhysicsBody body : physics.bodies) {
+//            switch (body.bodyType) {
+//                case KINEMATIC, STATIC -> {
+//
+//                }
+//                case DYNAMIC -> {
+//                    //do nothing
+//                }
+//            }
+//        }
+
 
     }
 
@@ -47,8 +66,11 @@ public class TransformManager {
             entity.rootTransform.currentTransform.set(driverBody.bodyHandle.getWorldTransform());
         }
 
+        VisualComponent visuals = entity.visualComponent;
+        if (visuals == null) return;
         //Set our current transforms
         for (RenderComponent renderComp : entity.visualComponent.renderComponents) {
+            if (renderComp == null) continue;
             if (renderComp.drivenByBody != -1) {
                 PhysicsBody drivenBy = physicsComponent.bodies.get(renderComp.drivenByBody);
                 renderComp.localFromBody.currentTransform.set(drivenBy.bodyHandle.getWorldTransform());
@@ -60,10 +82,11 @@ public class TransformManager {
     //Here is where we initialize our RenderParts
     public static void preRender(Entity entity, float alpha) {
         VisualComponent visualComponent = entity.visualComponent;
+        if (visualComponent == null) return;
 
         for (RenderComponent renderComponent : visualComponent.renderComponents) {
             RenderPart part = renderComponent.renderPart;
-            if (renderComponent.drivenByBody != -1) { //if tied to body lerp, handles Dynamic
+            if (renderComponent.drivenByBody != -1 && renderComponent.localFromBody != null) { //if tied to body lerp, handles Dynamic
                 //Sync to drivenBy
                 part.transform.set(renderComponent.localFromBody.lerp(alpha));
                 continue;
@@ -76,8 +99,44 @@ public class TransformManager {
 
     }
 
-    public static void teleport(Entity entity, Matrix4 target) {
+    public static void teleport(Entity entity, Matrix4 targetRootWorld) {
+        if (entity == null || targetRootWorld == null) return;
 
+        // Snap root history
+        if (entity.rootTransform != null) {
+            entity.rootTransform.setBoth(targetRootWorld);
+        }
+
+        PhysicsComponent physics = entity.physicsComponent;
+        if (physics != null && physics.bodies != null) {
+            Matrix4 tmpWorld = TMP_A.get();
+            for (PhysicsBody b : physics.bodies) {
+                if (b == null || b.bodyHandle == null) continue;
+
+                // bodyWorld = targetRootWorld * localFromRoot
+                tmpWorld.set(targetRootWorld);
+                if (b.localFromRoot != null) tmpWorld.mul(b.localFromRoot);
+                b.bodyHandle.setWorldTransform(tmpWorld);
+            }
+        }
+
+        // Snap any body-driven histories used for rendering
+        VisualComponent visual = entity.visualComponent;
+        if (visual != null && visual.renderComponents != null && physics != null && physics.bodies != null) {
+            for (RenderComponent rc : visual.renderComponents) {
+                if (rc == null || rc.localFromBody == null) continue;
+                if (rc.drivenByBody == -1) continue;
+
+                int idx = rc.drivenByBody;
+                if (idx < 0 || idx >= physics.bodies.size()) continue;
+
+                PhysicsBody b = physics.bodies.get(idx);
+                if (b == null || b.bodyHandle == null) continue;
+
+                Matrix4 world = b.bodyHandle.getWorldTransform();
+                rc.localFromBody.setBoth(world);
+            }
+        }
     }
 
 }

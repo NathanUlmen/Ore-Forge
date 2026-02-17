@@ -10,6 +10,15 @@ public class TransformHistory {
         this.currentTransform = new  Matrix4(currentTransform);
     }
 
+    public void advance() {
+        previousTransform.set(currentTransform);
+    }
+
+    public void setBoth(Matrix4 newValue) {
+        currentTransform.set(newValue);
+        previousTransform.set(newValue);
+    }
+
     public Matrix4 lerp(float alpha) {
         return previousTransform.lerp(currentTransform, alpha);
     }
