@@ -11,7 +11,7 @@ import ore.forge.game.event.GameEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author n
+/** @author Nathan Ulmen
  *
  * */
 public class Entity implements Disposable {
@@ -32,11 +32,6 @@ public class Entity implements Disposable {
         this.updatables = new ArrayList<>();
         this.gameEventListeners = new ArrayList<>();
     }
-
-    public void teleport(Matrix4 targetLocation) {
-        //TODO.
-    }
-
 
     @Override
     public void dispose() {

@@ -21,6 +21,7 @@ public class TransformManager {
     private static final ThreadLocal<Matrix4> TMP_A = ThreadLocal.withInitial(Matrix4::new);
     private static final ThreadLocal<Matrix4> TMP_B = ThreadLocal.withInitial(Matrix4::new);
     private static final ThreadLocal<Matrix4> TMP_C = ThreadLocal.withInitial(Matrix4::new);
+
     /**
      * Pre physics tick
      */
@@ -79,7 +80,9 @@ public class TransformManager {
 
     }
 
-    //Here is where we initialize our RenderParts
+    /**
+     * This is where we finalize RenderParts before shipping them of to render.
+     * */
     public static void preRender(Entity entity, float alpha) {
         VisualComponent visualComponent = entity.visualComponent;
         if (visualComponent == null) return;
@@ -102,7 +105,7 @@ public class TransformManager {
     public static void teleport(Entity entity, Matrix4 targetRootWorld) {
         if (entity == null || targetRootWorld == null) return;
 
-        // Snap root history
+        //Snap root history
         if (entity.rootTransform != null) {
             entity.rootTransform.setBoth(targetRootWorld);
         }
@@ -120,9 +123,9 @@ public class TransformManager {
             }
         }
 
-        // Snap any body-driven histories used for rendering
+        // Snap body driven histories used for rendering
         VisualComponent visual = entity.visualComponent;
-        if (visual != null && visual.renderComponents != null && physics != null && physics.bodies != null) {
+        if (visual != null && physics != null && physics.bodies != null) {
             for (RenderComponent rc : visual.renderComponents) {
                 if (rc == null || rc.localFromBody == null) continue;
                 if (rc.drivenByBody == -1) continue;
@@ -137,6 +140,7 @@ public class TransformManager {
                 rc.localFromBody.setBoth(world);
             }
         }
+
     }
 
 }
