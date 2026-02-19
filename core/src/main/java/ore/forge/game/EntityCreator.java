@@ -9,8 +9,8 @@ import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import ore.forge.engine.components.PhysicsComponent;
-import ore.forge.engine.components.VisualComponent;
-import ore.forge.engine.EntityInstance;
+import ore.forge.engine.components.RenderC;
+import ore.forge.engine.Entity;
 import ore.forge.engine.PhysicsBody;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.ItemUserData;
@@ -20,22 +20,23 @@ import ore.forge.game.behaviors.BodyLogic;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ore.forge.game.CollisionRules.*;
+public class EntityCreator {
 
-public class EntityInstanceCreator {
-
-    public static EntityInstance createInstance(ItemDefinition itemDefinition) {
-        VisualComponent visualComponent = new VisualComponent(new ModelInstance(itemDefinition.model()));
+    public static Entity createInstance(ItemDefinition itemDefinition) {
+        RenderC renderC = new RenderC(new ModelInstance(itemDefinition.model()));
 
         List<PhysicsBody> physicsComponents = new ArrayList<>();
         PhysicsComponent physicsComponent = new PhysicsComponent(physicsComponents);
-        EntityInstance instance = new EntityInstance(itemDefinition, physicsComponent, visualComponent);
+        Entity instance = new Entity(itemDefinition);
+        instance.physicsComponent = physicsComponent;
+        instance.renderC = renderC;
         for (btCollisionShape collisionShape : itemDefinition.collisionShapes()) {
             if (collisionShape instanceof btCompoundShape compoundShape) {//If Compound Shape do nothing as they shouldn't have behaviors.
                 btRigidBody rigidBody = new btRigidBody(0, new btDefaultMotionState(), compoundShape);
                 rigidBody.userData = new PhysicsBodyData(instance, itemDefinition, null, rigidBody.getWorldTransform());
                 //---------------
-                PhysicsBody body = new PhysicsBody(rigidBody, new Matrix4(), CollisionRules.combineBits(WORLD_GEOMETRY), CollisionRules.combineBits(ORE));
+                PhysicsBody body = new PhysicsBody(PhysicsBody.PhysicsBodyType.KINEMATIC, new Matrix4());
+                body.bodyHandle = rigidBody;
                 //---------------
                 physicsComponents.add(body);
             } else {
@@ -51,7 +52,7 @@ public class EntityInstanceCreator {
                 ghostObject.setCollisionFlags(ghostObject.getCollisionFlags() | CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR)
                     | btCollisionObject.CollisionFlags.CF_NO_CONTACT_RESPONSE);
                 //--------
-                physicsComponents.add(new PhysicsBody(ghostObject, nodeInfo.transform(), CollisionRules.combineBits(ORE_PROCESSOR), CollisionRules.combineBits(ORE)));
+                physicsComponents.add(new PhysicsBody(PhysicsBody.PhysicsBodyType.KINEMATIC, nodeInfo.transform()));
                 //--------
             }
         }
@@ -59,9 +60,9 @@ public class EntityInstanceCreator {
     }
 
     //Create one for ore instance too...
-    public static EntityInstance createInstance(OreDefinition oreDefinition) {
+    public static Entity createInstance(OreDefinition oreDefinition) {
         //Visual Setup
-        VisualComponent visualComponent = new VisualComponent(new ModelInstance(oreDefinition.model()));
+        RenderC renderC = new RenderC(new ModelInstance(oreDefinition.model()));
         //Physics Setup
         Vector3 inertia = new Vector3();
         oreDefinition.oreShape().calculateLocalInertia(10f, inertia);
@@ -69,9 +70,14 @@ public class EntityInstanceCreator {
 
         var tempList = new ArrayList<PhysicsBody>(1);
 
-        tempList.add(new PhysicsBody(oreBody, new Matrix4(), CollisionRules.combineBits(ORE), CollisionRules.combineBits(WORLD_GEOMETRY, ORE_PROCESSOR)));
+        PhysicsBody body = new PhysicsBody(PhysicsBody.PhysicsBodyType.DYNAMIC, new Matrix4());
+        body.bodyHandle = oreBody;
+        tempList.add(body);
+
         //Create our instance
-        EntityInstance instance = new EntityInstance(oreDefinition, new PhysicsComponent(tempList), visualComponent);
+        Entity instance = new Entity(oreDefinition);
+        instance.renderC = renderC;
+        instance.physicsComponent = new PhysicsComponent(tempList);
 
         Ore ore = new Ore();
         ore.setOreValue(oreDefinition.oreValue());
@@ -86,14 +92,14 @@ public class EntityInstanceCreator {
     /**
      * Creates preview Instance
      */
-    public static EntityInstance createPreviewInstance(Model model) {
+    public static Entity createPreviewInstance(Model model) {
         if (model == null) {
             throw new IllegalArgumentException("model must not be null");
         }
 
         // Visuals
         ModelInstance modelInstance = new ModelInstance(model);
-        VisualComponent visualComponent = new VisualComponent(modelInstance);
+        RenderC renderC = new RenderC(modelInstance);
 
         // Calculate model bounds
         BoundingBox boundingBox = new BoundingBox();
@@ -106,7 +112,7 @@ public class EntityInstanceCreator {
         Vector3 halfExtents = dimensions.scl(0.5f);
         btCollisionShape shape = new btBoxShape(halfExtents);
         btRigidBody rb = new btRigidBody(0,  new btDefaultMotionState(), shape);
-        PhysicsBody body = new PhysicsBody(rb, new Matrix4(), CollisionRules.combineBits(PREVIEW), CollisionRules.combineBits(ORE_PROCESSOR));
+        PhysicsBody body = new PhysicsBody(PhysicsBody.PhysicsBodyType.KINEMATIC, new Matrix4());
         var tempList = new ArrayList<PhysicsBody>(1);
         tempList.add(body);
 
@@ -115,11 +121,9 @@ public class EntityInstanceCreator {
         physicsComponent = new PhysicsComponent(tempList);
 
         // Preview instance has no ID
-        EntityInstance instance = new EntityInstance(
-            null,
-            physicsComponent,
-            visualComponent
-        );
+        Entity instance = new Entity(model);
+        instance.renderC = renderC;
+        instance.physicsComponent = physicsComponent;
 
         return instance;
     }

@@ -1,10 +1,11 @@
 package ore.forge.game;
 
+import ore.forge.engine.systems.TransformManager;
 import ore.forge.game.event.EventManager;
 import ore.forge.engine.PhysicsBody;
 import ore.forge.game.player.Player;
 import ore.forge.engine.PreviewManager;
-import ore.forge.engine.EntityInstance;
+import ore.forge.engine.Entity;
 import ore.forge.engine.EntityManager;
 import ore.forge.engine.PhysicsWorld;
 import ore.forge.engine.StagedCollection;
@@ -32,8 +33,8 @@ public class GameContext {
 
     public void update(float delta) {
         //update our physics step
-        for (EntityInstance instance : entityManager) {
-            instance.snapshotPreview();
+        for (Entity instance : entityManager) {
+            TransformManager.preTickSync(instance);
         }
 
         physicsWorld.dynamicsWorld().stepSimulation(1/60f, 2, 1/60f);
@@ -41,14 +42,13 @@ public class GameContext {
         collisionManager.updateTouchingEntities(delta);
 
         //update transforms
-        for (EntityInstance entity : entityManager) {
-            for (PhysicsBody body : entity.physicsComponent.getBodies()) {
-                body.readFromBullet();
-            }
+        for (Entity entity : entityManager) {
+            TransformManager.postTickSync(entity);
         }
 
         //update our time based updates
         for (final Updatable updatable : updatables) {
+            System.out.println("Updating!!");
             updatable.update(delta, this);
         }
 

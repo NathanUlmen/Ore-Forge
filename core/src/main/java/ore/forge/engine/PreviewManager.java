@@ -2,19 +2,19 @@ package ore.forge.engine;
 
 import java.util.Iterator;
 
-public class PreviewManager implements Iterable<EntityInstance> {
-    private final StagedCollection<EntityInstance> previewEntities;
+public class PreviewManager implements Iterable<Entity> {
+    private final StagedCollection<Entity> previewEntities;
 
     public PreviewManager() {
         previewEntities = new StagedCollection<>(30);
     }
 
-    public void addPreviewEntity(EntityInstance entityInstance) {
-        previewEntities.stageAddition(entityInstance);
+    public void addPreviewEntity(Entity Entity) {
+        previewEntities.stageAddition(Entity);
     }
 
-    public void removePreviewEntity(EntityInstance entityInstance) {
-        previewEntities.stageRemoval(entityInstance);
+    public void removePreviewEntity(Entity Entity) {
+        previewEntities.stageRemoval(Entity);
     }
 
     public void flush() {
@@ -26,7 +26,7 @@ public class PreviewManager implements Iterable<EntityInstance> {
     }
 
     @Override
-    public Iterator<EntityInstance> iterator() {
+    public Iterator<Entity> iterator() {
         return previewEntities.iterator();
     }
 

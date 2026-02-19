@@ -65,8 +65,8 @@ public class OreForge extends Game {
         //Create Our UI
         UI ui = new UI(context.player.inventory);
         Gameplay3D gameplay3D = new Gameplay3D(ui);
-//        setScreen(gameplay3D);
-        setScreen(new TestScene());
+        setScreen(gameplay3D);
+//        setScreen(new TestScene());
 	}
 
 	public void render() {

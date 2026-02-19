@@ -19,11 +19,11 @@ import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.components.PhysicsComponent;
-import ore.forge.engine.components.VisualComponent;
-import ore.forge.engine.EntityInstance;
-import ore.forge.game.EntityInstanceCreator;
+import ore.forge.engine.components.RenderC;
+import ore.forge.engine.Entity;
+import ore.forge.engine.systems.TransformManager;
+import ore.forge.game.EntityCreator;
 import ore.forge.engine.PhysicsBody;
-import ore.forge.game.CollisionRules;
 import ore.forge.game.GameContext;
 import ore.forge.game.PhysicsBodyData;
 import ore.forge.game.input.InputHandler;
@@ -35,8 +35,6 @@ import ore.forge.game.ui.UI;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static ore.forge.game.CollisionRules.ORE;
 
 public class Gameplay3D implements Screen {
     // Rendering
@@ -79,13 +77,17 @@ public class Gameplay3D implements Screen {
         btCollisionShape groundShape = new btBoxShape(new Vector3(50f, 1.5f, 50f));
         btRigidBody groundRigidBody = createStaticBody(groundModelInstance, groundShape);
         groundRigidBody.setFriction(100);
-        VisualComponent visualComponent = new VisualComponent(groundModelInstance);
+        RenderC renderC = new RenderC(groundModelInstance);
         // visualComponent.attributes = new GridAttribute(GridAttribute.ID);
 
         var rigidBodies = new ArrayList<PhysicsBody>();
-        rigidBodies.add(new PhysicsBody(groundRigidBody, new Matrix4().translate(0, -.75f, 0), CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY), CollisionRules.combineBits(ORE)));
+        PhysicsBody body = new PhysicsBody(PhysicsBody.PhysicsBodyType.STATIC, new Matrix4().translate(0, -.75f, 0));
+        body.bodyHandle = groundRigidBody;
+        rigidBodies.add(body);
+
         PhysicsComponent physicsComponent = new PhysicsComponent(rigidBodies);
-        EntityInstance planeInstance = new EntityInstance(null, physicsComponent, visualComponent);
+        Entity planeInstance = new Entity(null);
+        planeInstance.physicsComponent = physicsComponent;
         BodyLogic bodyLogic = new BodyLogic() {
             @Override
             public void register(GameContext context) {
@@ -110,7 +112,7 @@ public class Gameplay3D implements Screen {
             @Override
             public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
                 if (timeTouching > 1f) {
-                    context.entityManager.stageRemove(subject.parentEntityInstance);
+                    context.entityManager.stageRemove(subject.parentEntity);
                 }
             }
 
@@ -125,7 +127,8 @@ public class Gameplay3D implements Screen {
             }
         };
         groundRigidBody.userData = new PhysicsBodyData(planeInstance, null, bodyLogic, null);
-            planeInstance.setTransform(planeTransform);
+        TransformManager.teleport(planeInstance, planeTransform);
+//            planeInstance.setTransform(planeTransform);
 //        physicsWorld.dynamicsWorld().addRigidBody(groundRigidBody,
 //                CollisionRules.combineBits(CollisionRules.WORLD_GEOMETRY),
 //                CollisionRules.combineBits(CollisionRules.ORE));
@@ -139,9 +142,10 @@ public class Gameplay3D implements Screen {
         Matrix4 transform = new Matrix4();
         value = jsonReader.parse(Gdx.files.internal("Items/3DTestDropper.json"));
         ItemDefinition dropperSpawner = ItemDefinition.createDefinition(value);
-        EntityInstance instance1 = EntityInstanceCreator.createInstance(dropperSpawner);
+        Entity instance1 = EntityCreator.createInstance(dropperSpawner);
         transform.setTranslation(0, 8, 0);
-        instance1.setTransform(transform.cpy());
+//        instance1.setTransform(transform.cpy());
+        TransformManager.teleport(instance1, transform);
         context.entityManager.stageAdd(instance1);
 
         // Config UI
@@ -188,17 +192,18 @@ public class Gameplay3D implements Screen {
 
         modelBatch.begin(camera);
         //Render all our entities
-        for (EntityInstance instance : context.entityManager) {
-            instance.syncRender(alpha);
-            modelBatch.render(instance.visualComponent.modelInstance);
+        for (Entity instance : context.entityManager) {
+            if (instance.renderC == null) continue;
+            TransformManager.preRender(instance, alpha);
+            modelBatch.render(instance.renderC.modelInstance);
         }
         //Render preview entities
-        for (EntityInstance instance : context.previewManager) {
-            instance.syncRender(alpha);
-            modelBatch.render(instance.visualComponent.modelInstance);
+        for (Entity instance : context.previewManager) {
+            TransformManager.preRender(instance, alpha);
+            modelBatch.render(instance.renderC.modelInstance);
         }
         modelBatch.end();
-//        context.physicsWorld.drawDebug(camera);
+        context.physicsWorld.drawDebug(camera);
 
         ui.act();
         ui.getViewport().apply();

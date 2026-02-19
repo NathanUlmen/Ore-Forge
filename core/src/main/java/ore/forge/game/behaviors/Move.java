@@ -60,7 +60,7 @@ public class Move implements BodyLogic {
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
         assert subject.specificData instanceof Ore;
-        btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.physicsComponent.getRigidBody();
+        btRigidBody rigidBody = (btRigidBody) subject.parentEntity.physicsComponent.bodies.getFirst().bodyHandle;
 
         // Get conveyor direction in world space
         ItemUserData itemUserData = (ItemUserData) source.specificData;

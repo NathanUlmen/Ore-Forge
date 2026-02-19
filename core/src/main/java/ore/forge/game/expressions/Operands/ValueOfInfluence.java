@@ -51,7 +51,6 @@ public enum ValueOfInfluence implements NumericOperand {
             return true;
         } catch (Exception e) {
             return false;
-
         }
     }
 

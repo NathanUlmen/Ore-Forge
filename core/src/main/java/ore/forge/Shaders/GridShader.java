@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import ore.forge.engine.components.VisualComponent;
+import ore.forge.engine.components.RenderC;
 
 public class GridShader implements Shader, Disposable {
     private ShaderProgram shader;
@@ -28,7 +28,7 @@ public class GridShader implements Shader, Disposable {
 
     @Override
     public boolean canRender(Renderable renderable) {
-        boolean result = renderable.userData instanceof VisualComponent vc && vc.attributes instanceof GridAttribute;
+        boolean result = renderable.userData instanceof RenderC vc && vc.attributes instanceof GridAttribute;
 //        System.out.println("Can render: " + result);
         return result;
     }

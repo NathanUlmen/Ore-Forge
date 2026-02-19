@@ -11,7 +11,7 @@ import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.player.ItemInventory;
 import ore.forge.game.player.ItemInventoryNode;
 import ore.forge.game.ui.Widgets.Icon;
-import ore.forge.engine.components.VisualComponent;
+import ore.forge.engine.components.RenderC;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class UI extends Stage {
         IconRenderer iconRenderer = new IconRenderer();
         for (ItemInventoryNode node : inventory.nodes()) {
             ItemDefinition item = node.getHeldItem();
-            VisualComponent vc = new VisualComponent(new ModelInstance(item.model()));
+            RenderC vc = new RenderC(new ModelInstance(item.model()));
             iconRenderer.renderIcon(item.id(), vc);
             vc.dispose();
         }

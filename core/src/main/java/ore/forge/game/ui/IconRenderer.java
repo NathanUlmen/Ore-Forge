@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import ore.forge.engine.components.VisualComponent;
+import ore.forge.engine.components.RenderC;
 
 public class IconRenderer {
     private final ModelBatch modelBatch;
@@ -51,8 +51,8 @@ public class IconRenderer {
         camera.update();
     }
 
-    public void renderIcon(String key, VisualComponent visualComponent) {
-        ModelInstance modelInstance = visualComponent.modelInstance;
+    public void renderIcon(String key, RenderC renderC) {
+        ModelInstance modelInstance = renderC.modelInstance;
         BoundingBox bb = modelInstance.calculateBoundingBox(new BoundingBox());
 
         // Center our model
@@ -82,7 +82,7 @@ public class IconRenderer {
         Gdx.gl.glClearColor(.11f, .41f, 1f, 0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        ModelInstance instance = visualComponent.modelInstance;
+        ModelInstance instance = renderC.modelInstance;
 
         // Render model in our scene
         modelBatch.begin(camera);

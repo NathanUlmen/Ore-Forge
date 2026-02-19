@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
-import ore.forge.engine.components.VisualComponent;
+import ore.forge.engine.components.RenderC;
 
 
 public class CustomShaderProvider extends DefaultShaderProvider {
@@ -18,7 +18,7 @@ public class CustomShaderProvider extends DefaultShaderProvider {
 
     @Override
     protected Shader createShader(Renderable renderable) {
-        if (renderable.userData instanceof VisualComponent vc) {
+        if (renderable.userData instanceof RenderC vc) {
             if (vc.attributes instanceof GridAttribute) {
                 return gridShader;
             }
@@ -28,7 +28,7 @@ public class CustomShaderProvider extends DefaultShaderProvider {
             public boolean canRender(Renderable renderable) {
                 var result = super.canRender(renderable);
                 if (result) {
-                    if (renderable.userData instanceof VisualComponent vc) {
+                    if (renderable.userData instanceof RenderC vc) {
                         return !(vc.attributes instanceof GridAttribute);
                     }
                 }

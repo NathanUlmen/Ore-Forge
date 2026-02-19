@@ -76,7 +76,7 @@ public class SellOreBehavior implements BodyLogic {
             context.player.addCurrency(CurrencyType.SPECIAL_POINTS, spRewardAmount * (spRewardProgress / spRewardThreshold));
             spRewardProgress %= spRewardThreshold;
 
-            context.entityManager.stageRemove(subject.parentEntityInstance);
+            context.entityManager.stageRemove(subject.parentEntity);
         }
     }
 

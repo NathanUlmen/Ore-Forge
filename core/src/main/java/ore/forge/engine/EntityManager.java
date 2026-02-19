@@ -1,5 +1,6 @@
 package ore.forge.engine;
 
+import ore.forge.engine.systems.PhysicsAdder;
 import ore.forge.game.GameContext;
 import ore.forge.game.Updatable;
 
@@ -9,29 +10,29 @@ import java.util.Iterator;
  * Entity Manager tracks the lifetime of entities as they are added and removed from the world.
  * Systems can listen in to see when entities are removed or added and update themselves based on the entity in the event.
  * */
-public class EntityManager implements Iterable<EntityInstance> {
-    private final StagedCollection<EntityInstance> activeEntities;
+public class EntityManager implements Iterable<Entity> {
+    private final StagedCollection<Entity> activeEntities;
 
     public EntityManager() {
         activeEntities = new StagedCollection<>();
     }
 
-    public void stageAdd(EntityInstance entityInstance) {
-        activeEntities.stageAddition(entityInstance);
+    public void stageAdd(Entity Entity) {
+        activeEntities.stageAddition(Entity);
     }
 
-    public void stageRemove(EntityInstance entityInstance) {
-        activeEntities.stageRemoval(entityInstance);
+    public void stageRemove(Entity Entity) {
+        activeEntities.stageRemoval(Entity);
     }
 
     public void flush(GameContext ctx) {
         //Remove entities
-        for (EntityInstance e : activeEntities.toRemove()) {
+        for (Entity e : activeEntities.toRemove()) {
             //Remove from collisionManager
             ctx.collisionManager.removeAllPairsWith(e);
 
             //Remove from physics
-            e.removeFromWorld(ctx.physicsWorld.dynamicsWorld());
+            PhysicsAdder.removeEntity(e, ctx.physicsWorld);
 
             //Remove all its updatables
             for (Updatable updatable : e.updatables) {
@@ -44,9 +45,9 @@ public class EntityManager implements Iterable<EntityInstance> {
         }
 
         //Add entities
-        for (EntityInstance e : activeEntities.toAdd()) {
+        for (Entity e : activeEntities.toAdd()) {
             //add to physics
-            e.addToWorld(ctx.physicsWorld.dynamicsWorld());
+            PhysicsAdder.addEntity(e, ctx.physicsWorld);
 
             //add updatables
             for (Updatable updatable : e.updatables) {
@@ -64,7 +65,7 @@ public class EntityManager implements Iterable<EntityInstance> {
     }
 
     @Override
-    public Iterator<EntityInstance> iterator() {
+    public Iterator<Entity> iterator() {
         return activeEntities.iterator();
     }
 

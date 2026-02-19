@@ -3,16 +3,17 @@ package ore.forge.engine.systems;
 import com.badlogic.gdx.math.Matrix4;
 import ore.forge.engine.Entity;
 import ore.forge.engine.PhysicsBody;
+import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.PhysicsComponent;
 import ore.forge.engine.components.RenderComponent;
-import ore.forge.engine.components.VisualComponent;
+import ore.forge.engine.components.RenderC;
 import ore.forge.engine.render.RenderPart;
 
 /**
  * @author Nathan Ulmen
  * Transform manager is responsible for syncing the transforms of Entities across thier
  * different components. At the time of writing that means that it handles
- * {@link ore.forge.engine.components.PhysicsComponent}, {@link Entity}, and {@link ore.forge.engine.components.RenderComponent}
+ * {@link ore.forge.engine.components.PhysicsC}, {@link Entity}, and {@link ore.forge.engine.components.RenderC}
  * - N.U Feb 17, 2026.
  *
  */
@@ -26,8 +27,8 @@ public class TransformManager {
      * Pre physics tick
      */
     public static void preTickSync(Entity entity) {
-        PhysicsComponent physics = entity.physicsComponent;
-        VisualComponent visuals = entity.visualComponent;
+        PhysicsC physics = entity.physicsComponent;
+        RenderC visuals = entity.renderC;
         //update root transform if applicable
         PhysicsBody driverBody = physics.getDriverBody();
         if (driverBody != null) {
@@ -67,10 +68,10 @@ public class TransformManager {
             entity.rootTransform.currentTransform.set(driverBody.bodyHandle.getWorldTransform());
         }
 
-        VisualComponent visuals = entity.visualComponent;
+        RenderC visuals = entity.renderC;
         if (visuals == null) return;
         //Set our current transforms
-        for (RenderComponent renderComp : entity.visualComponent.renderComponents) {
+        for (RenderComponent renderComp : entity.renderC.renderComponents) {
             if (renderComp == null) continue;
             if (renderComp.drivenByBody != -1) {
                 PhysicsBody drivenBy = physicsComponent.bodies.get(renderComp.drivenByBody);
@@ -84,10 +85,10 @@ public class TransformManager {
      * This is where we finalize RenderParts before shipping them of to render.
      * */
     public static void preRender(Entity entity, float alpha) {
-        VisualComponent visualComponent = entity.visualComponent;
-        if (visualComponent == null) return;
+        RenderC renderC = entity.renderC;
+        if (renderC == null) return;
 
-        for (RenderComponent renderComponent : visualComponent.renderComponents) {
+        for (RenderComponent renderComponent : renderC.renderComponents) {
             RenderPart part = renderComponent.renderPart;
             if (renderComponent.drivenByBody != -1 && renderComponent.localFromBody != null) { //if tied to body lerp, handles Dynamic
                 //Sync to drivenBy
@@ -124,7 +125,7 @@ public class TransformManager {
         }
 
         // Snap body driven histories used for rendering
-        VisualComponent visual = entity.visualComponent;
+        RenderC visual = entity.renderC;
         if (visual != null && physics != null && physics.bodies != null) {
             for (RenderComponent rc : visual.renderComponents) {
                 if (rc == null || rc.localFromBody == null) continue;

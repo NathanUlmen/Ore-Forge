@@ -6,8 +6,9 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.engine.EntityInstance;
-import ore.forge.game.EntityInstanceCreator;
+import ore.forge.engine.Entity;
+import ore.forge.engine.systems.TransformManager;
+import ore.forge.game.EntityCreator;
 import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.*;
 import ore.forge.game.items.ItemDefinition;
@@ -36,15 +37,15 @@ public class DropOreBehavior implements BodyLogic, Updatable {
 
     @Override
     public void register(GameContext context) {
-        PhysicsBodyData data =  (PhysicsBodyData) parent.userData;
-        data.parentEntityInstance.updatables.add(this);
+        PhysicsBodyData data = (PhysicsBodyData) parent.userData;
+        data.parentEntity.updatables.add(this);
         context.addUpdatable(this);
     }
 
     @Override
     public void unregister(GameContext context) {
         PhysicsBodyData data =  (PhysicsBodyData) parent.userData;
-        data.parentEntityInstance.updatables.remove(this);
+        data.parentEntity.updatables.remove(this);
         context.removeUpdatable(this);
     }
 
@@ -61,9 +62,9 @@ public class DropOreBehavior implements BodyLogic, Updatable {
         for (int i = 0; i < dropperStrategy.drop(delta); i++) {
 //        if (dropperStrategy.drop(delta) > 0) {
             OreDefinition oreDefinition = dropperProperties.oreDefinition();
-            EntityInstance ore = EntityInstanceCreator.createInstance(oreDefinition);
-            ore.setTransform(this.parent.getWorldTransform().translate(0, -1f, 0));
-            btRigidBody body = (btRigidBody) ore.physicsComponent.getBodies().getFirst().getRigidBody();
+            Entity ore = EntityCreator.createInstance(oreDefinition);
+            TransformManager.teleport(ore, this.parent.getWorldTransform().translate(0, -1f, 0));
+            btRigidBody body = (btRigidBody) ore.physicsComponent.bodies.getFirst().bodyHandle;
             body.setLinearVelocity(new Vector3(0, -20, 0));
 
             ore.updatables.add(new Updatable() {
@@ -73,10 +74,9 @@ public class DropOreBehavior implements BodyLogic, Updatable {
                 @Override
                 public void update(float delta, GameContext context) {
                     if (!done && cd.update(delta) > 0) {
-                        btRigidBody body = (btRigidBody) ore.physicsComponent
-                            .getBodies()
+                        btRigidBody body = (btRigidBody) ore.physicsComponent.bodies
                             .getFirst()
-                            .getRigidBody();
+                            .bodyHandle;
 
                         btDynamicsWorld world = context.physicsWorld.dynamicsWorld();
 

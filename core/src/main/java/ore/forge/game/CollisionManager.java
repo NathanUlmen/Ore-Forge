@@ -2,7 +2,7 @@ package ore.forge.game;
 
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.engine.EntityInstance;
+import ore.forge.engine.Entity;
 import ore.forge.engine.StagedCollection;
 
 import java.util.HashSet;
@@ -65,7 +65,7 @@ public class CollisionManager extends ContactListener {
         }
     }
 
-    public void removeAllPairsWith(EntityInstance entity) {
+    public void removeAllPairsWith(Entity entity) {
         touchingEntities.removeIf(pair -> pair.contains(entity));
     }
 
