@@ -57,15 +57,16 @@ public class TeleportSystem extends IteratingSystem {
             }
         }
 
-        // 2) Update physics body
+        //Update physics body
         final PhysicsC p = entity.getComponent(PhysicsC.class);
         if (p != null) {
             p.rigidBody.setWorldTransform(targetWorld);
 
-             p.rigidBody.setLinearVelocity(Vector3.Zero);
-             p.rigidBody.setAngularVelocity(Vector3.Zero);
-             p.rigidBody.activate();
+            p.rigidBody.setLinearVelocity(Vector3.Zero);
+            p.rigidBody.setAngularVelocity(Vector3.Zero);
+            p.rigidBody.activate();
         }
+        entity.remove(TeleportRequestC.class);
     }
 
 

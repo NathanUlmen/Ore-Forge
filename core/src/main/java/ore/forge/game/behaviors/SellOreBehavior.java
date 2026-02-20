@@ -67,7 +67,7 @@ public class SellOreBehavior implements BodyLogic {
 
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
-        if (subject.specificData instanceof Ore ore && timeTouching > 0.5f) {
+        if (subject.specificData() instanceof Ore ore && timeTouching > 0.5f) {
             upgradeStrategy.applyTo(ore);
 //            eventManager.notifyListeners(new OreSoldGameEvent(ore, userData));
 

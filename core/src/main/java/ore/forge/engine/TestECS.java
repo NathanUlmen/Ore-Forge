@@ -8,8 +8,6 @@ public class TestECS {
 
     public static void main(String[] args) {
         Engine engine = new PooledEngine();
-        Entity entity = engine.createEntity();
-
     }
 
 }

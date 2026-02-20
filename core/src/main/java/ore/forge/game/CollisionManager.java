@@ -2,6 +2,8 @@ package ore.forge.game;
 
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.utils.LongMap;
+import com.badlogic.gdx.utils.ObjectLongMap;
 import ore.forge.engine.Entity;
 import ore.forge.engine.StagedCollection;
 
@@ -24,11 +26,11 @@ public class CollisionManager extends ContactListener {
     @Override
     public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-            if (o1Data.bodyLogic != null) {
-                o1Data.bodyLogic.onContactStart(o2Data, o1Data, gameState);
+            if (o1Data.bodyLogic() != null) {
+                o1Data.bodyLogic().onContactStart(o2Data, o1Data, gameState);
             }
-            if (o2Data.bodyLogic != null) {
-                o2Data.bodyLogic.onContactStart(o1Data, o2Data, gameState);
+            if (o2Data.bodyLogic() != null) {
+                o2Data.bodyLogic().onContactStart(o1Data, o2Data, gameState);
             }
 
             var pair = new CollisionPair(o2Data, o1Data);
@@ -40,11 +42,11 @@ public class CollisionManager extends ContactListener {
     @Override
     public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-            if (o1Data.bodyLogic != null) {
-                o1Data.bodyLogic.onContactEnd(o2Data, o1Data, gameState);
+            if (o1Data.bodyLogic() != null) {
+                o1Data.bodyLogic().onContactEnd(o2Data, o1Data, gameState);
             }
-            if (o2Data.bodyLogic != null) {
-                o2Data.bodyLogic.onContactEnd(o1Data, o2Data, gameState);
+            if (o2Data.bodyLogic() != null) {
+                o2Data.bodyLogic().onContactEnd(o1Data, o2Data, gameState);
             }
             var pair = new CollisionPair(o2Data, o1Data);
             touchingEntities.remove(pair);
@@ -55,11 +57,11 @@ public class CollisionManager extends ContactListener {
         for (var pair : touchingEntities) {
             pair.updateTouchingTime(delta);
             if (pair.a() instanceof PhysicsBodyData first && pair.b() instanceof PhysicsBodyData second) {
-                if (first.bodyLogic != null) {
-                    first.bodyLogic.colliding(second, first, gameState, pair.getTimeTouching());
+                if (first.bodyLogic() != null) {
+                    first.bodyLogic().colliding(second, first, gameState, pair.getTimeTouching());
                 }
-                if (second.bodyLogic != null) {
-                    second.bodyLogic.colliding(first, second, gameState, pair.getTimeTouching());
+                if (second.bodyLogic() != null) {
+                    second.bodyLogic().colliding(first, second, gameState, pair.getTimeTouching());
                 }
             }
         }

@@ -30,7 +30,6 @@ public class PhysicsWorld implements Disposable {
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_DrawWireframe);
 
-
         dynamicsWorld.setDebugDrawer(debugDrawer);
     }
 
@@ -47,7 +46,6 @@ public class PhysicsWorld implements Disposable {
     public btDynamicsWorld dynamicsWorld() {
         return dynamicsWorld;
     }
-
 
     @Override
     public void dispose() {
