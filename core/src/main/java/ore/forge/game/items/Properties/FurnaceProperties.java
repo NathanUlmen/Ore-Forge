@@ -1,5 +1,5 @@
 package ore.forge.game.items.Properties;
 
-public class FurnaceProperties implements ItemProperties {
+public final class FurnaceProperties implements ItemProperties {
 
 }

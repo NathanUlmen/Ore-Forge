@@ -4,15 +4,15 @@ import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.utils.Array;
-import ore.forge.game.GameContext;
+import ore.forge.game.GameContext2;
 
-public class CollisionCallbackResolutionSystem extends EntitySystem {
+public class PhysicsCallbackResolverSystem extends EntitySystem {
     private static final ComponentMapper<CollisionHandlerC> HANDLERS = ComponentMapper.getFor(CollisionHandlerC.class);
     private final CollisionManager collisionManager;
-    private final GameContext context;
+    private final GameContext2 context;
     private final Array<CollisionEvent> collisionEvents = new Array<>(false, 128);
 
-    public CollisionCallbackResolutionSystem(GameContext context, CollisionManager collisionManager) {
+    public PhysicsCallbackResolverSystem(GameContext2 context, CollisionManager collisionManager) {
         this.collisionManager = collisionManager;
         this.context = context;
 

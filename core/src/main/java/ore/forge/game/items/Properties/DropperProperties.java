@@ -3,7 +3,7 @@ package ore.forge.game.items.Properties;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.OreDefinition;
 
-public class DropperProperties implements ItemProperties {
+public final class DropperProperties implements ItemProperties {
     private OreDefinition oreDefinition;
 
     public DropperProperties(OreDefinition oreDefinition) {

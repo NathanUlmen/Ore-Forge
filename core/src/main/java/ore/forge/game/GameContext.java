@@ -14,7 +14,7 @@ import ore.forge.engine.StagedCollection;
 public class GameContext {
     public static final GameContext INSTANCE = new GameContext();
     public final EntityManager entityManager;
-    public final PreviewManager previewManager;
+//    public final PreviewManager previewManager;
     public final EventManager eventManager;
     public final PhysicsWorld physicsWorld;
     public final CollisionManager collisionManager;
@@ -22,7 +22,7 @@ public class GameContext {
     public final Player player;
 
     public GameContext() {
-        previewManager = new PreviewManager();
+//        previewManager = new PreviewManager();
         entityManager = new EntityManager();
         eventManager = new EventManager();
         physicsWorld = PhysicsWorld.instance();

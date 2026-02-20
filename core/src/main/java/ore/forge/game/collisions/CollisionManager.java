@@ -1,12 +1,11 @@
 package ore.forge.game.collisions;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.PooledEngine;
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.utils.*;
 import ore.forge.engine.components.IdComponent;
-import ore.forge.game.CollisionSystem;
 import ore.forge.game.PhysicsBodyData;
 
 /**
@@ -131,6 +130,22 @@ public class CollisionManager extends ContactListener {
         }
     }
 
+    public void free(CollisionEvent collisionEvent) {
+        eventPool.free(collisionEvent);
+    }
+
+    public void removeAllPairsWith(Entity entity) {
+        active.forEach(contactState -> {
+            ContactPair state = contactState.value;
+            if (state.a.entity() == entity || state.b.entity() == entity) toRemove.add(contactState.key);
+        });
+        for (int i = 0; i < toRemove.size; i++) {
+            ContactPair removed = active.remove(toRemove.get(i));
+            pool.free(removed);
+        }
+        toRemove.clear();
+    }
+
     private CollisionEvent createCollisionEvent(ContactPair pair, CollisionState state) {
         CollisionEvent event = eventPool.obtain();
         event.a = pair.a.entity();
@@ -148,10 +163,6 @@ public class CollisionManager extends ContactListener {
         int low = Math.min(a.id, b.id);
         int high = Math.max(a.id, b.id);
         return ((long) low << 32) | (high & 0xFFFFFFFFL);
-    }
-
-    public void free(CollisionEvent collisionEvent) {
-        eventPool.free(collisionEvent);
     }
 
     private static final class ContactPair {

@@ -1,3 +1,3 @@
 package ore.forge.game.items.Properties;
 
-public interface ItemProperties { }
+public sealed interface ItemProperties permits UpgraderProperties, BundledProperties, DropperProperties, FurnaceProperties { }

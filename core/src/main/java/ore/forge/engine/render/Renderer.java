@@ -1,5 +1,6 @@
 package ore.forge.engine.render;
 
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author Nathan Ulmen
  * Is responsible For sorting, batching, and instancing draw calls. *
  */
-public class Renderer {
+public class Renderer extends EntitySystem {
     public static final int MAX_INSTANCED_DRAW = 10_000;
     private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
     private final FloatBuffer instanceBuffer;
