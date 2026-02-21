@@ -1,6 +1,7 @@
 package ore.forge.game;
 
-import ore.forge.engine.Entity;
+
+import com.badlogic.ashley.core.Entity;
 
 import java.util.Objects;
 
@@ -31,7 +32,8 @@ public class CollisionPair {
     }
 
     public boolean contains(Entity entity) {
-        return a.parentEntity == entity ||  b.parentEntity == entity;
+//        return a.parentEntity == entity ||  b.parentEntity == entity;
+        return false;
     }
 
     @Override

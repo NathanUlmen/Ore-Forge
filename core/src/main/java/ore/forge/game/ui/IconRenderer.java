@@ -52,60 +52,60 @@ public class IconRenderer {
     }
 
     public void renderIcon(String key, RenderC renderC) {
-        ModelInstance modelInstance = renderC.modelInstance;
-        BoundingBox bb = modelInstance.calculateBoundingBox(new BoundingBox());
-
-        // Center our model
-        Vector3 center = bb.getCenter(new Vector3());
-        modelInstance.transform.setTranslation(center.scl(-1)); // Shift by offsets to be centered
-
-        Vector3 dimensions = bb.getDimensions(new Vector3());
-        float maxDim = Math.max(dimensions.x,
-                Math.max(dimensions.y, dimensions.z));
-
-        // Position our camera to be looking at the model diagonally
-        // TODO: Make it so big items look big by scaling non linearly or something
-        camera.position.set(maxDim, maxDim * .75f, maxDim);
-        camera.lookAt(Vector3.Zero); // look at item
-        camera.update();
-
-        FrameBuffer fbo = new FrameBuffer(
-                Pixmap.Format.RGBA8888,
-                renderResolution,
-                renderResolution,
-                true);
-
-        fbo.begin();
-
-        // Clear background (white / soft yellow)
-        Gdx.gl.glViewport(0, 0, renderResolution, renderResolution);
-        Gdx.gl.glClearColor(.11f, .41f, 1f, 0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
-        ModelInstance instance = renderC.modelInstance;
-
-        // Render model in our scene
-        modelBatch.begin(camera);
-        modelBatch.render(instance, environment);
-        modelBatch.end();
-
-        // Get pixmap from our buffer
-        Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, renderResolution, renderResolution);
-        Pixmap downscaled = new Pixmap(saveResolution, saveResolution, pixmap.getFormat());
-        pixmap.setFilter(Pixmap.Filter.BiLinear);
-        downscaled.setFilter(Pixmap.Filter.BiLinear);
-        downscaled.drawPixmap(pixmap,
-                0, 0, pixmap.getWidth(), pixmap.getHeight(),
-                0, 0, downscaled.getWidth(), downscaled.getHeight());
-
-        Pixmap flipped = flipPixmapVertically(downscaled);
-        downscaled.dispose();
-        toFile(flipped, "test.png");
-
-        packer.pack(key, flipped);
-        fbo.end();
-        fbo.dispose();
-        pixmap.dispose();
+//        ModelInstance modelInstance = renderC.modelInstance;
+//        BoundingBox bb = modelInstance.calculateBoundingBox(new BoundingBox());
+//
+//        // Center our model
+//        Vector3 center = bb.getCenter(new Vector3());
+//        modelInstance.transform.setTranslation(center.scl(-1)); // Shift by offsets to be centered
+//
+//        Vector3 dimensions = bb.getDimensions(new Vector3());
+//        float maxDim = Math.max(dimensions.x,
+//                Math.max(dimensions.y, dimensions.z));
+//
+//        // Position our camera to be looking at the model diagonally
+//        // TODO: Make it so big items look big by scaling non linearly or something
+//        camera.position.set(maxDim, maxDim * .75f, maxDim);
+//        camera.lookAt(Vector3.Zero); // look at item
+//        camera.update();
+//
+//        FrameBuffer fbo = new FrameBuffer(
+//                Pixmap.Format.RGBA8888,
+//                renderResolution,
+//                renderResolution,
+//                true);
+//
+//        fbo.begin();
+//
+//        // Clear background (white / soft yellow)
+//        Gdx.gl.glViewport(0, 0, renderResolution, renderResolution);
+//        Gdx.gl.glClearColor(.11f, .41f, 1f, 0f);
+//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+//
+//        ModelInstance instance = renderC.modelInstance;
+//
+//        // Render model in our scene
+//        modelBatch.begin(camera);
+//        modelBatch.render(instance, environment);
+//        modelBatch.end();
+//
+//        // Get pixmap from our buffer
+//        Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, renderResolution, renderResolution);
+//        Pixmap downscaled = new Pixmap(saveResolution, saveResolution, pixmap.getFormat());
+//        pixmap.setFilter(Pixmap.Filter.BiLinear);
+//        downscaled.setFilter(Pixmap.Filter.BiLinear);
+//        downscaled.drawPixmap(pixmap,
+//                0, 0, pixmap.getWidth(), pixmap.getHeight(),
+//                0, 0, downscaled.getWidth(), downscaled.getHeight());
+//
+//        Pixmap flipped = flipPixmapVertically(downscaled);
+//        downscaled.dispose();
+//        toFile(flipped, "test.png");
+//
+//        packer.pack(key, flipped);
+//        fbo.end();
+//        fbo.dispose();
+//        pixmap.dispose();
     }
 
     public TextureAtlas buildAtlas() {

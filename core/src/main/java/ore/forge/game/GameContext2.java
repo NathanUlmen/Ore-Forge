@@ -12,6 +12,7 @@ import ore.forge.game.player.Player;
 
 public class GameContext2 {
     public static final float FIXED_TIME_STEP = 1/60f;
+    public static final int MAX_SUBSTEPS = 3;
     public final Engine engine;
     public final Player player;
     public final PhysicsWorld physicsWorld;
@@ -19,13 +20,12 @@ public class GameContext2 {
     private final PhysicsCallbackResolverSystem callbackResolver;
 
     public GameContext2() {
-        engine = new PooledEngine(1_000, 5_000, 8_000, 40_000);
+        engine = new PooledEngine();
         player = new Player();
         physicsWorld = PhysicsWorld.instance();
         collisionManager = new CollisionManager();
         callbackResolver = new PhysicsCallbackResolverSystem(this, collisionManager);
         engine.addSystem(callbackResolver);
-
     }
 
     public void update(float delta) {
@@ -35,7 +35,7 @@ public class GameContext2 {
         preTickSync.update(delta);
 
         //step Physics
-        physicsWorld.dynamicsWorld().stepSimulation(delta, 2, FIXED_TIME_STEP);
+        physicsWorld.dynamicsWorld().stepSimulation(delta, MAX_SUBSTEPS, FIXED_TIME_STEP);
 
         //update contacts
         collisionManager.update(delta);

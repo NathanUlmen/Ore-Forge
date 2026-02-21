@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title" : "ItemDefinition",
+  "type" : "object",
+  "required": ["name", "id", "category", "role", "acquisitionInfo", "components"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The display name of the object."
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the object."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional textual description."
+    },
+    "role": {
+      "type": "array",
+      "description": "The roles this item fulfills.",
+      "items": {
+        "type": "string",
+        "enum": ["UPGRADER", "DROPPER", "FURNACE", "CONVEYOR", "TELEPORTER"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "roleProperties" : {
+      "type" : "array",
+      "description": "Properties required for behaviors to function properly.",
+      "items" : {
+        "type" : "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "name", "id", "maxUpgrades", "isResetter"],
+            "properties": {
+              "type": { "const": "UpgradeTag" },
+              "name": { "type": "string" },
+              "id": { "type": "string" },
+              "maxUpgrades": { "type": "integer" },
+              "isResetter": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "id", "oreName", "oreValue", "oreTemperature", "multiOre"],
+            "properties": {
+              "type": { "const": "OreDefinition" },
+              "oreName": { "type": "string" },
+              "id" : {"type" :  "string"},
+              "oreValue": { "type": "number" },
+              "oreTemperature": { "type": "number" },
+              "multiOre": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "category" :{
+      "type" : "string",
+      "description": "Tier of the object.",
+      "enum": ["COMMON", "UNCOMMON", "RARE", "SUPER_RARE", "EPIC", "SPECIAL", "PRESTIGE", "EXOTIC", "PINNACLE"]
+    },
+    "acquisitionInfo" : {
+      "type": "object",
+      "required": [
+        "unlockMethod",
+        "unlockRequirement",
+        "unlockedByDefault",
+        "canBeSold",
+        "isPrestigeProof",
+        "currency",
+        "itemValue",
+        "sellPrice",
+        "rarity"
+      ],
+      "properties": {
+        "unlockMethod": {
+          "type": "string",
+          "enum": ["SPECIAL_POINTS", "PRESTIGE_LEVEL", "QUEST", "NONE"],
+          "description": "Method required to unlock the item."
+        },
+        "unlockRequirement": {
+          "type": "number",
+          "description": "The value required to unlock the item, if applicable."
+        },
+        "unlockedByDefault": {
+          "type": "boolean",
+          "description": "Whether the item is already unlocked by default."
+        },
+        "canBeSold": {
+          "type": "boolean",
+          "description": "Whether the item can be sold."
+        },
+        "isPrestigeProof": {
+          "type": "boolean",
+          "description": "Whether the item is immune to prestige reset or similar mechanic."
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["NONE", "SPECIAL_POINTS", "PRESTIGE_POINTS", "CASH"],
+          "description": "Currency used for acquiring or valuing the item."
+        },
+        "itemValue": {
+          "type": "number",
+          "description": "The in-game value of the item."
+        },
+        "sellPrice": {
+          "type": "number",
+          "description": "The price received when selling the item."
+        },
+        "rarity": {
+          "type": "number",
+          "description": "A float representing the rarity weight of the item between 0 and 1. -1 if not applicable"
+        }
+      }
+    },
+    "entities" : {
+      "type": "array",
+      "description": "Each entity and its components.",
+      "items" : {
+        "type": "object",
+        "properties": {
+          "PhysicsC" : {
+            "type" : "object",
+            "properties": {
+              "bodyType": {
+              "type" : "string",
+              "enum" : ["DYNAMIC", "STATIC", "KINEMATIC"]
+              },
+              "collisionShape" : {
+              },
+              "foo" : {}
+            }
+          },
+        }
+      }
+    }
+  }
+}

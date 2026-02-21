@@ -3,7 +3,6 @@ package ore.forge.game.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.engine.Entity;
 import ore.forge.game.PhysicsBodyData;
 import ore.forge.game.ui.UIMenu;
 
@@ -37,9 +36,9 @@ public class DefaultInputState extends InputState {
                 btCollisionObject hitObject = rayCallback.getCollisionObject();
                 PhysicsBodyData hitBodyData = (PhysicsBodyData) hitObject.userData;
                 if (hitBodyData != null) {
-                    Entity Entity = hitBodyData.parentEntity;
+//                    Entity Entity = hitBodyData.parentEntity;
                     inputHandler.setInputState(selecting);
-                    selecting.addToSelectedItems(Entity);
+//                    selecting.addToSelectedItems(Entity);
                 }
             }
             rayCallback.dispose();

@@ -9,4 +9,8 @@ public class ChildC implements Component {
 
     //If child inherits parent transform every tick.
     public boolean inheritTransform = true;
+
+    public record Recipe() {
+
+    }
 }

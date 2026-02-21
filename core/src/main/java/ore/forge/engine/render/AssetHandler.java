@@ -51,6 +51,7 @@ public class AssetHandler {
     public Hashtable<String, MeshHandle> handleLookup;
 
     public AssetHandler() {
+        handleLookup = new Hashtable<>();
         var sceneAssets = gatherMeshesFromDirectory("assets/models");
 //        Gdx.app.log("AssetHandler", "Gathered Meshes From Directory");
         List<PackedMesh> packedMeshes = extractMeshes(sceneAssets);
@@ -153,6 +154,7 @@ public class AssetHandler {
             handle.strideBytes = STRIDE_BYTES;
 
             handles.add(handle);
+            handleLookup.put(packedMesh.id(), handle);
 
             vertexOffset += packedMesh.vertexCount();
             indexOffsetBytes += packedMesh.indexCount() * Integer.BYTES;

@@ -64,7 +64,6 @@
       "enum": ["COMMON", "UNCOMMON", "RARE", "SUPER_RARE", "EPIC", "SPECIAL", "PRESTIGE", "EXOTIC", "PINNACLE"],
       "description": "Tier of the object."
     },
-
     "acquisitionInfo" : {
       "type": "object",
       "required": [

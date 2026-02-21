@@ -6,22 +6,30 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Pool;
 import ore.forge.game.PhysicsBodyData;
 
-public class CollisionEvent implements Pool.Poolable {
-    public CollisionState type;
+public final class CollisionEvent {
     public Entity a;
     public Entity b;
-    public PhysicsBodyData aBody;
-    public PhysicsBodyData bBody;
+
+    public CollisionState type;
     public final Vector3 normalOnB = new Vector3();
     public float timeTouching;
 
-    @Override
-    public void reset() {
-        timeTouching = 0;
-        normalOnB.setZero();
-        a = null;
-        b = null;
-        aBody = null;
-        bBody = null;
+    // Bullet sub-shape identifiers:
+    public int partIdA;
+    public int indexA;
+
+    public int partIdB;
+    public int indexB;
+
+    public int indexFor(Entity self) {
+        if (self == a) return indexA;
+        if (self == b) return indexB;
+        return -1;
+    }
+
+    public int partIdFor(Entity self) {
+        if (self == a) return partIdA;
+        if (self == b) return partIdB;
+        return -1;
     }
 }

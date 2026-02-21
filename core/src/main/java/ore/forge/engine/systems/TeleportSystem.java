@@ -60,6 +60,7 @@ public class TeleportSystem extends IteratingSystem {
         //Update physics body
         final PhysicsC p = entity.getComponent(PhysicsC.class);
         if (p != null) {
+            System.out.println("Updating Physics");
             p.rigidBody.setWorldTransform(targetWorld);
 
             p.rigidBody.setLinearVelocity(Vector3.Zero);

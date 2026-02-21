@@ -11,11 +11,8 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.TestScene;
 import ore.forge.engine.profiling.Profiler;
-import ore.forge.engine.render.AssetHandler;
 import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.player.ItemInventory;
-import ore.forge.game.screens.Gameplay3D;
-import ore.forge.game.ui.UI;
+import ore.forge.game.temp.TestItemEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +28,7 @@ public class OreForge extends Game {
 
         //TODO: load in assets(item definitions depend/have handles to these)
 
-        //load in item definitions
-        ArrayList<ItemDefinition> allItems = new ArrayList<>();
-        loadItemDefinitions(allItems);
+        //TODO: load in item definitions
 
         //TODO: load player save data
 
@@ -47,23 +42,19 @@ public class OreForge extends Game {
 
         //TODO: finally set screen to main gameplay
 
-        GameContext2 context2 = new GameContext2();
+        setScreen(new TestItemEntity());
 
-        GameContext context = GameContext.INSTANCE;
-        Runtime.getRuntime().addShutdownHook(new Thread(context::save)); //Save progress before exit
-        Profiler instance = Profiler.INSTANCE;
+
+//        GameContext context = GameContext.INSTANCE;
+//        Runtime.getRuntime().addShutdownHook(new Thread(context::save)); //Save progress before exit
 //        Runtime.getRuntime().addShutdownHook(new Thread(instance::dumpToFile));
 
 
 
-        //Setup our inventory with all items we loaded.
-        context.player.inventory = new ItemInventory(allItems);
-        context.load();
-
         //Create Our UI
-        UI ui = new UI(context.player.inventory);
-        Gameplay3D gameplay3D = new Gameplay3D(ui);
-        setScreen(gameplay3D);
+//        UI ui = new UI(context.player.inventory);
+//        Gameplay3D gameplay3D = new Gameplay3D(ui);
+//        setScreen(gameplay3D);
 //        setScreen(new TestScene());
     }
 

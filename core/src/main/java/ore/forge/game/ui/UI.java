@@ -28,9 +28,9 @@ public class UI extends Stage {
         IconRenderer iconRenderer = new IconRenderer();
         for (ItemInventoryNode node : inventory.nodes()) {
             ItemDefinition item = node.getHeldItem();
-            RenderC vc = new RenderC(new ModelInstance(item.model()));
-            iconRenderer.renderIcon(item.id(), vc);
-            vc.dispose();
+//            RenderC vc = new RenderC(new ModelInstance(item.model()));
+//            iconRenderer.renderIcon(item.id(), vc);
+//            vc.dispose();
         }
         iconAtlas = iconRenderer.buildAtlas();
 

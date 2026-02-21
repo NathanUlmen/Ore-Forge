@@ -22,7 +22,6 @@ public abstract class RenderPass {
 
     protected void bindShader(ShaderProgram shader, Camera camera) {
         if (this.currentShader == shader) return;
-
         shader.bind();
         shader.setUniformMatrix("u_projView", camera.combined);
 

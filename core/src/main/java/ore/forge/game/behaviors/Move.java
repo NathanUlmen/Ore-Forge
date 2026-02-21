@@ -60,7 +60,7 @@ public class Move implements BodyLogic {
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
         assert subject.specificData() instanceof Ore;
-        btRigidBody rigidBody = (btRigidBody) subject.parentEntity.physicsComponent.bodies.getFirst().bodyHandle;
+//        btRigidBody rigidBody = (btRigidBody) subject.parentEntity.physicsComponent.bodies.getFirst().bodyHandle;
 
         // Get conveyor direction in world space
         ItemUserData itemUserData = (ItemUserData) source.specificData();
@@ -74,15 +74,15 @@ public class Move implements BodyLogic {
         float maxSpeed = force;          // units per second
         float responsiveness = 10f;
 
-        Vector3 currentVel = rigidBody.getLinearVelocity().cpy();
+//        Vector3 currentVel = rigidBody.getLinearVelocity().cpy();
 
-        float velAlongDir = currentVel.cpy().dot(conveyorDir);
+//        float velAlongDir = currentVel.cpy().dot(conveyorDir);
 
-        float deltaV = maxSpeed - velAlongDir;
+//        float deltaV = maxSpeed - velAlongDir;
 
-        Vector3 forceVec = conveyorDir.scl(deltaV * 10 * responsiveness);
+//        Vector3 forceVec = conveyorDir.scl(deltaV * 10 * responsiveness);
 
-        rigidBody.applyCentralForce(forceVec);
+//        rigidBody.applyCentralForce(forceVec);
     }
 
 

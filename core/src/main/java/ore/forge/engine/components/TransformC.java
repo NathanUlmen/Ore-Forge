@@ -49,5 +49,9 @@ public class TransformC implements Component {
             localScale.x, localScale.y, localScale.z
         );
     }
+
+    public record Recipe(Matrix4 transform) {
+
+    }
 }
 

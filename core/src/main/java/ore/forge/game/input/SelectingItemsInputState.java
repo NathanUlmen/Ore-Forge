@@ -1,10 +1,10 @@
 package ore.forge.game.input;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
-import ore.forge.engine.Entity;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.PhysicsBodyData;
 
@@ -38,8 +38,8 @@ public class SelectingItemsInputState extends InputState {
             List<Matrix4> transforms = new ArrayList<>(selectedItems.size());
             for (Entity item : selectedItems) {
                 inputHandler.context.entityManager.stageRemove(item);
-                defs.add((ItemDefinition) item.definition);
-                transforms.add(item.rootTransform.currentTransform);
+//                defs.add((ItemDefinition) item.definition);
+//                transforms.add(item.rootTransform.currentTransform);
             }
             inputHandler.setInputState(buildingState);
             buildingState.setActiveFromDef(defs, transforms);
@@ -77,9 +77,9 @@ public class SelectingItemsInputState extends InputState {
             if (rayCallback.hasHit() && rayCallback.getCollisionObject() != null) { //If Ray-Cast returns an item add to selectedItem
                 var collisionObject = rayCallback.getCollisionObject();
                 if (collisionObject.userData instanceof PhysicsBodyData data) {
-                    if (data.parentEntity.definition instanceof ItemDefinition) {
-                        addToSelectedItems(data.parentEntity);
-                    }
+//                    if (data.parentEntity.definition instanceof ItemDefinition) {
+//                        addToSelectedItems(data.parentEntity);
+//                    }
                 }
 
 //            } else { //if Ray-Cast returns no item exit

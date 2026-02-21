@@ -31,8 +31,11 @@ public class PhysicsCallbackResolverSystem extends EntitySystem {
 
     private void fire(Entity self, Entity other, CollisionEvent event) {
         if (self.isScheduledForRemoval() || other.isScheduledForRemoval()) return;
-        CollisionHandlerC logic = HANDLERS.get(self);
-        if (logic == null) return;
+        CollisionHandlerC handlerComponent = HANDLERS.get(self);
+        if (handlerComponent == null) return;
+
+        int selfChildIndex = event.indexFor(self);
+        CollisionHandlerC.HandlerSet logic = handlerComponent.handlersForChildIndex(selfChildIndex);
         switch (event.type) {
             case STARTED -> {
                 for (var contactStartedLogic : logic.starts) {

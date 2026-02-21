@@ -9,4 +9,9 @@ public class RenderC implements Component {
 
     //Constant offset from entity Transform to mesh, if needed/optional
     public final Matrix4 localFromEntity = new Matrix4().idt();
+
+    public record Recipe(String meshHandle, Matrix4 localFromEntity) {
+
+    }
+
 }

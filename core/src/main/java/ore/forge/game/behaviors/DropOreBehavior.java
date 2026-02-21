@@ -1,13 +1,10 @@
 package ore.forge.game.behaviors;
 
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.engine.Entity;
-import ore.forge.engine.systems.TransformManager;
 import ore.forge.game.EntityCreator;
 import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.*;
@@ -37,16 +34,16 @@ public class DropOreBehavior implements BodyLogic, Updatable {
 
     @Override
     public void register(GameContext context) {
-        PhysicsBodyData data = (PhysicsBodyData) parent.userData;
-        data.parentEntity.updatables.add(this);
-        context.addUpdatable(this);
+//        PhysicsBodyData data = (PhysicsBodyData) parent.userData;
+//        data.parentEntity.updatables.add(this);
+//        context.addUpdatable(this);
     }
 
     @Override
     public void unregister(GameContext context) {
-        PhysicsBodyData data =  (PhysicsBodyData) parent.userData;
-        data.parentEntity.updatables.remove(this);
-        context.removeUpdatable(this);
+//        PhysicsBodyData data =  (PhysicsBodyData) parent.userData;
+//        data.parentEntity.updatables.remove(this);
+//        context.removeUpdatable(this);
     }
 
     @Override
@@ -59,37 +56,37 @@ public class DropOreBehavior implements BodyLogic, Updatable {
     public void update(float delta, GameContext context) {
         //To Produce an ore we will need: OreModel, Ore Shape, and OreStats
         //This info will be taken from the DropperSpawner that this thing holds
-        for (int i = 0; i < dropperStrategy.drop(delta); i++) {
+//        for (int i = 0; i < dropperStrategy.drop(delta); i++) {
 //        if (dropperStrategy.drop(delta) > 0) {
-            OreDefinition oreDefinition = dropperProperties.oreDefinition();
-            Entity ore = EntityCreator.createInstance(oreDefinition);
-            TransformManager.teleport(ore, this.parent.getWorldTransform().translate(0, -1f, 0));
-            btRigidBody body = (btRigidBody) ore.physicsComponent.bodies.getFirst().bodyHandle;
-            body.setLinearVelocity(new Vector3(0, -20, 0));
+//            OreDefinition oreDefinition = dropperProperties.oreDefinition();
+//            Entity ore = EntityCreator.createInstance(oreDefinition);
+//            TransformManager.teleport(ore, this.parent.getWorldTransform().translate(0, -1f, 0));
+//            btRigidBody body = (btRigidBody) ore.physicsComponent.bodies.getFirst().bodyHandle;
+//            body.setLinearVelocity(new Vector3(0, -20, 0));
 
-            ore.updatables.add(new Updatable() {
-                private final CoolDown cd = new CoolDown(2f);
-                private boolean done = false;
+//            ore.updatables.add(new Updatable() {
+//                private final CoolDown cd = new CoolDown(2f);
+//                private boolean done = false;
 
-                @Override
-                public void update(float delta, GameContext context) {
-                    if (!done && cd.update(delta) > 0) {
-                        btRigidBody body = (btRigidBody) ore.physicsComponent.bodies
-                            .getFirst()
-                            .bodyHandle;
-
-                        btDynamicsWorld world = context.physicsWorld.dynamicsWorld();
-
-                        world.removeRigidBody(body);
-
-                        int newMask = CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR , CollisionRules.ORE, CollisionRules.WORLD_GEOMETRY);
-
-                        world.addRigidBody(body, CollisionRules.combineBits(CollisionRules.ORE), newMask);
-
-                        done = true;
-                    }
-                }
-            });            //Add ore to the world
+//                @Override
+//                public void update(float delta, GameContext context) {
+//                    if (!done && cd.update(delta) > 0) {
+//                        btRigidBody body = (btRigidBody) ore.physicsComponent.bodies
+//                            .getFirst()
+//                            .bodyHandle;
+//
+//                        btDynamicsWorld world = context.physicsWorld.dynamicsWorld();
+//
+//                        world.removeRigidBody(body);
+//
+//                        int newMask = CollisionRules.combineBits(CollisionRules.ORE_PROCESSOR , CollisionRules.ORE, CollisionRules.WORLD_GEOMETRY);
+//
+//                        world.addRigidBody(body, CollisionRules.combineBits(CollisionRules.ORE), newMask);
+//
+//                        done = true;
+//                    }
+//                }
+//            });            //Add ore to the world
 //            VisualComponent visualComponent = new VisualComponent(new ModelInstance(dropperProperties.oreModel));
 //            Ore oreInfo = new Ore();
 
@@ -106,8 +103,8 @@ public class DropOreBehavior implements BodyLogic, Updatable {
 //            oreBody.setCcdMotionThreshold(0);
 //            oreBody.setCcdMotionThreshold(0);
 
-            context.entityManager.stageAdd(ore);
-        }
+//            context.entityManager.stageAdd(ore);
+//        }
     }
 
     @Override
@@ -130,10 +127,5 @@ public class DropOreBehavior implements BodyLogic, Updatable {
         return new DropOreBehavior(this);
     }
 
-
-    public record OreBlueprint(String name, double oreValue, float oreTemperature, int multiOre,
-                               FixtureDef fixtureDef) {
-
-    }
 
 }
