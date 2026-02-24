@@ -7,7 +7,7 @@ import ore.forge.engine.StagedCollection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CollisionManager extends ContactListener {
+public class CollisionManager {
     private final Set<CollisionPair> touchingEntities;
     private final StagedCollection<CollisionPair> collisions;
     private final GameContext gameState;
@@ -20,7 +20,7 @@ public class CollisionManager extends ContactListener {
         collisions = new StagedCollection<>();
     }
 
-    @Override
+//    @Override
     public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
             if (o1Data.bodyLogic() != null) {
@@ -36,7 +36,7 @@ public class CollisionManager extends ContactListener {
 
     }
 
-    @Override
+//    @Override
     public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
             if (o1Data.bodyLogic() != null) {

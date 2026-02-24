@@ -1,5 +1,6 @@
 package ore.forge.game.components;
 
+import com.badlogic.ashley.core.Component;
 import ore.forge.game.UpgradeCooldown;
 import ore.forge.game.UpgradeTag;
 import ore.forge.game.behaviors.OreEffects.BundledOreEffect;
@@ -14,7 +15,7 @@ import java.util.Stack;
 /**
  * @author Nathan Ulmen
  */
-public class Ore {
+public class Ore implements Component {
     private int durability;
     private final HashMap<String, UpgradeTag> tagMap;
     private final ArrayList<OreEffect> effects;

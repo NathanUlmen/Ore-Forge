@@ -16,14 +16,14 @@ public class GameContext2 {
     public final Engine engine;
     public final Player player;
     public final PhysicsWorld physicsWorld;
-    public final CollisionManager collisionManager;
+    public CollisionManager collisionManager;
     private final PhysicsCallbackResolverSystem callbackResolver;
 
     public GameContext2() {
         engine = new PooledEngine();
         player = new Player();
         physicsWorld = PhysicsWorld.instance();
-        collisionManager = new CollisionManager();
+//        collisionManager = new CollisionManager();
         callbackResolver = new PhysicsCallbackResolverSystem(this, collisionManager);
         engine.addSystem(callbackResolver);
     }

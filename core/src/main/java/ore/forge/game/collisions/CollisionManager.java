@@ -39,16 +39,17 @@ public class CollisionManager extends ContactListener {
     };
 
     /**
-     * Call this ONCE per frame, BEFORE world.stepSimulation(...).
-     * It clears the "seen this step" flag so we can detect ended subpart contacts.
+     * Call this once per frame before physics step
+
      */
+
     public void beginFrame() {
         active.forEach(entry -> entry.value.seenThisStep = false);
     }
 
     /**
-     * Call this ONCE per frame, AFTER world.stepSimulation(...)
-     * (i.e., after Bullet has invoked onContactAdded callbacks for this step).
+     * Call this once per frame after physics step
+     *
      */
     public void update(float delta) {
         active.forEach(entry -> {
@@ -61,7 +62,6 @@ public class CollisionManager extends ContactListener {
                 return;
             }
 
-            // Otherwise it's active this step:
             switch (pair.type) {
                 case STARTED -> {
                     out.addLast(createCollisionEvent(pair, CollisionState.STARTED));
@@ -72,13 +72,13 @@ public class CollisionManager extends ContactListener {
                     out.addLast(createCollisionEvent(pair, CollisionState.TOUCHING));
                 }
                 case ENDED -> {
-                    // Shouldn't normally happen because we remove ENDED pairs immediately now,
-                    // but keep it safe.
                     toRemove.add(entry.key);
                 }
             }
         });
 
+
+        System.out.println("to remove size" + toRemove.size);
         for (int i = 0; i < toRemove.size; i++) {
             ContactPair removed = active.remove(toRemove.get(i));
             if (removed != null) pool.free(removed);
@@ -90,13 +90,15 @@ public class CollisionManager extends ContactListener {
     public boolean onContactAdded(btManifoldPoint cp,
                                   btCollisionObject objectA, int partId0, int index0,
                                   btCollisionObject objectB, int partId1, int index1) {
-
+        dbg("Foo");
         final Entity entityA = (Entity) objectA.userData;
         final Entity entityB = (Entity) objectB.userData;
         if (entityA == null || entityB == null) return false;
 
         final long key = computeKey(entityA, partId0, index0, entityB, partId1, index1);
-        if (key == Long.MIN_VALUE) return false;
+        if (key == Long.MIN_VALUE) {
+            return false;
+        }
 
         ContactPair pair = active.get(key);
         if (pair == null) {
@@ -113,6 +115,7 @@ public class CollisionManager extends ContactListener {
             pair.indexB  = index1;
 
             active.put(key, pair);
+            System.out.println("Active Size after add: " + active.size);
         }
 
         // Mark as present in this step and refresh contact data
@@ -120,6 +123,10 @@ public class CollisionManager extends ContactListener {
         cp.getNormalWorldOnB(pair.normalOnB);
 
         return true;
+    }
+
+    @Override
+    public void onContactStarted(btPersistentManifold manifold) {
     }
 
     @Override
@@ -169,7 +176,7 @@ public class CollisionManager extends ContactListener {
 
         final IdComponent a = entityA.getComponent(IdComponent.class);
         final IdComponent b = entityB.getComponent(IdComponent.class);
-        if (a == null || b == null) return Long.MIN_VALUE;
+        if (a == null || b == null) return 4;
 
         int aId = a.id;
         int bId = b.id;
@@ -189,7 +196,7 @@ public class CollisionManager extends ContactListener {
         x = fnv1a64(x, indexA);
         x = fnv1a64(x, partIdB);
         x = fnv1a64(x, indexB);
-        return x;
+        return 4;
     }
 
     private static long fnv1a64(long hash, int v) {
@@ -202,6 +209,11 @@ public class CollisionManager extends ContactListener {
         hash ^= ((v >>> 24) & 0xFF);
         hash *= 1099511628211L;
         return hash;
+    }
+
+    private void dbg(String where) {
+        System.out.println(where + " this=" + System.identityHashCode(this)
+            + " activeSize=" + active.size);
     }
 
     private static final class ContactPair {
