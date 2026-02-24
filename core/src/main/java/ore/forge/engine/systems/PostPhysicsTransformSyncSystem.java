@@ -21,7 +21,13 @@ public class PostPhysicsTransformSyncSystem extends IteratingSystem {
         final WorldTransformC world = entity.getComponent(WorldTransformC.class);
         final PhysicsC physics = entity.getComponent(PhysicsC.class);
         if (physics.type == PhysicsC.BodyType.DYNAMIC) {
+            world.advance();
             world.currentTransform.set(physics.rigidBody.getWorldTransform());
         }
     }
+
+    protected void processEntity(Entity entity, float deltaTime, int priority) {
+    }
+
 }
+

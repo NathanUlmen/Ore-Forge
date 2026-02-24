@@ -1,5 +1,7 @@
-package ore.forge.game;
+package ore.forge.game.components;
 
+import ore.forge.game.UpgradeCooldown;
+import ore.forge.game.UpgradeTag;
 import ore.forge.game.behaviors.OreEffects.BundledOreEffect;
 import ore.forge.game.behaviors.OreEffects.Burning;
 import ore.forge.game.behaviors.OreEffects.ObserverOreEffect;
@@ -21,11 +23,11 @@ public class Ore {
     private String oreName, id;
     private double oreValue; //value of the ore
     private int upgradeCount;
-    private int multiOre;
+    private int yield;
     private float oreTemperature;
     private boolean isDoomed; //Flag denoting ore will be destroyed next update cycle. Invincibility effects can use this.
     private int resetCount; //Times ore has had its UpgradeTags reset by a resetter type item
-    private HashMap<UpgradeTag, UpgradeCooldown> cooldownLookup;
+    private final HashMap<UpgradeTag, UpgradeCooldown> cooldownLookup;
 
     public Ore() {
         this.oreValue = 0;
@@ -33,7 +35,7 @@ public class Ore {
         this.oreName = "";
         this.id = "";
         this.upgradeCount = 0;
-        this.multiOre = 1;
+        this.yield = 1;
         this.isDoomed = false;
         tagMap = new HashMap<>();
         effects = new ArrayList<>();
@@ -81,7 +83,7 @@ public class Ore {
         this.oreValue = oreValue;
         this.id = id;
         this.oreTemperature = oreTemp;
-        this.multiOre = multiOre;
+        this.yield = multiOre;
         this.oreName = oreName;
         applyEffect(strategy);
         return this;
@@ -92,7 +94,7 @@ public class Ore {
         this.oreTemperature = 0;
         this.oreName = "";
         this.upgradeCount = 0;
-        this.multiOre = 1;
+        this.yield = 1;
         effects.clear();
         removalStack.clear();
         isDoomed = false;
@@ -192,12 +194,12 @@ public class Ore {
         return upgradeCount;
     }
 
-    public int getMultiOre() {
-        return multiOre;
+    public int getYield() {
+        return yield;
     }
 
-    public void setMultiOre(int newMultiOre) {
-        this.multiOre = newMultiOre;
+    public void setYield(int newMultiOre) {
+        this.yield = newMultiOre;
     }
 
     public void setUpgradeCount(int upgradeCount) {
@@ -241,7 +243,7 @@ public class Ore {
             .append(oreName)
             .append("\tValue: ").append(oreValue)
             .append("\tTemp: ").append(oreTemperature)
-            .append("\tMulti-Ore: ").append(multiOre)
+            .append("\tMulti-Ore: ").append(yield)
             .append("\tisDoomed: ").append(isDoomed)
             .append("\nEffects: ");
         for (OreEffect effect : effects) {

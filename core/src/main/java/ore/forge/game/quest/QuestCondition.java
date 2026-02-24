@@ -6,7 +6,7 @@ import ore.forge.game.event.Events.GameEvent;
 import ore.forge.game.event.GameEventListener;
 import ore.forge.game.expressions.Condition;
 import ore.forge.Listener;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 import java.util.ArrayList;
 

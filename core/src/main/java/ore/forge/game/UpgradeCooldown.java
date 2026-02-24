@@ -1,5 +1,7 @@
 package ore.forge.game;
 
+import ore.forge.game.components.Ore;
+
 public class UpgradeCooldown implements Updatable {
     private final CoolDown cooldown;
     private final UpgradeTag tag;

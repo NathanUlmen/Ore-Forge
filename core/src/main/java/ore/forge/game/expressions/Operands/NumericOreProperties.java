@@ -1,7 +1,7 @@
 package ore.forge.game.expressions.Operands;
 
 import ore.forge.game.expressions.NumericOperand;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 
 public enum NumericOreProperties implements NumericOperand {
@@ -39,7 +39,7 @@ public enum NumericOreProperties implements NumericOperand {
         supplier = switch (this) {
             case ORE_VALUE -> (Ore::getOreValue);
             case TEMPERATURE -> (Ore::getOreTemp);
-            case MULTIORE -> (Ore::getMultiOre);
+            case MULTIORE -> (Ore::getYield);
 //            case SPEED -> (Ore::getMoveSpeed);
 //            case SPEED_SCALAR -> (Ore::getSpeedScalar);
             case UPGRADE_COUNT -> (Ore::getUpgradeCount);

@@ -1,9 +1,7 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
 import ore.forge.ButtonHelper;
-import ore.forge.game.expressions.Operands.NumericOreProperties;
-import ore.forge.game.expressions.Operators.NumericOperator;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.OreRealm;
 import ore.forge.game.behaviors.OreEffects.OreEffect;
 import ore.forge.game.behaviors.OreEffects.UpgradeOreEffect;
@@ -35,7 +33,7 @@ public class ReplicateStrategy implements OreEffect, UpgradeStrategy {
 //            replicant.applyEffect(new UpgradeOreEffect(.1f, .1f, bundle)); //Slows ore down for a time
 //            replicant.applyEffect(new UpgradeOreEffect(.2f, .2f, new BasicUpgrade(1, NumericOperator.ASSIGNMENT, NumericOreProperties.SPEED_SCALAR))); //Returns to normal speed
             replicant.applyEffect(new UpgradeOreEffect(3f, 3f, this));
-            replicant.applyBaseStats(ore.getOreValue(), ore.getOreTemp(), ore.getMultiOre(), ore.getName(), ore.getID(), null);
+            replicant.applyBaseStats(ore.getOreValue(), ore.getOreTemp(), ore.getYield(), ore.getName(), ore.getID(), null);
         }
     }
 

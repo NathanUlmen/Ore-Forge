@@ -3,12 +3,11 @@ package ore.forge.game.behaviors;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.GameContext;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.ItemUserData;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.game.PhysicsBodyData;
 
 public class Move implements BodyLogic {

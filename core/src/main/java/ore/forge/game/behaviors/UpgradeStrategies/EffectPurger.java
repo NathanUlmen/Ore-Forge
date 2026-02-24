@@ -1,6 +1,6 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 @SuppressWarnings("unused")
 public class EffectPurger implements UpgradeStrategy {

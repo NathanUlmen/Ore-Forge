@@ -1,7 +1,7 @@
 package ore.forge.game.behaviors.OreEffects;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 @SuppressWarnings("unused")
 public class Burning implements OreEffect {

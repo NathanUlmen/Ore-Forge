@@ -5,6 +5,10 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 
+/**
+ * This is the local transform helps derive {@link WorldTransformC}
+ *
+ * */
 public class TransformC implements Component {
     // Canonical LOCAL pose (relative to parent if ChildC.inheritTransform == true)
     public final Vector3 localPosition = new Vector3();
@@ -43,9 +47,11 @@ public class TransformC implements Component {
         prevLocalScale.set(localScale);
     }
 
-    /** Build a LOCAL matrix (useful for composition). */
-    public Matrix4 toLocalMatrix(Matrix4 out) {
-        return out.idt().translate(localPosition).rotate(localRotation).scale(
+    /**
+     * Build a LOCAL matrix (useful for composition).
+     */
+    public void toLocalMatrix(Matrix4 out) {
+        out.idt().translate(localPosition).rotate(localRotation).scale(
             localScale.x, localScale.y, localScale.z
         );
     }

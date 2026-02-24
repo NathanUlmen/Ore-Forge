@@ -5,7 +5,7 @@ import ore.forge.game.expressions.Operands.MethodBasedOperand;
 import ore.forge.game.expressions.Operands.NumericOreProperties;
 import ore.forge.game.expressions.Operands.ValueOfInfluence;
 import ore.forge.game.expressions.Operators.NumericOperator;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 import java.util.Objects;
 import java.util.Stack;

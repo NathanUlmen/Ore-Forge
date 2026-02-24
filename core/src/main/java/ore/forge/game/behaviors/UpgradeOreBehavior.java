@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.*;
+import ore.forge.game.components.Ore;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.Properties.UpgraderProperties;
 import ore.forge.game.behaviors.UpgradeStrategies.UpgradeStrategy;

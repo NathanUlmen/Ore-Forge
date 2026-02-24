@@ -1,6 +1,6 @@
 package ore.forge.game.expressions;
 
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 import java.util.function.Function;
 

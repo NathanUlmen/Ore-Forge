@@ -3,7 +3,7 @@ package ore.forge.game.event.Events;
 
 import ore.forge.FontColors;
 import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 public record OreSoldGameEvent(Ore ore, ItemDefinition item) implements GameEvent<Ore> {
 
@@ -26,7 +26,7 @@ public record OreSoldGameEvent(Ore ore, ItemDefinition item) implements GameEven
     @Override
     public String getInDepthInfo() {
         var info = "";
-        info += " Name: " + ore.getName() + " Value: " + ore.getOreValue() + " Temperature: " + ore.getOreTemp() + " Multiore: " + ore.getMultiOre();
+        info += " Name: " + ore.getName() + " Value: " + ore.getOreValue() + " Temperature: " + ore.getOreTemp() + " Multiore: " + ore.getYield();
         info += "\nSold By: " + item.name();
         return info;
     }

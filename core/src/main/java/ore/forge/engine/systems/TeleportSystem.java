@@ -7,11 +7,13 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.engine.components.*;
 
+/**
+ * Teleport system teleports the root of an entity to a specific location in world space
+ * TeleportRequests applied to non-root entities will have it applied to the root of the entity they are apart of.
+ * */
 public class TeleportSystem extends IteratingSystem {
     private static final Family FAMILY =
-        Family.all(TeleportRequestC.class).one(TransformC.class, PhysicsC.class,
-            ParentC.class
-        ).get();
+        Family.all(TeleportRequestC.class).get();
 
     private final Matrix4 tmpWorld = new Matrix4();
 
@@ -19,48 +21,17 @@ public class TeleportSystem extends IteratingSystem {
         super(FAMILY);
     }
 
-    /**
-     * When we teleport an entity we must do the following:
-     * Set its transform component to the target
-     * If it has a history set prev and current to target
-     * Set the PhysicsC bodyHandle transform to target
-     * Adjust RenderComponent to be correct if present.
-     * If it's a parent component we must do that for all its children
-     *
-     */
     @Override
     protected void processEntity(Entity entity, float deltaTime) {
         final Matrix4 targetWorld = entity.getComponent(TeleportRequestC.class).targetRootWorld;
-        entity.remove(TeleportRequestC.class);
+        final Entity root = getRootEntity(entity);
+        final WorldTransformC worldTransformC = root.getComponent(WorldTransformC.class);
+        worldTransformC.setBoth(targetWorld);
 
-        //Update TransformC (LOCAL canonical)
-        final TransformC t = entity.getComponent(TransformC.class);
-        if (t != null) {
-            final ChildC child = entity.getComponent(ChildC.class);
-
-            // If we inherit from a parent, convert target WORLD -> LOCAL
-            if (child != null && child.inheritTransform && child.parent != null) {
-                // You need parentWorld matrix from your world-cache or transform system.
-                // Assume you have it in a WorldTransformC:
-                final WorldTransformC parentW = child.parent.getComponent(WorldTransformC.class);
-
-                if (parentW != null) {
-                    // local = inverse(parentWorld) * targetWorld
-                    tmpWorld.set(parentW.currentTransform).inv().mul(targetWorld);
-                    t.setBothLocal(tmpWorld);
-                } else {
-                    t.setBothLocal(targetWorld);
-                }
-            } else {
-                // Root: local == world
-                t.setBothLocal(targetWorld);
-            }
-        }
 
         //Update physics body
-        final PhysicsC p = entity.getComponent(PhysicsC.class);
+        final PhysicsC p = root.getComponent(PhysicsC.class);
         if (p != null) {
-            System.out.println("Updating Physics");
             p.rigidBody.setWorldTransform(targetWorld);
 
             p.rigidBody.setLinearVelocity(Vector3.Zero);
@@ -68,6 +39,19 @@ public class TeleportSystem extends IteratingSystem {
             p.rigidBody.activate();
         }
         entity.remove(TeleportRequestC.class);
+    }
+
+    private Entity getRootEntity(Entity entity) {
+        Entity parent = entity;
+        while (true) {
+            final ChildC childC = entity.getComponent(ChildC.class);
+            if (childC != null && childC.parent != null) {
+                parent = childC.parent;
+            } else {
+                break;
+            }
+        }
+        return parent;
     }
 
 

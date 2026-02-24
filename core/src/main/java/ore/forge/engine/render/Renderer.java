@@ -46,7 +46,7 @@ public class Renderer extends EntitySystem {
     }
 
     public void render(List<RenderPart> toRender, Camera camera) {
-        toRender = frustumCull(camera, toRender);
+//        toRender = frustumCull(camera, toRender);
         for (RenderPass pass : renderPasses) {
             ArrayList<RenderCommand> commands = new ArrayList<>(toRender.size());
             for (RenderPart part : toRender) {

@@ -6,6 +6,7 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
+import ore.forge.engine.components.ChildC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
 import ore.forge.engine.render.RenderPart;
@@ -15,10 +16,12 @@ import ore.forge.engine.render.RenderPart;
  * before we ship it of to the renderer.
  * This means we need to interpolate where needed.
  *
+ * Basically only responsible for lerping.
  * */
 public class RenderPrepSystem extends IteratingSystem {
     private static final Family FAMILY = Family.all(RenderC.class).one(WorldTransformC.class).get();
     private static final Matrix4 tmp = new Matrix4();
+    private static final Vector3 tmpVec = new Vector3();
     private float alpha = 1f;
     private final Vector3 p0 = new Vector3();
     private final Vector3 p1 = new Vector3();
@@ -45,10 +48,16 @@ public class RenderPrepSystem extends IteratingSystem {
         final WorldTransformC worldTransform = (WorldTransformC) entity.getComponent(WorldTransformC.class);
         final RenderC renderC = entity.getComponent(RenderC.class);
 
-        interpolateTRS(interpWorld, worldTransform.previousTransform, worldTransform.currentTransform, alpha);
+//        if (!worldTransform.previousTransform.equals(worldTransform.currentTransform)) {
+            interpolateTRS(interpWorld, worldTransform.previousTransform, worldTransform.currentTransform, alpha);
+            tmp.set(interpWorld).mul(renderC.localFromEntity);
+            renderC.renderPart.transform.set(tmp);
+//        } else {
+//            renderC.renderPart.transform.set(worldTransform.currentTransform);
+//        }
 
-        tmp.set(interpWorld).mul(renderC.localFromEntity);
-        renderC.renderPart.transform.set(tmp);
+        renderC.renderPart.transform.scale(renderC.scale.x, renderC.scale.y, renderC.scale.z);
+
     }
 
     private void interpolateTRS(Matrix4 out, Matrix4 prev, Matrix4 curr, float alpha) {
