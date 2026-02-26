@@ -43,6 +43,11 @@ public class TransformHierarchySystem extends IteratingSystem {
 
             childWorld.advance();
             childWorld.currentTransform.set(tmp);
+
+            final PhysicsC physicsC = child.getComponent(PhysicsC.class);
+            if (physicsC != null) {
+                physicsC.collisionObject.setWorldTransform(tmp);
+            }
         }
 
     }

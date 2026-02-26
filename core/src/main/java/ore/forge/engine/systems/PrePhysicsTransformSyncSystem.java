@@ -26,10 +26,10 @@ public class PrePhysicsTransformSyncSystem extends IteratingSystem {
         final WorldTransformC world = entity.getComponent(WorldTransformC.class);
 
         world.advance();
-        switch (physics.type) {
+        switch (physics.motionType) {
             case KINEMATIC -> {
-                physics.rigidBody.setWorldTransform(world.currentTransform);
-                physics.rigidBody.activate();
+                physics.collisionObject.setWorldTransform(world.currentTransform);
+                physics.collisionObject.activate();
             }
             case DYNAMIC -> {
             }

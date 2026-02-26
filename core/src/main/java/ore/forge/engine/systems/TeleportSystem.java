@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import ore.forge.engine.components.*;
 
 /**
@@ -30,14 +31,14 @@ public class TeleportSystem extends IteratingSystem {
 
 
         //Update physics body
-        final PhysicsC p = root.getComponent(PhysicsC.class);
-        if (p != null) {
-            p.rigidBody.setWorldTransform(targetWorld);
-
-            p.rigidBody.setLinearVelocity(Vector3.Zero);
-            p.rigidBody.setAngularVelocity(Vector3.Zero);
-            p.rigidBody.activate();
+        final PhysicsC physicsC = root.getComponent(PhysicsC.class);
+        btRigidBody rigidBody = physicsC.asRigidBody();
+        if (rigidBody != null) {
+            rigidBody.setLinearVelocity(Vector3.Zero);
+            rigidBody.setAngularVelocity(Vector3.Zero);
         }
+        physicsC.collisionObject.setWorldTransform(targetWorld);
+        physicsC.collisionObject.activate();
         entity.remove(TeleportRequestC.class);
     }
 

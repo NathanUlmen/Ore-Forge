@@ -1,12 +1,10 @@
 package ore.forge.game.collisions;
 
 import com.badlogic.ashley.core.Entity;
-import com.badlogic.ashley.core.EntitySystem;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.utils.*;
 import ore.forge.engine.components.IdComponent;
-import ore.forge.game.PhysicsBodyData;
 
 /**
  * @author Nathan Ulmen
@@ -17,7 +15,6 @@ import ore.forge.game.PhysicsBodyData;
  * It is responsible for pushing CollisionEvents out for the CollisionCallbackSystem
  * to resolve/process.
  * <p>
- *
  * The pipeline for this thing looks like this:
  * Physics step runs, Collision manager records all callbacks
  * Update Callbacks
@@ -30,42 +27,31 @@ public class CollisionManager extends ContactListener {
     private final Queue<CollisionEvent> out = new Queue<>();
     private final LongArray toRemove = new LongArray(false, 64);
 
-    private final Pool<ContactPair> pool = new Pool<>() {
-        @Override protected ContactPair newObject() { return new ContactPair(); }
+    private final Pool<ContactPair> pairPool = new Pool<>() {
+        @Override
+        protected ContactPair newObject() {
+            return new ContactPair();
+        }
     };
 
     private final Pool<CollisionEvent> eventPool = new Pool<>() {
-        @Override protected CollisionEvent newObject() { return new CollisionEvent(); }
+        @Override
+        protected CollisionEvent newObject() {
+            return new CollisionEvent();
+        }
     };
 
-    /**
-     * Call this once per frame before physics step
-
-     */
-
-    public void beginFrame() {
-        active.forEach(entry -> entry.value.seenThisStep = false);
-    }
-
-    /**
-     * Call this once per frame after physics step
-     *
-     */
+    /*
+     * Called after physics step
+     * */
     public void update(float delta) {
+        System.out.println(active.size);
         active.forEach(entry -> {
             ContactPair pair = entry.value;
-
-            // If this subpart pair was not reported this step, it ended
-            if (!pair.seenThisStep) {
-                out.addLast(createCollisionEvent(pair, CollisionState.ENDED));
-                toRemove.add(entry.key);
-                return;
-            }
-
-            switch (pair.type) {
+            switch (pair.state) {
                 case STARTED -> {
                     out.addLast(createCollisionEvent(pair, CollisionState.STARTED));
-                    pair.type = CollisionState.TOUCHING;
+                    pair.state = CollisionState.TOUCHING;
                 }
                 case TOUCHING -> {
                     pair.timeTouching += delta;
@@ -78,60 +64,44 @@ public class CollisionManager extends ContactListener {
         });
 
 
-        System.out.println("to remove size" + toRemove.size);
         for (int i = 0; i < toRemove.size; i++) {
             ContactPair removed = active.remove(toRemove.get(i));
-            if (removed != null) pool.free(removed);
+            if (removed != null) pairPool.free(removed);
         }
         toRemove.clear();
     }
 
     @Override
-    public boolean onContactAdded(btManifoldPoint cp,
-                                  btCollisionObject objectA, int partId0, int index0,
-                                  btCollisionObject objectB, int partId1, int index1) {
-        dbg("Foo");
-        final Entity entityA = (Entity) objectA.userData;
-        final Entity entityB = (Entity) objectB.userData;
-        if (entityA == null || entityB == null) return false;
-
-        final long key = computeKey(entityA, partId0, index0, entityB, partId1, index1);
-        if (key == Long.MIN_VALUE) {
-            return false;
+    public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
+        final Entity a = (Entity) o1.userData;
+        final Entity b = (Entity) o2.userData;
+        if (a == null || b == null) {
+            Gdx.app.error("CollisionManager", "Entity is null collisionStarted!");
+            return;
         }
 
-        ContactPair pair = active.get(key);
-        if (pair == null) {
-            pair = pool.obtain();
-            pair.type = CollisionState.STARTED;
-            pair.timeTouching = 0f;
-
-            pair.a = entityA;
-            pair.b = entityB;
-
-            pair.partIdA = partId0;
-            pair.indexA  = index0;
-            pair.partIdB = partId1;
-            pair.indexB  = index1;
-
-            active.put(key, pair);
-            System.out.println("Active Size after add: " + active.size);
-        }
-
-        // Mark as present in this step and refresh contact data
-        pair.seenThisStep = true;
-        cp.getNormalWorldOnB(pair.normalOnB);
-
-        return true;
+        long key = computeKey(a, b);
+        if (key == Long.MIN_VALUE) {return;}
+        ContactPair pair = pairPool.obtain();
+        pair.a = a;
+        pair.b = b;
+        pair.timeTouching = 0f;
+        pair.state = CollisionState.STARTED;
+        active.put(key, pair);
     }
 
     @Override
-    public void onContactStarted(btPersistentManifold manifold) {
-    }
+    public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
+        final Entity a = (Entity) o1.userData;
+        final Entity b = (Entity) o2.userData;
+        if (a == null || b == null) {
+            Gdx.app.error("CollisionManager", "Entity is null collisionEnded!");
+            return;
+        }
 
-    @Override
-    public void onContactEnded(btCollisionObject colObj0, btCollisionObject colObj1) {
-        // Intentionally ignored. End is inferred by "not seen this step".
+        long key = computeKey(a, b);
+        if (key == Long.MIN_VALUE) {return;}
+        active.get(key).state = CollisionState.ENDED;
     }
 
     public void drainTo(Array<CollisionEvent> destination) {
@@ -150,7 +120,7 @@ public class CollisionManager extends ContactListener {
 
         for (int i = 0; i < toRemove.size; i++) {
             ContactPair removed = active.remove(toRemove.get(i));
-            if (removed != null) pool.free(removed);
+            if (removed != null) pairPool.free(removed);
         }
         toRemove.clear();
     }
@@ -160,71 +130,28 @@ public class CollisionManager extends ContactListener {
         event.a = pair.a;
         event.b = pair.b;
         event.type = state;
-        event.normalOnB.set(pair.normalOnB);
         event.timeTouching = pair.timeTouching;
-
-        event.partIdA = pair.partIdA;
-        event.indexA  = pair.indexA;
-        event.partIdB = pair.partIdB;
-        event.indexB  = pair.indexB;
 
         return event;
     }
 
-    private long computeKey(Entity entityA, int partIdA, int indexA,
-                            Entity entityB, int partIdB, int indexB) {
+    private long computeKey(Entity entityA,
+                            Entity entityB) {
 
         final IdComponent a = entityA.getComponent(IdComponent.class);
         final IdComponent b = entityB.getComponent(IdComponent.class);
-        if (a == null || b == null) return 4;
+        if (a == null || b == null) return Long.MIN_VALUE;
 
-        int aId = a.id;
-        int bId = b.id;
 
-        // normalize ordering + swap subshape ids with it
-        if (aId > bId) {
-            int tmpId = aId; aId = bId; bId = tmpId;
+        int min = Math.min(a.id, b.id);
+        int max = Math.max(a.id, b.id);
 
-            int tmpP = partIdA; partIdA = partIdB; partIdB = tmpP;
-            int tmpI = indexA;  indexA  = indexB;  indexB  = tmpI;
-        }
-
-        long x = 1469598103934665603L; // FNV offset basis
-        x = fnv1a64(x, aId);
-        x = fnv1a64(x, bId);
-        x = fnv1a64(x, partIdA);
-        x = fnv1a64(x, indexA);
-        x = fnv1a64(x, partIdB);
-        x = fnv1a64(x, indexB);
-        return 4;
-    }
-
-    private static long fnv1a64(long hash, int v) {
-        hash ^= (v & 0xFF);
-        hash *= 1099511628211L;
-        hash ^= ((v >>> 8) & 0xFF);
-        hash *= 1099511628211L;
-        hash ^= ((v >>> 16) & 0xFF);
-        hash *= 1099511628211L;
-        hash ^= ((v >>> 24) & 0xFF);
-        hash *= 1099511628211L;
-        return hash;
-    }
-
-    private void dbg(String where) {
-        System.out.println(where + " this=" + System.identityHashCode(this)
-            + " activeSize=" + active.size);
+        return ((long) min << 32) | (max & 0xFFFFFFFFL);
     }
 
     private static final class ContactPair {
         public Entity a, b;
-        public final Vector3 normalOnB = new Vector3();
         public float timeTouching;
-        public CollisionState type;
-
-        public int partIdA, indexA;
-        public int partIdB, indexB;
-
-        public boolean seenThisStep;
+        public CollisionState state;
     }
 }

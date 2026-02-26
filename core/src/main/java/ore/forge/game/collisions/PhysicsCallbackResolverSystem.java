@@ -36,6 +36,7 @@ public class PhysicsCallbackResolverSystem extends EntitySystem {
 
         int selfChildIndex = event.indexFor(self);
         CollisionHandlerC.HandlerSet logic = handlerComponent.handlersForChildIndex(selfChildIndex);
+        if (logic == null) return;
         switch (event.type) {
             case STARTED -> {
                 for (var contactStartedLogic : logic.starts) {
@@ -43,6 +44,7 @@ public class PhysicsCallbackResolverSystem extends EntitySystem {
                 }
             }
             case TOUCHING -> {
+                System.out.println("Firing touching!");
                 for (var collidingLogic : logic.touchings) {
                     collidingLogic.onTouching(self, other, event, context);
                 }
