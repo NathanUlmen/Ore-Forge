@@ -1,10 +1,10 @@
  # Ore Forge / Forge Engine
 
- **Ore Forge** is an isometric 3D incremental factory-tycoon game.  
+ **Ore Forge** is an isometric 3D incremental factory tycoon game.  
  **Forge** is the custom engine that powers it, focused on efficient rendering, asset reuse, and scalable content pipelines.
 
  ## Highlights
- - Component-driven architecture (ECS) for modular, data-oriented gameplay systems.
+ - Entity component driven architecture (ECS) for modular, data oriented gameplay systems.
  - Render pipeline designed for batching, instancing, and multiple render passes.
  - Centralized asset handling for meshes, materials, and textures.
  - Performance goals aimed at smooth gameplay on modest hardware.
