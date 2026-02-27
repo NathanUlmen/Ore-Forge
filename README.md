@@ -1,5 +1,7 @@
  # Ore Forge / Forge Engine
 
+ ![White debug asset deposits pile of ore](https://shthub.org/u/benjamin/ore-forge-5d23890?raw)
+
  **Ore Forge** is an isometric 3D incremental factory tycoon game.  
  **Forge** is the custom engine that powers it, focused on efficient rendering, asset reuse, and scalable content pipelines.
 
