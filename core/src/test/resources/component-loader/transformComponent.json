@@ -1,0 +1,23 @@
+[
+  {
+    "componentType": "TransformComponent",
+    "transformComponent": {
+      "localPosition": {
+        "x": 1.0,
+        "y": 2.0,
+        "z": 3.0
+      },
+      "localRotation": {
+        "x": 1.0,
+        "y": 2.0,
+        "z": 3.0,
+        "w": 4.0
+      },
+      "localScale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      }
+    }
+  }
+]
