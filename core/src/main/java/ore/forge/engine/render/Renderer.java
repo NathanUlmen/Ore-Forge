@@ -119,11 +119,11 @@ public class Renderer extends EntitySystem {
         int instanceCount = end - start;
         MeshHandle mesh = commands.get(start).meshHandle;
 
-        // 1. Build instance data (CPU loop)
+        // Build instance data
         instanceBuffer.clear();
         for (int i = start; i < end; i++) {
             RenderCommand cmd = commands.get(i);
-            // write mat4 (16 floats)
+            // write mat4
             instanceBuffer.put(cmd.worldTransform.val);
         }
         instanceBuffer.flip();
@@ -150,7 +150,7 @@ public class Renderer extends EntitySystem {
 
     /*
     * To make this faster in the future we could:
-    * Break it down so the compiler will vectorize it.
+    * Break it down so hot spot will vectorize it.
     * Ensure that toCull is built from an acceleration structure to cut large parts of world out
     * Have OrientedBoundingBox be a property of RenderPart and update it when it becomes dirty
     *  */

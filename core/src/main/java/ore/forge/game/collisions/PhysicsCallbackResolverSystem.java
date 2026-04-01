@@ -44,7 +44,6 @@ public class PhysicsCallbackResolverSystem extends EntitySystem {
                 }
             }
             case TOUCHING -> {
-                System.out.println("Firing touching!");
                 for (var collidingLogic : logic.touchings) {
                     collidingLogic.onTouching(self, other, event, context);
                 }

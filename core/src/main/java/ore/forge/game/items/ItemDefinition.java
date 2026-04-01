@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.engine.definitions.Definition;
 import ore.forge.game.items.Acquisition.AcquisitionInfo;
 import ore.forge.game.items.Properties.BundledProperties;
 import ore.forge.game.items.Properties.DropperProperties;
@@ -29,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ItemDefinition {
+public class ItemDefinition implements Definition {
     //General Stuff
     protected String name, id, description;
     protected Tier category;

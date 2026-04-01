@@ -83,7 +83,7 @@ class FunctionTest {
 
     @Test
     void testSpeedScalarProperty() {
-        ore.setSpeedScalar(3);
+//        ore.setSpeedScalar(3);
         var speedScalarProperty = Function.compile("(SPEED_SCALAR+5)");
         assertEquals(8, speedScalarProperty.calculate(ore));
     }

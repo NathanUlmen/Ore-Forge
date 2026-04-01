@@ -8,7 +8,6 @@ import ore.forge.engine.render.RenderPart;
 public class RenderC implements Component {
     public RenderPart renderPart;
 
-
     //Required
     public final Vector3 scale = new Vector3(1,1,1);
 

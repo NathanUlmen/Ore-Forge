@@ -3,8 +3,8 @@ package ore.forge.game;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
+import ore.forge.engine.components.DirectionC;
 import ore.forge.engine.components.TransformC;
 
 /** @author Nathan Ulmen
@@ -29,7 +29,7 @@ public class DirectionSyncSystem extends IteratingSystem {
         final DirectionC directionC = entity.getComponent(DirectionC.class);
         final TransformC transformC = entity.getComponent(TransformC.class);
         transformC.localRotation.transform(tmp);
-        directionC.direction.set(tmp.add(directionC.offset).nor());
+        directionC.direction.set(tmp.add(directionC.directionOffset).nor());
     }
 
 }

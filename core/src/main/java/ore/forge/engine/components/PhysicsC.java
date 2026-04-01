@@ -8,24 +8,16 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 
 public class PhysicsC implements Component {
 
-    public enum MotionType {DYNAMIC, STATIC, KINEMATIC}
-    public enum BodyType {RIGID, GHOST}
-
-
     public btCollisionObject collisionObject; //handle to bullet object
-    public MotionType motionType;
-    public BodyType bodyType;
-
-    public record Recipe(MotionType motionType, btCollisionShape localFromEntity) {
-
-    }
+    public PhysicsMotionType motionType;
+    public PhysicsBodyType bodyType;
 
     public btRigidBody asRigidBody() {
-        return bodyType == BodyType.RIGID ? (btRigidBody) collisionObject : null;
+        return bodyType == PhysicsBodyType.RIGID ? (btRigidBody) collisionObject : null;
     }
 
     public btGhostObject asGhost() {
-        return bodyType == BodyType.GHOST ? (btGhostObject) collisionObject : null;
+        return bodyType == PhysicsBodyType.GHOST ? (btGhostObject) collisionObject : null;
     }
 
 }

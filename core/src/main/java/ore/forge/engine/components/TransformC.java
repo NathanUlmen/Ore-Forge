@@ -8,7 +8,8 @@ import com.badlogic.gdx.math.Vector3;
 /**
  * This is the local transform helps derive {@link WorldTransformC}
  *
- * */
+ *
+ */
 public class TransformC implements Component {
     // Canonical LOCAL pose (relative to parent if ChildC.inheritTransform == true)
     public final Vector3 localPosition = new Vector3();
@@ -36,7 +37,9 @@ public class TransformC implements Component {
         prevLocalScale.set(scl);
     }
 
-    /** Convenience: interpret matrix as LOCAL TRS. */
+    /**
+     * interpret matrix as LOCAL TRS.
+     */
     public void setBothLocal(Matrix4 localMatrix) {
         localMatrix.getTranslation(localPosition);
         localMatrix.getRotation(localRotation);
@@ -48,7 +51,7 @@ public class TransformC implements Component {
     }
 
     /**
-     * Build a LOCAL matrix (useful for composition).
+     * Build a LOCAL matrix
      */
     public void toLocalMatrix(Matrix4 out) {
         out.idt().translate(localPosition).rotate(localRotation).scale(

@@ -5,11 +5,10 @@
 Players place **Droppers/Extractors, Upgraders/Refiners, Furnaces/Smelters** (also movement items like conveyors and teleporters)
 to produce ore, modify it for higher payouts, then sell it to purchase/obtain new items to further improve their factory.
 Progression is driven by collecting unique items, completing quests, unlocking locations, and prestiging for powerful new items that 
-open up build options.
-
+open up build options. 
 Isometric.
 
-**Genre/Descriptors:** Incremental 3D Tycoon Builder / Factory / Collectathon (item dictionary)
+**Genre/Descriptors:** Incremental 3D Tycoon Builder / Factory / Collectathon (item dictionary) / Multiplayer
 
 ---
 
@@ -181,5 +180,8 @@ Add an item creator as progression:
 Turn in multiple copies of an item to get a stronger version.
 #### 3D Platforms
 Platforms that allow you to place items on top of them and below them.
+#### Server Browser
+A server browser that allows players to join and see each others bases.
+Gives the game a sense of community and lets you aspire to get certain items and stuff.
 
 ---

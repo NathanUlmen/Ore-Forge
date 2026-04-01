@@ -45,7 +45,6 @@ public class CollisionManager extends ContactListener {
      * Called after physics step
      * */
     public void update(float delta) {
-        System.out.println(active.size);
         active.forEach(entry -> {
             ContactPair pair = entry.value;
             switch (pair.state) {
@@ -101,7 +100,12 @@ public class CollisionManager extends ContactListener {
 
         long key = computeKey(a, b);
         if (key == Long.MIN_VALUE) {return;}
-        active.get(key).state = CollisionState.ENDED;
+        ContactPair pair = active.get(key);
+        if (pair == null) {
+            Gdx.app.log("CollisionManager", "Par was null meaning invalid key: " + key);
+            return;
+        }
+        pair.state = CollisionState.ENDED;
     }
 
     public void drainTo(Array<CollisionEvent> destination) {
