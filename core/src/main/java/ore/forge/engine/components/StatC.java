@@ -1,6 +1,9 @@
 package ore.forge.engine.components;
 
+import ore.forge.engine.Stat;
+
+import java.util.ArrayList;
+
 public class StatC {
-    public String id;
-    public float value;
+    public final ArrayList<Stat> stats = new ArrayList<>();
 }

@@ -1,18 +1,16 @@
 package ore.forge.engine.serialization;
 
 import com.badlogic.ashley.core.Component;
-import com.badlogic.gdx.math.Quaternion;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.SerializationException;
 import com.badlogic.gdx.utils.JsonWriter;
-import ore.forge.engine.components.DirectionC;
-import ore.forge.engine.components.PhysicsC;
-import ore.forge.engine.components.RenderC;
-import ore.forge.engine.components.TransformC;
-import ore.forge.engine.definitions.DefinitionTree;
-import ore.forge.engine.definitions.PhysicsCompIR;
+import ore.forge.engine.PhysicsBodyType;
+import ore.forge.engine.PhysicsMotionType;
+import ore.forge.engine.components.*;
+import ore.forge.engine.definitions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +65,7 @@ public class ComponentLoader {
     }
 
     public ComponentNode createComponentNode(JsonValue value) {
-        Component data = createComponent(value);
+        Component data = (Component) createComponent(value);
         ComponentNode node = new ComponentNode(data);
         return null;
     }
@@ -82,7 +80,7 @@ public class ComponentLoader {
      *
      *
      */
-    public Component createComponent(JsonValue value) {
+    public Object createComponent(JsonValue value) {
         return switch (value.getString("componentType")) {
             case "TransformComponent" -> {
                 yield readComponentData(value, "transformComponent", TransformC.class);
@@ -98,8 +96,7 @@ public class ComponentLoader {
                 yield readComponentData(value, "directionComponent", DirectionC.class);
             }
             case "PhysicsComponent" -> {
-//                var t = new PhysicsCompIR();
-                yield new PhysicsC();
+                yield createPhysicsCompIR(value);
             }
             default ->
                 throw new SerializationException("Unsupported Component Type: " + value.getString("componentType"));
@@ -117,8 +114,39 @@ public class ComponentLoader {
         return json.fromJson(type, componentData.toJson(JsonWriter.OutputType.json));
     }
 
-    private Vector3 vector3FromJson(String key) {
-        return json.fromJson(Vector3.class, key);
+    private PhysicsCompIR createPhysicsCompIR(JsonValue jsonValue) {
+        PhysicsMotionType motionType = PhysicsMotionType.valueOf(jsonValue.getString("motionType"));
+        PhysicsBodyType bodyType = PhysicsBodyType.valueOf(jsonValue.getString("bodyType"));
+        PhysicsCollisionShapeIR ir = shapeIR(jsonValue.get("collisionShape"));
+
+        return new PhysicsCompIR(bodyType, motionType, ir);
+    }
+
+    private PhysicsCollisionShapeIR shapeIR(JsonValue jsonValue) {
+        String id = jsonValue.getString("id");
+        System.out.println(id);
+        return switch (jsonValue.getString("shapeType")) {
+            case "Box" -> new BoxShapeIR(id, readComponentData(jsonValue, "boundingBox", BoundingBox.class));
+            case "Sphere" -> new SphereShapeIR(id, jsonValue.getFloat("radius"));
+            case "Capsule" -> new CapsuleShapeIR(id, jsonValue.getFloat("radius"), jsonValue.getFloat("height"));
+            case "CompoundShape" -> {
+                JsonValue children = jsonValue.get("children");
+                if (children == null || children.size == 0) {
+                    throw new SerializationException("CompoundShape missing children.");
+                }
+
+                List<Matrix4> transforms = new ArrayList<>(children.size);
+                List<PhysicsCollisionShapeIR> collisionShapes = new ArrayList<>(children.size);
+
+                for (JsonValue value : children) {
+                    transforms.add(readComponentData(value, "transform", Matrix4.class));
+                    collisionShapes.add(shapeIR(value.get("collisionShape")));
+                }
+
+                yield new CompoundShapeIR(id, transforms, collisionShapes);
+            }
+            default -> throw new SerializationException("Unsupported Shape Type: " + jsonValue.getString("shapeType"));
+        };
     }
 
 }

@@ -13,8 +13,4 @@ public class ParentC implements Component {
         children.add(entity);
     }
 
-    public record Recipe(boolean destroyChildrenWithParent) {
-
-    }
-
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "componentType": "PhysicsComponent",
+    "bodyType": "RIGID",
+    "motionType": "DYNAMIC",
+    "collisionShape": {
+      "id": "foo",
+      "shapeType": "Sphere",
+      "radius": 2.5
+    }
+  }
+]

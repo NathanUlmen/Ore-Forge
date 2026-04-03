@@ -5,4 +5,4 @@ import com.badlogic.gdx.physics.bullet.collision.btCompoundShape;
 
 import java.util.List;
 
-public record CompoundShapeIR(List<Matrix4> transforms, List<PhysicsCollisionShapeIR> collisionShapes) implements PhysicsCollisionShapeIR { }
+public record CompoundShapeIR(String id, List<Matrix4> transforms, List<PhysicsCollisionShapeIR> collisionShapes) implements PhysicsCollisionShapeIR { }

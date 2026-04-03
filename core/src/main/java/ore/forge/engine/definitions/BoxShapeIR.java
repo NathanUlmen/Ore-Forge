@@ -8,5 +8,6 @@ import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
  * BoxShapeIR contains all data needed to create a {@link btBoxShape}
  *
  */
-public record BoxShapeIR(BoundingBox halfExtents) implements PhysicsCollisionShapeIR {
+public record BoxShapeIR(String id, BoundingBox halfExtents) implements PhysicsCollisionShapeIR {
+
 }

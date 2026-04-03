@@ -2,9 +2,10 @@ package ore.forge.engine.components;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
 import com.badlogic.gdx.physics.bullet.collision.btGhostObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import ore.forge.engine.PhysicsBodyType;
+import ore.forge.engine.PhysicsMotionType;
 
 public class PhysicsC implements Component {
 

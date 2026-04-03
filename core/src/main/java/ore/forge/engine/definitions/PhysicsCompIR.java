@@ -1,8 +1,8 @@
 package ore.forge.engine.definitions;
 
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import ore.forge.engine.components.PhysicsBodyType;
-import ore.forge.engine.components.PhysicsMotionType;
+import ore.forge.engine.PhysicsBodyType;
+import ore.forge.engine.PhysicsMotionType;
 
 /**
  * @author Nathan Ulmen

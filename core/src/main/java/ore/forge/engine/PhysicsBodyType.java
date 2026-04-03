@@ -1,3 +1,3 @@
-package ore.forge.engine.components;
+package ore.forge.engine;
 
 public enum PhysicsBodyType {RIGID, GHOST}

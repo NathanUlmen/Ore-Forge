@@ -1,5 +1,6 @@
 package ore.forge.engine.definitions;
 
+
 /**
  * @author Nathan Ulmen
  * <p>
@@ -16,7 +17,7 @@ package ore.forge.engine.definitions;
  * instances can exist to represent variations (e.g., different kinds
  * of swords). Each definition can then be used to create one or more
  * runtime weapon instances.
- *</p>
+ * </p>
  * <p>- Nathan Ulmen, April 1, 2026</p>
  */
 public interface Definition {
