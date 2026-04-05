@@ -2,6 +2,7 @@ package ore.forge.engine.serialization;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -128,6 +129,7 @@ public class ComponentLoader {
     private PhysicsCollisionShapeIR shapeIR(JsonValue jsonValue) {
         return switch (jsonValue.getString("shapeType")) {
             case "Box" -> new BoxShapeIR(readComponentData(jsonValue, "boundingBox", BoundingBox.class));
+            case "Plane" -> new PlaneShapeIR(readComponentData(jsonValue, "planeNormal", Vector3.class), jsonValue.getFloat("planeConstant"));
             case "Sphere" -> new SphereShapeIR(jsonValue.getFloat("radius"));
             case "Capsule" -> new CapsuleShapeIR(jsonValue.getFloat("radius"), jsonValue.getFloat("height"));
             case "CompoundShape" -> {
