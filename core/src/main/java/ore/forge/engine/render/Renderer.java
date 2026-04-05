@@ -36,6 +36,7 @@ public class Renderer extends EntitySystem {
             }
         };
 
+
         Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
         Gdx.gl30.glBufferData(
             GL30.GL_ARRAY_BUFFER,
@@ -148,6 +149,7 @@ public class Renderer extends EntitySystem {
 
     }
 
+
     /*
     * To make this faster in the future we could:
     * Break it down so hot spot will vectorize it.
@@ -164,6 +166,7 @@ public class Renderer extends EntitySystem {
                 culled.add(part);
             }
         }
+
         return culled;
     }
 

@@ -118,17 +118,18 @@ public class ComponentLoader {
         PhysicsMotionType motionType = PhysicsMotionType.valueOf(jsonValue.getString("motionType"));
         PhysicsBodyType bodyType = PhysicsBodyType.valueOf(jsonValue.getString("bodyType"));
         PhysicsCollisionShapeIR ir = shapeIR(jsonValue.get("collisionShape"));
-
-        return new PhysicsCompIR(bodyType, motionType, ir);
+        String id = jsonValue.getString("id");
+        float mass = jsonValue.getFloat("mass");
+        float friction = jsonValue.getFloat("friction");
+        float restitution = jsonValue.getFloat("restitution");
+        return new PhysicsCompIR(id, bodyType, motionType, mass, friction, restitution, ir);
     }
 
     private PhysicsCollisionShapeIR shapeIR(JsonValue jsonValue) {
-        String id = jsonValue.getString("id");
-        System.out.println(id);
         return switch (jsonValue.getString("shapeType")) {
-            case "Box" -> new BoxShapeIR(id, readComponentData(jsonValue, "boundingBox", BoundingBox.class));
-            case "Sphere" -> new SphereShapeIR(id, jsonValue.getFloat("radius"));
-            case "Capsule" -> new CapsuleShapeIR(id, jsonValue.getFloat("radius"), jsonValue.getFloat("height"));
+            case "Box" -> new BoxShapeIR(readComponentData(jsonValue, "boundingBox", BoundingBox.class));
+            case "Sphere" -> new SphereShapeIR(jsonValue.getFloat("radius"));
+            case "Capsule" -> new CapsuleShapeIR(jsonValue.getFloat("radius"), jsonValue.getFloat("height"));
             case "CompoundShape" -> {
                 JsonValue children = jsonValue.get("children");
                 if (children == null || children.size == 0) {
@@ -143,7 +144,7 @@ public class ComponentLoader {
                     collisionShapes.add(shapeIR(value.get("collisionShape")));
                 }
 
-                yield new CompoundShapeIR(id, transforms, collisionShapes);
+                yield new CompoundShapeIR(transforms, collisionShapes);
             }
             default -> throw new SerializationException("Unsupported Shape Type: " + jsonValue.getString("shapeType"));
         };

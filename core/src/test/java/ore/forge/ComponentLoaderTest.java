@@ -118,8 +118,11 @@ public class ComponentLoaderTest {
               "componentType": "PhysicsComponent",
               "bodyType": "GHOST",
               "motionType": "KINEMATIC",
+              "id" : "abc",
+              "mass" : 1.0,
+              "friction" : 3.0,
+              "restitution" : 9.0,
               "collisionShape": {
-                "id" : "abc",
                 "shapeType": "Capsule",
                 "radius": 1.25,
                 "height": 3.5
