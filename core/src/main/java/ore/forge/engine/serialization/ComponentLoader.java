@@ -90,7 +90,7 @@ public class ComponentLoader {
 
                 //TODO: Rework RenderParts so its handle based to an asset if that makes sense.
 
-                yield new RenderC();
+                yield createRenderIR(value);
             }
             case "DirectionComponent" -> {
 
@@ -150,6 +150,17 @@ public class ComponentLoader {
             }
             default -> throw new SerializationException("Unsupported Shape Type: " + jsonValue.getString("shapeType"));
         };
+    }
+
+    public RenderComponentIR createRenderIR(JsonValue jsonValue) {
+        String id = jsonValue.getString("id");
+        String meshHandle = jsonValue.getString("meshHandle");
+        String materialHandle = jsonValue.getString("materialHandle");
+
+        Vector3 scale = readComponentData(jsonValue, "scale", Vector3.class);
+        Matrix4 localFromEntity = readComponentData(jsonValue, "localFromEntity", Matrix4.class);
+
+        return null;
     }
 
 }
