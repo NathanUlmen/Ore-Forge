@@ -2,7 +2,6 @@ package ore.forge.engine;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.mongodb.lang.NonNull;
 
 import java.util.*;
 
@@ -36,7 +35,6 @@ public class StagedCollection<E> implements Iterable<E> {
         }
     }
 
-    @NonNull
     public void stageAddition(E element) {
         assert !toRemove.contains(element);
         if (element == null) { throw new NullPointerException("Element cannot be null."); }
@@ -44,7 +42,6 @@ public class StagedCollection<E> implements Iterable<E> {
         toAdd.add(element);
     }
 
-    @NonNull
     public void stageRemoval(E element) {
         assert !toAdd.contains(element);
         if (element == null) { throw new NullPointerException("Element cannot be null."); }
