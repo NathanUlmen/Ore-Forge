@@ -26,8 +26,8 @@ application {
   mainClass = 'ore.forge.lwjgl3.Lwjgl3Launcher'
 }
 eclipse.project.name = appName + '-lwjgl3'
-java.sourceCompatibility = 25
-java.targetCompatibility = 25
+java.sourceCompatibility = 21
+java.targetCompatibility = 21
 
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"

@@ -1,11 +1,14 @@
 package ore.forge.engine.definitions;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
@@ -48,15 +51,15 @@ public class MeshDataSerializer {
     private static class MeshDataKryoSerializer extends Serializer<MeshData> {
         @Override
         public void write(Kryo kryo, Output output, MeshData meshData) {
-            Objects.requireNonNull(meshData, "meshData");
-            kryo.writeObject(output, meshData.record());
+//            Objects.requireNonNull(meshData, "meshData");
+//            kryo.writeObject(output, meshData.record());
 
-            FloatBuffer vbo = meshData.vbo().duplicate();
+            ByteBuffer vbo = meshData.vbo().duplicate();
             vbo.rewind();
             int vboLen = vbo.remaining();
             output.writeInt(vboLen);
             for (int i = 0; i < vboLen; i++) {
-                output.writeFloat(vbo.get());
+                output.writeByte(vbo.get());
             }
 
             IntBuffer ebo = meshData.ebo().duplicate();
@@ -70,12 +73,12 @@ public class MeshDataSerializer {
 
         @Override
         public MeshData read(Kryo kryo, Input input, Class<? extends MeshData> type) {
-            AssetRecord record = kryo.readObject(input, AssetRecord.class);
+//            AssetRecord record = kryo.readObject(input, AssetRecord.class);
 
             int vboLen = input.readInt();
-            FloatBuffer vbo = FloatBuffer.allocate(vboLen);
+            ByteBuffer vbo = ByteBuffer.allocate(vboLen);
             for (int i = 0; i < vboLen; i++) {
-                vbo.put(input.readFloat());
+                vbo.put(input.readByte());
             }
             vbo.flip();
 
@@ -86,7 +89,7 @@ public class MeshDataSerializer {
             }
             ebo.flip();
 
-            return new MeshData(record, vbo, ebo);
+            return new MeshData(vbo, ebo);
         }
     }
 }

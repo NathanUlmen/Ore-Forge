@@ -4,12 +4,15 @@ import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.io.GltfModelReader;
 import ore.forge.engine.definitions.AssetRecord;
+import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshData;
 import ore.forge.engine.definitions.MeshDataSerializer;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,56 +46,46 @@ public class AssetLoader {
         "WEIGHTS_0", 6
     );
 
+    //Size in Bytes
     private static final Map<String, Integer> ATTRIBUTE_SIZE = Map.of(
-        "POSITION", 3,
-        "NORMAL", 3,
-        "TANGENT", 4,
-        "COLOR_0", 4,
-        "TEXCOORD_0", 2,
-        "JOINTS_0", 4,
-        "WEIGHTS_0", 4
+        "POSITION", Float.BYTES * 3,  // vec3 float
+        "NORMAL", Float.BYTES * 3,     // vec3 float
+        "TANGENT", Float.BYTES * 4,    // vec4 float
+        "COLOR_0", Float.BYTES * 4,   // often vec4 float
+        "TEXCOORD_0", Float.BYTES * 2,  // vec2 float
+        "WEIGHTS_0", Float.BYTES * 4  // vec4 float
     );
     private static final int IMPORT_VERSION = 1;
 
     protected final List<AssetRecord> registry;
     private final List<Future<?>> submittedTasks;
     protected final ExecutorService executor;
-    private String outputDir;
 
-    public AssetLoader(int numThreads, String outputDir) {
+    /**
+     * Initial output Directory
+     *
+     */
+    public AssetLoader(int numThreads) {
         registry = Collections.synchronizedList(new ArrayList<>());
         submittedTasks = Collections.synchronizedList(new ArrayList<>());
         executor = Executors.newFixedThreadPool(numThreads);
-        this.outputDir = outputDir;
     }
 
-    /**
-     * Loads all .glb/gltf files in a given directory.
-     *
-     *
-     */
-    public void loadDirectory(String directoryPath) {
-        loadDirectory(Path.of(directoryPath));
-    }
-
-    public void loadDirectory(Path directoryPath) {
-        try (Stream<Path> files = Files.list(directoryPath)) {
+    public void loadDirectory(Path inputDir, Path outputDir) {
+        try (Stream<Path> files = Files.list(inputDir)) {
             files
                 .filter(Files::isRegularFile)
                 .filter(this::isModelFile)
                 .forEach(file -> {
                     Future<?> task = executor.submit(() -> {
                         GltfModel gltfModel = loadModel(file);
-                        try {
-                            extractAssetData(gltfModel, file);
-                        } catch (FileNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
+                        ExtractedAssetData assetData = extractAssetData(gltfModel, file);
+                        flushExtracted(assetData, outputDir);
                     });
                     submittedTasks.add(task);
                 });
         } catch (IOException e) {
-            throw new RuntimeException("Failed to list asset directory: " + directoryPath, e);
+            throw new RuntimeException("Failed to list asset directory: " + inputDir, e);
         }
     }
 
@@ -118,33 +111,35 @@ public class AssetLoader {
         }
     }
 
-    public void extractAssetData(GltfModel gltfModel, Path sceneFilePath) throws FileNotFoundException {
-        extractMeshes(gltfModel, sceneFilePath);
+    public ExtractedAssetData extractAssetData(GltfModel gltfModel, Path sceneFilePath) {
+        var meshes = extractMeshes(gltfModel, sceneFilePath);
         extractTextures(gltfModel, sceneFilePath);
         extractAnimations(gltfModel, sceneFilePath);
+        var extractedAssetData = new ExtractedAssetData();
+        extractedAssetData.meshes.addAll(meshes);
+        return extractedAssetData;
+        //return extracted data in one big ol struct
     }
 
     /**
      * Extract mesh data and put it into a format that engine can handle.
-     * MeshModel
-     *
      */
-    public void extractMeshes(GltfModel gltfModel, Path sceneFilePath) {
+    public List<MeshData> extractMeshes(GltfModel gltfModel, Path sceneFilePath) {
+        List<MeshData> dataList = new ArrayList<>();
         //Register meshes
         for (MeshModel meshModel : gltfModel.getMeshModels()) {
             AssetRecord assetRecord = new AssetRecord();
             assetRecord.setDisplayName(meshModel.getName());
             registry.add(assetRecord);
+            assetRecord.setAssetType(AssetType.MESH);
 
             for (MeshPrimitiveModel primitive : meshModel.getMeshPrimitiveModels()) {
                 AttributeHolder[] buffers = new AttributeHolder[6];
 
                 for (Map.Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
                     String attributeName = entry.getKey();
-
                     Integer index = ATTRIBUTE_INDEX.get(attributeName);
                     Integer size = ATTRIBUTE_SIZE.get(attributeName);
-
                     if (index == null || size == null) {
                         throw new RuntimeException(
                             "Unknown attribute: " + attributeName +
@@ -152,51 +147,44 @@ public class AssetLoader {
                                 " found in " + sceneFilePath
                         );
                     }
-
-                    FloatBuffer data = getFloatBufferData(primitive, attributeName);
+                    ByteBuffer data = entry.getValue().getAccessorData().createByteBuffer();
                     buffers[index] = new AttributeHolder(attributeName, data, size);
                 }
 
-                FloatBuffer finalizedVbo = interleaveVBO(buffers);
+                ByteBuffer finalizedVbo = interleaveVBO(buffers);
+                IntBuffer finalizedEbo = createEBO(primitive);
 
-                MeshData data = new MeshData(assetRecord, finalizedVbo, IntBuffer.allocate(32));
-                MeshDataSerializer serializer = new MeshDataSerializer();
-
-                Path outFile = Path.of(outputDir, assetRecord.displayName() + ".bin");
-                try {
-                    Files.createDirectories(outFile.getParent());
-                    try (Output output = new Output(Files.newOutputStream(outFile))) {
-                        serializer.writeObject(data, output);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Failed to write mesh data to " + outFile, e);
-                }
+                MeshData data = new MeshData(finalizedVbo, finalizedEbo);
+                data.setAssetRecord(assetRecord);
+                dataList.add(data);
             }
         }
-
+        return dataList;
     }
 
-    private static FloatBuffer interleaveVBO(AttributeHolder[] holders) {
+    private static ByteBuffer interleaveVBO(AttributeHolder[] holders) {
         if (holders[0] == null) {
             throw new IllegalStateException("Position Data not present.");
         }
         int totalCapacity = 0;
         for (AttributeHolder holder : holders) {
-            if (holder != null) {
-                totalCapacity += holder.floatBuffer.capacity();
+            if (holder == null) {
+                continue;
             }
+            totalCapacity += holder.buffer.capacity();
         }
 
-        FloatBuffer finalizedVbo = FloatBuffer.allocate(totalCapacity);
+        ByteBuffer finalizedVbo = ByteBuffer.allocate(totalCapacity);
 
-        int vertexCount = holders[0].floatBuffer.capacity() / holders[0].strideLength;
+        int vertexCount = holders[0].buffer.capacity() / holders[0].strideLength;
         for (int vertex = 0; vertex < vertexCount; vertex++) {
             for (AttributeHolder holder : holders) {
-                if (holder == null) { continue; }
-
+                if (holder == null) {
+                    continue;
+                }
                 int base = vertex * holder.strideLength;
                 for (int component = 0; component < holder.strideLength; component++) {
-                    finalizedVbo.put(holder.floatBuffer.get(base + component));
+                    finalizedVbo.put(holder.buffer.get(base + component));
                 }
             }
         }
@@ -205,25 +193,39 @@ public class AssetLoader {
         return finalizedVbo;
     }
 
-    private static FloatBuffer getFloatBufferData(MeshPrimitiveModel primitive, String attribute) {
-        AccessorModel model = primitive.getAttributes().get(attribute);
-        AccessorData data = model.getAccessorData();
+    private static IntBuffer createEBO(MeshPrimitiveModel primitiveModel) {
+        AccessorModel accessorModel = primitiveModel.getIndices();
+        ByteBuffer indexBytes = accessorModel.getAccessorData().createByteBuffer();
+        indexBytes.order(ByteOrder.LITTLE_ENDIAN); //gltf specifies little endian
 
-        if (data instanceof AccessorFloatData floatData) {
-            int capacity = floatData.getTotalNumComponents();
-            FloatBuffer bufferData = FloatBuffer.allocate(capacity);
-            for (int i = 0; i < capacity; i++) {
-                bufferData.put(floatData.get(i));
+
+        int count = accessorModel.getCount();
+        int type = accessorModel.getComponentType();
+
+        IntBuffer finalizedIndexBuffer = IntBuffer.allocate(count);
+        switch (type) {
+            case GltfConstants.GL_UNSIGNED_BYTE -> {
+                for (int i = 0; i < count; i++) {
+                    int val = indexBytes.get() & 0xFF;
+                    finalizedIndexBuffer.put(val);
+                }
             }
-            bufferData.flip();
-            return bufferData;
-        } else {
-            throw new RuntimeException();
+            case GltfConstants.GL_UNSIGNED_SHORT -> {
+                for (int i = 0; i < count; i++) {
+                    int val = indexBytes.getShort(i * Short.BYTES) & 0xFFFF;
+                    finalizedIndexBuffer.put(val);
+                }
+            }
+            case GltfConstants.GL_UNSIGNED_INT -> {
+                for (int i = 0; i < count; i++) {
+                    int val = indexBytes.getInt(i * Integer.BYTES);
+                    finalizedIndexBuffer.put(val);
+                }
+            }
+            default -> throw new RuntimeException("Unknown primitive type " + type);
         }
-
-    }
-
-    private void extractMeshRec(GltfModel gltfModel, Path container) {
+        finalizedIndexBuffer.flip();
+        return finalizedIndexBuffer;
 
     }
 
@@ -233,6 +235,24 @@ public class AssetLoader {
 
     public void extractAnimations(GltfModel gltfModel, Path container) {
 
+    }
+
+    private void flushExtracted(ExtractedAssetData extractedAssetData, Path outputDir) {
+        MeshDataSerializer serializer = new MeshDataSerializer();
+
+        for (MeshData meshData : extractedAssetData.meshes) {
+            Path outFile = outputDir.resolve(meshData.assetRecord().displayName() + ".bin");
+            try {
+                Files.createDirectories(outFile.getParent());
+                System.out.println(outFile);
+
+                try (Output output = new Output(Files.newOutputStream(outFile))) {
+                    serializer.writeObject(meshData, output);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to write mesh data to " + outFile, e);
+            }
+        }
     }
 
     /**
@@ -268,23 +288,34 @@ public class AssetLoader {
                 throw new RuntimeException(cause);
             }
         }
-    }
-
-    public void setOutputDir(String outputDir) {
-        this.outputDir = outputDir;
+        //TODO Flush our registry
     }
 
     private static class AttributeHolder {
         private final String attributeType;
-        private final int strideLength;
-        private final FloatBuffer floatBuffer;
+        private final int strideLength; //stride length in bytes
+        private final ByteBuffer buffer;
 
-        public AttributeHolder(String attributeType, FloatBuffer buffer, int strideLength) {
+        public AttributeHolder(String attributeType, ByteBuffer buffer, int strideLength) {
             this.attributeType = attributeType;
-            this.floatBuffer = buffer;
+            this.buffer = buffer;
             this.strideLength = strideLength;
         }
 
+
+    }
+
+    public static class ExtractedAssetData {
+        private List<AssetRecord> assetRecords;
+        private final List<MeshData> meshes;
+        private final List<?> textures, animations;
+
+        public ExtractedAssetData() {
+            assetRecords = new ArrayList<>();
+            meshes = new ArrayList<>();
+            textures = new ArrayList<>();
+            animations = new ArrayList<>();
+        }
 
     }
 

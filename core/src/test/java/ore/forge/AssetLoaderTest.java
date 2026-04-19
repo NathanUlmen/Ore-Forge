@@ -8,7 +8,6 @@ import ore.forge.engine.definitions.MeshDataSerializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -23,16 +22,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AssetLoaderTest {
+    static int NUM_THREADS = 1;
+
     @TempDir
-    Path tempDir;
+    static Path tmpDir;
 
     @Test
     void loadDirectoryLoadsModelsFromTestResources() throws URISyntaxException {
-        RecordingAssetLoader loader = new RecordingAssetLoader(1);
+        RecordingAssetLoader loader = new RecordingAssetLoader(NUM_THREADS);
         Path modelsDir = Path.of(getClass().getResource("/models").toURI());
 
-        loader.setOutputDir(tempDir.toString());
-        loader.loadDirectory(modelsDir);
+        loader.loadDirectory(modelsDir, tmpDir);
         loader.end();
 
         assertEquals(
@@ -48,17 +48,16 @@ class AssetLoaderTest {
     }
 
     @Test
-    void loadDirectoryWritesReadableFilesToTempDirectoryAndDeletesThemAfterward() throws IOException, URISyntaxException {
-        RecordingAssetLoader loader = new RecordingAssetLoader(1);
+    void loadWriteRead() throws IOException, URISyntaxException {
+        RecordingAssetLoader loader = new RecordingAssetLoader(NUM_THREADS);
         Path modelsDir = Path.of(getClass().getResource("/models").toURI());
         MeshDataSerializer serializer = new MeshDataSerializer();
         List<Path> producedFiles;
 
-        loader.setOutputDir(tempDir.toString());
-        loader.loadDirectory(modelsDir);
+        loader.loadDirectory(modelsDir, tmpDir);
         loader.end();
 
-        try (var files = Files.list(tempDir)) {
+        try (var files = Files.list(tmpDir)) {
             producedFiles = files
                 .filter(Files::isRegularFile)
                 .filter(path -> path.getFileName().toString().endsWith(".bin"))
@@ -69,12 +68,9 @@ class AssetLoaderTest {
 
         try {
             for (Path producedFile : producedFiles) {
-                assertTrue(Files.size(producedFile) > 0, "Produced file should not be empty: " + producedFile);
-
+                assertTrue(Files.size(producedFile) > 0, "Produced file should not be empty: " + producedFile); //
                 MeshData meshData = serializer.readObject(producedFile.toString());
                 assertNotNull(meshData);
-                assertNotNull(meshData.record());
-                assertNotNull(meshData.record().displayName());
                 assertTrue(meshData.vbo().remaining() > 0, "Produced mesh should contain vertex data");
             }
         } finally {
@@ -90,16 +86,16 @@ class AssetLoaderTest {
         private final List<GltfModel> loadedModels = new ArrayList<>();
 
         private RecordingAssetLoader(int numThreads) {
-            super(numThreads, "tmp");
+            super(numThreads);
         }
 
         @Override
-        public void extractAssetData(GltfModel gltfModel, Path sceneFilePath) throws FileNotFoundException {
-            super.extractAssetData(gltfModel, sceneFilePath);
+        public AssetLoader.ExtractedAssetData extractAssetData(GltfModel gltfModel, Path sceneFilePath) {
             synchronized (this) {
                 loadedFiles.add(sceneFilePath.getFileName().toString());
                 loadedModels.add(gltfModel);
             }
+            return super.extractAssetData(gltfModel, sceneFilePath);
         }
 
         private List<String> loadedFileNames() {
