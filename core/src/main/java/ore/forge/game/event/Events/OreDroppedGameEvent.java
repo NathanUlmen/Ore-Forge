@@ -3,7 +3,7 @@ package ore.forge.game.event.Events;
 
 import ore.forge.FontColors;
 import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 public record OreDroppedGameEvent(Ore ore, ItemDefinition dropper) implements GameEvent<Ore> {
 

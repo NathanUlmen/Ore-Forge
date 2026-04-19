@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.expressions.Function;
 import ore.forge.game.expressions.Operands.NumericOreProperties;
 import ore.forge.game.expressions.Operators.NumericOperator;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 /**
  * @author Nathan Ulmen

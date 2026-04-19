@@ -1,6 +1,6 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 
 //interface for upgrade strategies.

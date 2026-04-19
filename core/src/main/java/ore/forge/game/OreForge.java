@@ -6,13 +6,13 @@ package ore.forge.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.TestScene;
 import ore.forge.engine.profiling.Profiler;
 import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.player.ItemInventory;
-import ore.forge.game.screens.Gameplay3D;
-import ore.forge.game.ui.UI;
+import ore.forge.game.temp.TestItemEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,70 +22,68 @@ import java.util.List;
  */
 public class OreForge extends Game {
 
-	public void create() {
+    public void create() {
+        //assert that gl30 is available and set active
+        initGL();
 
-        Gdx.app.log("GL", Gdx.gl.getClass().getName());
-        Gdx.app.log("GL20", Gdx.gl20 == null ? "null" : Gdx.gl20.getClass().getName());
-        Gdx.app.log("GL30", Gdx.gl30 == null ? "null" : Gdx.gl30.getClass().getName());
+        //TODO: load in assets(item definitions depend/have handles to these)
 
-        if (Gdx.graphics.isGL30Available()) {
-            System.out.println("GL30 is available");
-            Gdx.gl = Gdx.gl30;
-            Gdx.graphics.setGL30(Gdx.graphics.getGL30());
-        }
+        //TODO: load in item definitions
 
-        //Set to gl30
-        Gdx.app.log("GL", Gdx.gl.glGetString(GL30.GL_VERSION));
-        Gdx.app.log("GLSL", Gdx.gl.glGetString(GL30.GL_SHADING_LANGUAGE_VERSION));
+        //TODO: load player save data
 
-//        while (true) {
-//            foo.render();
-//            if (1 > 50) {break;}
-//        }
+        //TODO: setup UI (render icons for each item into an atlas)
 
-        /*
-		* Things to Initialize here:
-		* AllGameItems
-		* Load Save Data
-		* Create the Objects for elements like the map and UI.
-		* */
+        //TODO: init all ECS systems
 
-        GameContext context = GameContext.INSTANCE;
-        Runtime.getRuntime().addShutdownHook(new Thread(context::save)); //Save progress before exit
-        Profiler instance = Profiler.INSTANCE;
+        //TODO: load game world
+
+        //TODO: init player controller
+
+        //TODO: finally set screen to main gameplay
+
+        setScreen(new TestItemEntity());
+
+
+//        GameContext context = GameContext.INSTANCE;
+//        Runtime.getRuntime().addShutdownHook(new Thread(context::save)); //Save progress before exit
 //        Runtime.getRuntime().addShutdownHook(new Thread(instance::dumpToFile));
 
-        var allItems = loadItemDefinitions();
 
-        //Setup our inventory with all items we loaded.
-        context.player.inventory = new ItemInventory(allItems);
-        context.load();
 
         //Create Our UI
-        UI ui = new UI(context.player.inventory);
-        Gameplay3D gameplay3D = new Gameplay3D(ui);
-        setScreen(gameplay3D);
+//        UI ui = new UI(context.player.inventory);
+//        Gameplay3D gameplay3D = new Gameplay3D(ui);
+//        setScreen(gameplay3D);
 //        setScreen(new TestScene());
-	}
+    }
 
-	public void render() {
-		// Clear the screen
-		super.render();
-	}
+    public void render() {
+        // Clear the screen
+        super.render();
+    }
 
-    public List<ItemDefinition> loadItemDefinitions() {
-        ArrayList<ItemDefinition> itemDefinitions = new ArrayList<>();
+    public void loadItemDefinitions(List<ItemDefinition> destination) {
         JsonReader reader = new JsonReader();
         JsonValue items = reader.parse(Gdx.files.internal("Items/items.json"));
         for (JsonValue itemValue : items) {
-            itemDefinitions.add(ItemDefinition.createDefinition(itemValue));
+            destination.add(ItemDefinition.createDefinition(itemValue));
         }
-        return itemDefinitions;
     }
 
     @Override
     public void dispose() {
         super.dispose();
+    }
+
+    private void initGL() {
+        if (Gdx.graphics.isGL30Available()) {
+            System.out.println("GL30 is available");
+            Gdx.gl = Gdx.gl30;
+            Gdx.graphics.setGL30(Gdx.graphics.getGL30());
+        } else {
+            Gdx.app.error("GL ERROR", "GL30 is not available.");
+        }
     }
 
 }

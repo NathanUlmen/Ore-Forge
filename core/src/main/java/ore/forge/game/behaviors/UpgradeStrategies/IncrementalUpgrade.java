@@ -1,7 +1,7 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.engine.ReflectionLoader;
 
 /**

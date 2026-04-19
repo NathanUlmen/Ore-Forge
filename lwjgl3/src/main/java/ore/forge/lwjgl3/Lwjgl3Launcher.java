@@ -1,5 +1,6 @@
 package ore.forge.lwjgl3;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
@@ -30,7 +31,7 @@ public class Lwjgl3Launcher {
 
         config.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 3);
         config.setForegroundFPS(10_000);
-        config.useVsync(true);
+        config.useVsync(false);
         Graphics.DisplayMode mode = Lwjgl3ApplicationConfiguration.getDisplayMode();
         config.setWindowedMode(mode.width/1, mode.height/1);
 //        config.setFullscreenMode(mode);

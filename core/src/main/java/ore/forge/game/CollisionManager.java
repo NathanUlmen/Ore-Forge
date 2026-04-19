@@ -2,13 +2,12 @@ package ore.forge.game;
 
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import ore.forge.engine.EntityInstance;
 import ore.forge.engine.StagedCollection;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class CollisionManager extends ContactListener {
+public class CollisionManager {
     private final Set<CollisionPair> touchingEntities;
     private final StagedCollection<CollisionPair> collisions;
     private final GameContext gameState;
@@ -21,14 +20,14 @@ public class CollisionManager extends ContactListener {
         collisions = new StagedCollection<>();
     }
 
-    @Override
+//    @Override
     public void onContactStarted(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-            if (o1Data.bodyLogic != null) {
-                o1Data.bodyLogic.onContactStart(o2Data, o1Data, gameState);
+            if (o1Data.bodyLogic() != null) {
+                o1Data.bodyLogic().onContactStart(o2Data, o1Data, gameState);
             }
-            if (o2Data.bodyLogic != null) {
-                o2Data.bodyLogic.onContactStart(o1Data, o2Data, gameState);
+            if (o2Data.bodyLogic() != null) {
+                o2Data.bodyLogic().onContactStart(o1Data, o2Data, gameState);
             }
 
             var pair = new CollisionPair(o2Data, o1Data);
@@ -37,14 +36,14 @@ public class CollisionManager extends ContactListener {
 
     }
 
-    @Override
+//    @Override
     public void onContactEnded(btCollisionObject o1, btCollisionObject o2) {
         if (o1.userData instanceof PhysicsBodyData o1Data && o2.userData instanceof PhysicsBodyData o2Data) {
-            if (o1Data.bodyLogic != null) {
-                o1Data.bodyLogic.onContactEnd(o2Data, o1Data, gameState);
+            if (o1Data.bodyLogic() != null) {
+                o1Data.bodyLogic().onContactEnd(o2Data, o1Data, gameState);
             }
-            if (o2Data.bodyLogic != null) {
-                o2Data.bodyLogic.onContactEnd(o1Data, o2Data, gameState);
+            if (o2Data.bodyLogic() != null) {
+                o2Data.bodyLogic().onContactEnd(o1Data, o2Data, gameState);
             }
             var pair = new CollisionPair(o2Data, o1Data);
             touchingEntities.remove(pair);
@@ -55,19 +54,19 @@ public class CollisionManager extends ContactListener {
         for (var pair : touchingEntities) {
             pair.updateTouchingTime(delta);
             if (pair.a() instanceof PhysicsBodyData first && pair.b() instanceof PhysicsBodyData second) {
-                if (first.bodyLogic != null) {
-                    first.bodyLogic.colliding(second, first, gameState, pair.getTimeTouching());
+                if (first.bodyLogic() != null) {
+                    first.bodyLogic().colliding(second, first, gameState, pair.getTimeTouching());
                 }
-                if (second.bodyLogic != null) {
-                    second.bodyLogic.colliding(first, second, gameState, pair.getTimeTouching());
+                if (second.bodyLogic() != null) {
+                    second.bodyLogic().colliding(first, second, gameState, pair.getTimeTouching());
                 }
             }
         }
     }
 
-    public void removeAllPairsWith(EntityInstance entity) {
-        touchingEntities.removeIf(pair -> pair.contains(entity));
-    }
+//    public void removeAllPairsWith(Entity entity) {
+//        touchingEntities.removeIf(pair -> pair.contains(entity));
+//    }
 
     public int getNumTouchingEntities() {
         return touchingEntities.size();

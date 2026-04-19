@@ -1,6 +1,6 @@
 package ore.forge;
 
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.game.expressions.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,7 +83,7 @@ class FunctionTest {
 
     @Test
     void testSpeedScalarProperty() {
-        ore.setSpeedScalar(3);
+//        ore.setSpeedScalar(3);
         var speedScalarProperty = Function.compile("(SPEED_SCALAR+5)");
         assertEquals(8, speedScalarProperty.calculate(ore));
     }
@@ -216,7 +216,7 @@ class FunctionTest {
     void testImpliedMultiply2() {
         ore.setOreValue(10);
         ore.setTemperature(1);
-        ore.setMultiOre(5);
+        ore.setYield(5);
         var testCase = Function.compile("ORE_VALUE(TEMPERATURE + MULTIORE)");
         assertEquals(60, testCase.calculate(ore));
     }

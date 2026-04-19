@@ -4,4 +4,9 @@ eclipse.project.name = appName + '-core'
 dependencies {
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "com.github.mgsx-dev.gdx-gltf:gltf:$gltfVersion"
+  api "de.javagl:jgltf-model:$jgltfVersion"
+  api "io.github.spair:imgui-java-binding:$imguiVersion"
+  api "com.google.flatbuffers:flatbuffers-java:$flatbuffersVersion"
+  api "com.esotericsoftware:kryo:$kryoVersion"
 }

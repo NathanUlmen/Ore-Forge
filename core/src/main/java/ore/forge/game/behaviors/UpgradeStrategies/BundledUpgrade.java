@@ -1,8 +1,11 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.engine.ReflectionLoader;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * @author Nathan Ulmen
@@ -18,12 +21,8 @@ public class BundledUpgrade implements UpgradeStrategy {
     }
 
     public BundledUpgrade(JsonValue jsonValue) {
-//        this.upgradeStrategies = new UpgradeStrategy[jsonValue.size];
-//        for (int i = 0; i < jsonValue.size; i++) {
-//            this.upgradeStrategies[i] = createOrNull(jsonValue, "upgStrat" + String.valueOf(i + 1), "upgradeName");
-//        }
-
         JsonValue strategyArray = jsonValue.get("upgrades");
+        Deque<Integer> foo = new ArrayDeque<>();
         this.upgradeStrategies = new UpgradeStrategy[strategyArray.size];
         for (int i = 0; i < strategyArray.size; i++) {
             this.upgradeStrategies[i] = ReflectionLoader.load(strategyArray.get(i), "upgradeName");

@@ -6,7 +6,7 @@ import ore.forge.game.expressions.Operands.StringOreProperty;
 import ore.forge.game.expressions.Operands.ValueOfInfluence;
 import ore.forge.game.expressions.Operators.ComparisonOperator;
 import ore.forge.game.expressions.Operators.LogicalOperator;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 import java.util.*;
 import java.util.function.Function;

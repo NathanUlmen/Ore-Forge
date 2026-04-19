@@ -1,5 +1,6 @@
 package ore.forge.engine;
 
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
@@ -9,7 +10,10 @@ import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.utils.Disposable;
 
-public class PhysicsWorld implements Disposable {
+import static ore.forge.game.GameContext2.FIXED_TIME_STEP;
+
+public class PhysicsWorld extends EntitySystem implements Disposable {
+    private static final int MAX_SUBSTEPS = 3;
     private static final PhysicsWorld instance = instance();
     private final btDiscreteDynamicsWorld dynamicsWorld;
     private final btDispatcher dispatcher;
@@ -19,6 +23,7 @@ public class PhysicsWorld implements Disposable {
     private final DebugDrawer debugDrawer;
 
     private PhysicsWorld() {
+        super();
         Bullet.init();
         collisionConfig = new btDefaultCollisionConfiguration();
         dispatcher = new btCollisionDispatcherMt(collisionConfig);
@@ -30,7 +35,6 @@ public class PhysicsWorld implements Disposable {
         debugDrawer = new DebugDrawer();
         debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_DrawWireframe);
 
-
         dynamicsWorld.setDebugDrawer(debugDrawer);
     }
 
@@ -40,6 +44,11 @@ public class PhysicsWorld implements Disposable {
         debugDrawer.end();
     }
 
+    @Override
+    public void update(float delta) {
+        dynamicsWorld.stepSimulation(delta, MAX_SUBSTEPS, FIXED_TIME_STEP);
+    }
+
     public static PhysicsWorld instance() {
         return instance != null ? instance : new PhysicsWorld();
     }
@@ -47,7 +56,6 @@ public class PhysicsWorld implements Disposable {
     public btDynamicsWorld dynamicsWorld() {
         return dynamicsWorld;
     }
-
 
     @Override
     public void dispose() {

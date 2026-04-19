@@ -1,0 +1,57 @@
+[
+  {
+    "componentType": "PhysicsComponent",
+    "bodyType": "RIGID",
+    "motionType": "DYNAMIC",
+    "id" : "foo",
+    "mass" : 1.0,
+    "friction" : 3.0,
+    "restitution" : 9.0,
+    "collisionShape": {
+      "shapeType": "CompoundShape",
+      "children": [
+        {
+          "transform": {
+            "val": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1]
+          },
+          "collisionShape": {
+            "shapeType": "Sphere",
+            "radius": 2.5
+          }
+        },
+        {
+          "transform": {
+            "val": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3, 0, 1]
+          },
+          "collisionShape": {
+            "shapeType": "CompoundShape",
+            "children": [
+              {
+                "transform": {
+                  "val": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 4, 1]
+                },
+                "collisionShape": {
+                  "shapeType": "Capsule",
+                  "radius": 1.25,
+                  "height": 3.5
+                }
+              },
+              {
+                "transform": {
+                  "val": [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 1]
+                },
+                "collisionShape": {
+                  "shapeType": "Box",
+                  "boundingBox": {
+                    "min": {"x": -1, "y": -2, "z": -3},
+                    "max": {"x": 1, "y": 2, "z": 3}
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

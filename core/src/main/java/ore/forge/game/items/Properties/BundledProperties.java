@@ -3,7 +3,7 @@ package ore.forge.game.items.Properties;
 import java.util.Iterator;
 import java.util.List;
 
-public class BundledProperties implements ItemProperties, Iterable<ItemProperties> {
+public final class BundledProperties implements ItemProperties, Iterable<ItemProperties> {
     private List<ItemProperties> properties;
 
     public BundledProperties(List<ItemProperties> properties) {

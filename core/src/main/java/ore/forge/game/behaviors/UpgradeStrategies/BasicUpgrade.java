@@ -3,7 +3,7 @@ package ore.forge.game.behaviors.UpgradeStrategies;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.expressions.Operands.NumericOreProperties;
 import ore.forge.game.expressions.Operators.NumericOperator;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 
 import java.util.function.Consumer;
 
@@ -59,7 +59,7 @@ public class BasicUpgrade implements UpgradeStrategy {
             case TEMPERATURE ->
                 (Ore ore) -> ore.setTemperature((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
             case MULTIORE ->
-                (Ore ore) -> ore.setMultiOre((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
+                (Ore ore) -> ore.setYield((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
             case UPGRADE_COUNT, RESET_COUNT ->
                 throw new IllegalArgumentException(valueToModify + " is not a valid value to Modify.");
         };

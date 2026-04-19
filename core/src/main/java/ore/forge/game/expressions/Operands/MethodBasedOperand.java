@@ -1,6 +1,6 @@
 package ore.forge.game.expressions.Operands;
 
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.OreRealm;
 
 /*

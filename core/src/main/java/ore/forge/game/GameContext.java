@@ -1,10 +1,7 @@
 package ore.forge.game;
 
 import ore.forge.game.event.EventManager;
-import ore.forge.engine.PhysicsBody;
 import ore.forge.game.player.Player;
-import ore.forge.engine.PreviewManager;
-import ore.forge.engine.EntityInstance;
 import ore.forge.engine.EntityManager;
 import ore.forge.engine.PhysicsWorld;
 import ore.forge.engine.StagedCollection;
@@ -13,7 +10,7 @@ import ore.forge.engine.StagedCollection;
 public class GameContext {
     public static final GameContext INSTANCE = new GameContext();
     public final EntityManager entityManager;
-    public final PreviewManager previewManager;
+//    public final PreviewManager previewManager;
     public final EventManager eventManager;
     public final PhysicsWorld physicsWorld;
     public final CollisionManager collisionManager;
@@ -21,7 +18,7 @@ public class GameContext {
     public final Player player;
 
     public GameContext() {
-        previewManager = new PreviewManager();
+//        previewManager = new PreviewManager();
         entityManager = new EntityManager();
         eventManager = new EventManager();
         physicsWorld = PhysicsWorld.instance();
@@ -32,23 +29,22 @@ public class GameContext {
 
     public void update(float delta) {
         //update our physics step
-        for (EntityInstance instance : entityManager) {
-            instance.snapshotPreview();
-        }
+//        for (Entity instance : entityManager) {
+//            TransformManager.preTickSync(instance);
+//        }
 
-        physicsWorld.dynamicsWorld().stepSimulation(1/60f, 2, 1/60f);
+        physicsWorld.dynamicsWorld().stepSimulation(1/60f, 3, 1/60f);
 
         collisionManager.updateTouchingEntities(delta);
 
         //update transforms
-        for (EntityInstance entity : entityManager) {
-            for (PhysicsBody body : entity.physicsComponent.getBodies()) {
-                body.readFromBullet();
-            }
-        }
+//        for (Entity entity : entityManager) {
+//            TransformManager.postTickSync(entity);
+//        }
 
         //update our time based updates
         for (final Updatable updatable : updatables) {
+            System.out.println("Updating!!");
             updatable.update(delta, this);
         }
 
@@ -68,7 +64,7 @@ public class GameContext {
 
     public void flush() {
         entityManager.flush(this);
-        previewManager.flush();
+//        previewManager.flush();
 
         updatables.flush();
     }

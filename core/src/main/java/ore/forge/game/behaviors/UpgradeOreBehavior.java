@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.*;
+import ore.forge.game.components.Ore;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.Properties.UpgraderProperties;
 import ore.forge.game.behaviors.UpgradeStrategies.UpgradeStrategy;
@@ -55,9 +56,9 @@ public class UpgradeOreBehavior implements BodyLogic {
 
     @Override
     public void onContactStart(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
-        assert subject.specificData instanceof Ore;
+        assert subject.specificData() instanceof Ore;
         assert upgradeTag != null && upgradeStrategy != null;
-        Ore ore = (Ore) subject.specificData;
+        Ore ore = (Ore) subject.specificData();
         if (ore.isUpgradable(upgradeTag)) {
             upgradeStrategy.applyTo(ore);
 //            System.out.println("Ore Upgraded!");
@@ -71,7 +72,7 @@ public class UpgradeOreBehavior implements BodyLogic {
 
     @Override
     public void onContactEnd(PhysicsBodyData subject, PhysicsBodyData source, GameContext context) {
-        if (subject.specificData instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
+        if (subject.specificData() instanceof Ore ore && ore.isUpgradable(upgradeTag)) {
             ore.addUpgradeCooldown(upgradeTag, new UpgradeCooldown(cooldownDuration, ore, upgradeTag));
             ore.getUpgradeTag(upgradeTag).incrementCurrentUpgrades();
         }

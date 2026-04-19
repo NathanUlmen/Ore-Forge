@@ -1,0 +1,15 @@
+[
+  {
+    "componentType": "PhysicsComponent",
+    "bodyType": "RIGID",
+    "motionType": "DYNAMIC",
+    "id": "foo",
+    "mass": 1.0,
+    "friction": 3.0,
+    "restitution": 9.0,
+    "collisionShape": {
+      "shapeType": "Sphere",
+      "radius": 2.5
+    }
+  }
+]

@@ -1,5 +1,6 @@
 package ore.forge.engine.render;
 
+import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,7 +19,7 @@ import java.util.List;
  * @author Nathan Ulmen
  * Is responsible For sorting, batching, and instancing draw calls. *
  */
-public class Renderer {
+public class Renderer extends EntitySystem {
     public static final int MAX_INSTANCED_DRAW = 10_000;
     private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
     private final FloatBuffer instanceBuffer;
@@ -35,6 +36,7 @@ public class Renderer {
             }
         };
 
+
         Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
         Gdx.gl30.glBufferData(
             GL30.GL_ARRAY_BUFFER,
@@ -45,7 +47,7 @@ public class Renderer {
     }
 
     public void render(List<RenderPart> toRender, Camera camera) {
-        toRender = frustumCull(camera, toRender);
+//        toRender = frustumCull(camera, toRender);
         for (RenderPass pass : renderPasses) {
             ArrayList<RenderCommand> commands = new ArrayList<>(toRender.size());
             for (RenderPart part : toRender) {
@@ -118,11 +120,11 @@ public class Renderer {
         int instanceCount = end - start;
         MeshHandle mesh = commands.get(start).meshHandle;
 
-        // 1. Build instance data (CPU loop)
+        // Build instance data
         instanceBuffer.clear();
         for (int i = start; i < end; i++) {
             RenderCommand cmd = commands.get(i);
-            // write mat4 (16 floats)
+            // write mat4
             instanceBuffer.put(cmd.worldTransform.val);
         }
         instanceBuffer.flip();
@@ -147,9 +149,10 @@ public class Renderer {
 
     }
 
+
     /*
     * To make this faster in the future we could:
-    * Break it down so the compiler will vectorize it.
+    * Break it down so hot spot will vectorize it.
     * Ensure that toCull is built from an acceleration structure to cut large parts of world out
     * Have OrientedBoundingBox be a property of RenderPart and update it when it becomes dirty
     *  */
@@ -163,6 +166,7 @@ public class Renderer {
                 culled.add(part);
             }
         }
+
         return culled;
     }
 

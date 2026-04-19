@@ -3,12 +3,11 @@ package ore.forge.game.behaviors;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.GameContext;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.ItemUserData;
-import ore.forge.game.Ore;
+import ore.forge.game.components.Ore;
 import ore.forge.game.PhysicsBodyData;
 
 public class Move implements BodyLogic {
@@ -59,11 +58,11 @@ public class Move implements BodyLogic {
     *   */
     @Override
     public void colliding(PhysicsBodyData subject, PhysicsBodyData source, GameContext context, float timeTouching) {
-        assert subject.specificData instanceof Ore;
-        btRigidBody rigidBody = (btRigidBody) subject.parentEntityInstance.physicsComponent.getRigidBody();
+        assert subject.specificData() instanceof Ore;
+//        btRigidBody rigidBody = (btRigidBody) subject.parentEntity.physicsComponent.bodies.getFirst().bodyHandle;
 
         // Get conveyor direction in world space
-        ItemUserData itemUserData = (ItemUserData) source.specificData;
+        ItemUserData itemUserData = (ItemUserData) source.specificData();
         Vector3 localDirection = itemUserData.direction().cpy().nor();
 
         Quaternion sensorRotation = new Quaternion();
@@ -74,15 +73,15 @@ public class Move implements BodyLogic {
         float maxSpeed = force;          // units per second
         float responsiveness = 10f;
 
-        Vector3 currentVel = rigidBody.getLinearVelocity().cpy();
+//        Vector3 currentVel = rigidBody.getLinearVelocity().cpy();
 
-        float velAlongDir = currentVel.cpy().dot(conveyorDir);
+//        float velAlongDir = currentVel.cpy().dot(conveyorDir);
 
-        float deltaV = maxSpeed - velAlongDir;
+//        float deltaV = maxSpeed - velAlongDir;
 
-        Vector3 forceVec = conveyorDir.scl(deltaV * 10 * responsiveness);
+//        Vector3 forceVec = conveyorDir.scl(deltaV * 10 * responsiveness);
 
-        rigidBody.applyCentralForce(forceVec);
+//        rigidBody.applyCentralForce(forceVec);
     }
 
 
