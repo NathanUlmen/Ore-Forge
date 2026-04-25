@@ -14,6 +14,7 @@ import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.UUID;
 
 public class MeshDataSerializer {
     private final Kryo kryo;
@@ -21,7 +22,21 @@ public class MeshDataSerializer {
     public MeshDataSerializer() {
         kryo = new Kryo();
 
-        kryo.register(AssetGUID.class);
+        kryo.register(UUID.class, new Serializer<UUID>() {
+            @Override
+            public void write(Kryo kryo, Output output, UUID object) {
+                output.writeLong(object.getMostSignificantBits());
+                output.writeLong(object.getLeastSignificantBits());
+            }
+
+            @Override
+            public UUID read(Kryo kryo, Input input, Class<? extends UUID> type) {
+                long hi =  input.readLong();
+                long lo = input.readLong();
+                return new UUID(hi, lo);
+            }
+        });
+
         kryo.register(AssetRecord.class);
         kryo.register(AssetType.class);
         kryo.register(int[].class);

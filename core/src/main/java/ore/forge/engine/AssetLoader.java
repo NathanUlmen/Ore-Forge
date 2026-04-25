@@ -1,5 +1,9 @@
 package ore.forge.engine;
 
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.io.GltfModelReader;
@@ -8,8 +12,7 @@ import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshData;
 import ore.forge.engine.definitions.MeshDataSerializer;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class AssetLoader {
+    private static final int DEFAULT_THREADS = 4;
     private static final Set<String> MODEL_EXTENSIONS = Set.of("gltf", "glb");
     private static final Map<String, Integer> ATTRIBUTE_INDEX = Map.of(
         "POSITION", 0,
@@ -62,15 +66,30 @@ public class AssetLoader {
     protected final ExecutorService executor;
 
     /**
-     * Initial output Directory
+     * @param numThreads - Number of hardware threads the Asset Loader will use when loading assets.
      *
      */
     public AssetLoader(int numThreads) {
         registry = Collections.synchronizedList(new ArrayList<>());
         submittedTasks = Collections.synchronizedList(new ArrayList<>());
         executor = Executors.newFixedThreadPool(numThreads);
+        //TODO read existing registry into memory
     }
 
+    public AssetLoader(int numThreads, File registryFile) {
+        this(numThreads);
+        loadRegistry(registryFile);
+    }
+
+    public AssetLoader() {
+        this(DEFAULT_THREADS);
+    }
+
+    /**
+     * @param inputDir  - Directory to read all .gltf files from.
+     * @param outputDir - Directory to put the "baked" assets into.
+     *                  Loads all .gltf/.glb files from an intput file and outputs to an output directory.
+     */
     public void loadDirectory(Path inputDir, Path outputDir) {
         try (Stream<Path> files = Files.list(inputDir)) {
             files
@@ -256,11 +275,10 @@ public class AssetLoader {
     }
 
     /**
-     * Writes the asset registry to disk.
-     *
-     *
+     * @param outputDir - Directory registry should be output to.
+     *                  Flushes asset registry to a file in the specified directory
      */
-    public void end() {
+    public void end(Path outputDir) {
         executor.shutdown();
         try {
             if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
@@ -289,6 +307,26 @@ public class AssetLoader {
             }
         }
         //TODO Flush our registry
+    }
+
+    @SuppressWarnings("unchecked")
+    public void loadRegistry(File registryFile) {
+        JsonReader reader = new JsonReader();
+        JsonValue jsonValue = reader.parse(new FileHandle(registryFile));
+        Json json = new Json();
+        json.setSerializer(UUID.class, new Json.Serializer<>() {
+            @Override
+            public void write(Json json, UUID object, Class knownType) {
+                json.writeValue(object.toString());
+            }
+
+            @Override
+            public UUID read(Json json, JsonValue jsonData, Class type) {
+                return UUID.fromString(jsonData.asString());
+            }
+        });
+        ArrayList<?> registry = json.fromJson(ArrayList.class, AssetRecord.class, jsonValue.toString());
+        this.registry.addAll((Collection<? extends AssetRecord>) registry);
     }
 
     private static class AttributeHolder {
