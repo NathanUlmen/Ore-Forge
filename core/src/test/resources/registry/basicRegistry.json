@@ -1,29 +1,17 @@
 [
-  {
-    "guid": "550e8400-e29b-41d4-a716-446655440000",
-    "assetType": "MESH",
-    "logicalName": "Environment.TreeOak_A",
-    "displayName": "TreeOak_A",
-    "sourcePath": "assets/models/environment/tree_oak_a.glb",
-    "importVersion": 3,
-    "dependencyIndices": [1, 2]
-  },
-  {
-    "guid": "8c4b2a9e-6f42-4d8d-9a1d-3f2d95c8f101",
-    "assetType": "MATERIAL",
-    "logicalName": "Environment.TreeOak_A_Mat",
-    "displayName": "TreeOak_A_Mat",
-    "sourcePath": "assets/materials/tree_oak_a.mat",
-    "importVersion": 1,
-    "dependencyIndices": [2]
-  },
-  {
-    "guid": "2d9c7f61-9f8d-45b7-bb8c-8ab7f7d3c202",
-    "assetType": "TEXTURE",
-    "logicalName": "Environment.TreeOak_A_Albedo",
-    "displayName": "TreeOak_A_Albedo",
-    "sourcePath": "assets/textures/tree_oak_a_albedo.png",
-    "importVersion": 1,
-    "dependencyIndices": []
-  }
+{
+	"class": "ore.forge.engine.importing.AssetRegistry$AssetRegistryData",
+	"uuid": "040513d5-5190-480b-a320-e3be66edc8ce",
+	"artifact": {
+		"filePath": "TODO_UNIQUE_PATH",
+		"sourceKey": {
+			"assetType": "MESH",
+			"containerName": "Cube",
+			"AssetName": "Cube",
+			"importVersion": 1
+		},
+		"dependencies": null,
+		"uuid": "040513d5-5190-480b-a320-e3be66edc8ce"
+	}
+}
 ]

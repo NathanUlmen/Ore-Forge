@@ -1,4 +1,4 @@
-package ore.forge.engine;
+package ore.forge.engine.importing;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
@@ -7,9 +7,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
 import de.javagl.jgltf.model.io.GltfModelReader;
-import ore.forge.engine.definitions.AssetRecord;
+import ore.forge.engine.VertexAttribute;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.definitions.MeshData;
+import ore.forge.engine.MeshData;
 import ore.forge.engine.definitions.MeshDataSerializer;
 
 import java.io.File;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * @author Nathan Ulmen
  * <p>
  * AssetLoader takes in .glb/gltf and produces a FlatBuffer for each asset in the container.
- * For each asset packed into a FlatBuffer it also generates an {@link AssetRecord} which it
+ * For each asset packed into a FlatBuffer it also generates an {@link AssetSourceKey} which it
  * appends to a registry that the engine will load on startup.
  * This is process is done during "Build" time.
  *
@@ -61,7 +61,7 @@ public class AssetLoader {
     );
     private static final int IMPORT_VERSION = 1;
 
-    protected final List<AssetRecord> registry;
+    protected final List<AssetSourceKey> registry;
     private final List<Future<?>> submittedTasks;
     protected final ExecutorService executor;
 
@@ -147,41 +147,32 @@ public class AssetLoader {
         List<MeshData> dataList = new ArrayList<>();
         //Register meshes
         for (MeshModel meshModel : gltfModel.getMeshModels()) {
-            AssetRecord assetRecord = new AssetRecord();
-            assetRecord.setDisplayName(meshModel.getName());
-            registry.add(assetRecord);
-            assetRecord.setAssetType(AssetType.MESH);
+            AssetSourceKey assetSourceKey = new AssetSourceKey();
+            assetSourceKey.setAssetName(meshModel.getName());
+            registry.add(assetSourceKey);
+            assetSourceKey.setAssetType(AssetType.MESH);
 
             for (MeshPrimitiveModel primitive : meshModel.getMeshPrimitiveModels()) {
                 AttributeHolder[] buffers = new AttributeHolder[6];
 
                 for (Map.Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
                     String attributeName = entry.getKey();
-                    Integer index = ATTRIBUTE_INDEX.get(attributeName);
-                    Integer size = ATTRIBUTE_SIZE.get(attributeName);
-                    if (index == null || size == null) {
-                        throw new RuntimeException(
-                            "Unknown attribute: " + attributeName +
-                                " in " + meshModel.getName() +
-                                " found in " + sceneFilePath
-                        );
-                    }
+                    VertexAttribute attribute = VertexAttribute.valueOf(attributeName);
                     ByteBuffer data = entry.getValue().getAccessorData().createByteBuffer();
-                    buffers[index] = new AttributeHolder(attributeName, data, size);
+                    buffers[attribute.index()] = new AttributeHolder(attribute, data, attribute.sizeInBytes());
                 }
 
                 ByteBuffer finalizedVbo = interleaveVBO(buffers);
                 IntBuffer finalizedEbo = createEBO(primitive);
 
                 MeshData data = new MeshData(finalizedVbo, finalizedEbo);
-                data.setAssetRecord(assetRecord);
                 dataList.add(data);
             }
         }
         return dataList;
     }
 
-    private static ByteBuffer interleaveVBO(AttributeHolder[] holders) {
+    public static ByteBuffer interleaveVBO(AttributeHolder[] holders) {
         if (holders[0] == null) {
             throw new IllegalStateException("Position Data not present.");
         }
@@ -190,20 +181,20 @@ public class AssetLoader {
             if (holder == null) {
                 continue;
             }
-            totalCapacity += holder.buffer.capacity();
+            totalCapacity += holder.buffer().capacity();
         }
 
         ByteBuffer finalizedVbo = ByteBuffer.allocate(totalCapacity);
 
-        int vertexCount = holders[0].buffer.capacity() / holders[0].strideLength;
+        int vertexCount = holders[0].buffer().capacity() / holders[0].strideLength();
         for (int vertex = 0; vertex < vertexCount; vertex++) {
             for (AttributeHolder holder : holders) {
                 if (holder == null) {
                     continue;
                 }
-                int base = vertex * holder.strideLength;
-                for (int component = 0; component < holder.strideLength; component++) {
-                    finalizedVbo.put(holder.buffer.get(base + component));
+                int base = vertex * holder.strideLength();
+                for (int component = 0; component < holder.strideLength(); component++) {
+                    finalizedVbo.put(holder.buffer().get(base + component));
                 }
             }
         }
@@ -212,7 +203,7 @@ public class AssetLoader {
         return finalizedVbo;
     }
 
-    private static IntBuffer createEBO(MeshPrimitiveModel primitiveModel) {
+    public static IntBuffer createEBO(MeshPrimitiveModel primitiveModel) {
         AccessorModel accessorModel = primitiveModel.getIndices();
         ByteBuffer indexBytes = accessorModel.getAccessorData().createByteBuffer();
         indexBytes.order(ByteOrder.LITTLE_ENDIAN); //gltf specifies little endian
@@ -245,7 +236,6 @@ public class AssetLoader {
         }
         finalizedIndexBuffer.flip();
         return finalizedIndexBuffer;
-
     }
 
     public void extractTextures(GltfModel gltfModel, Path container) {
@@ -257,21 +247,21 @@ public class AssetLoader {
     }
 
     private void flushExtracted(ExtractedAssetData extractedAssetData, Path outputDir) {
-        MeshDataSerializer serializer = new MeshDataSerializer();
-
-        for (MeshData meshData : extractedAssetData.meshes) {
-            Path outFile = outputDir.resolve(meshData.assetRecord().displayName() + ".bin");
-            try {
-                Files.createDirectories(outFile.getParent());
-                System.out.println(outFile);
-
-                try (Output output = new Output(Files.newOutputStream(outFile))) {
-                    serializer.writeObject(meshData, output);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to write mesh data to " + outFile, e);
-            }
-        }
+//        MeshDataSerializer serializer = new MeshDataSerializer();
+//
+//        for (MeshData meshData : extractedAssetData.meshes) {
+//            Path outFile = outputDir.resolve(meshData.assetRecord().displayName() + ".bin");
+//            try {
+//                Files.createDirectories(outFile.getParent());
+//                System.out.println(outFile);
+//
+//                try (Output output = new Output(Files.newOutputStream(outFile))) {
+//                    serializer.writeObject(meshData, output);
+//                }
+//            } catch (IOException e) {
+//                throw new RuntimeException("Failed to write mesh data to " + outFile, e);
+//            }
+//        }
     }
 
     /**
@@ -325,31 +315,17 @@ public class AssetLoader {
                 return UUID.fromString(jsonData.asString());
             }
         });
-        ArrayList<?> registry = json.fromJson(ArrayList.class, AssetRecord.class, jsonValue.toString());
-        this.registry.addAll((Collection<? extends AssetRecord>) registry);
-    }
-
-    private static class AttributeHolder {
-        private final String attributeType;
-        private final int strideLength; //stride length in bytes
-        private final ByteBuffer buffer;
-
-        public AttributeHolder(String attributeType, ByteBuffer buffer, int strideLength) {
-            this.attributeType = attributeType;
-            this.buffer = buffer;
-            this.strideLength = strideLength;
-        }
-
-
+        ArrayList<?> registry = json.fromJson(ArrayList.class, AssetSourceKey.class, jsonValue.toString());
+        this.registry.addAll((Collection<? extends AssetSourceKey>) registry);
     }
 
     public static class ExtractedAssetData {
-        private List<AssetRecord> assetRecords;
+        private List<AssetSourceKey> assetSourceKeys;
         private final List<MeshData> meshes;
         private final List<?> textures, animations;
 
         public ExtractedAssetData() {
-            assetRecords = new ArrayList<>();
+            assetSourceKeys = new ArrayList<>();
             meshes = new ArrayList<>();
             textures = new ArrayList<>();
             animations = new ArrayList<>();

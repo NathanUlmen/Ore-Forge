@@ -1,15 +1,14 @@
 package ore.forge.engine.definitions;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import ore.forge.engine.MeshData;
+import ore.forge.engine.importing.AssetSourceKey;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +36,7 @@ public class MeshDataSerializer {
             }
         });
 
-        kryo.register(AssetRecord.class);
+        kryo.register(AssetSourceKey.class);
         kryo.register(AssetType.class);
         kryo.register(int[].class);
         kryo.register(MeshData.class, new MeshDataKryoSerializer());
