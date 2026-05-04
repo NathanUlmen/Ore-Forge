@@ -1,15 +1,19 @@
 package ore.forge.engine;
 
+import com.badlogic.gdx.files.FileHandle;
+import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetCandidate;
-import ore.forge.engine.importing.AssetSourceKey;
-import ore.forge.engine.importing.AttributeHolder;
+import ore.forge.engine.definitions.MeshDataSerializer;
+import ore.forge.engine.importing.*;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,34 +22,26 @@ import java.util.Map;
 
 public class AssetExtractor {
 
-
-    public static List<AssetCandidate> extractAssets(GltfModel gltfModel) {
-        return extractAssets(gltfModel, null);
+    public static void extractAssets(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
+        AssetExtractor.extractMeshes(gltfModel, sourceFile, assetRegistry);
+        AssetExtractor.extractTextures(gltfModel);
     }
 
-    public static List<AssetCandidate> extractAssets(GltfModel gltfModel, java.nio.file.Path sourceFile) {
-        List<AssetCandidate> assets = new ArrayList<>();
-        assets.addAll(AssetExtractor.extractMeshes(gltfModel, sourceFile));
-        assets.addAll(AssetExtractor.extractTextures(gltfModel));
-        return assets;
-    }
-
-    public static List<AssetCandidate> extractMeshes(GltfModel gltfModel) {
-        return extractMeshes(gltfModel, null);
-    }
-
-    public static List<AssetCandidate> extractMeshes(GltfModel gltfModel, java.nio.file.Path sourceFile) {
+    public static void extractMeshes(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         ArrayList<AssetCandidate> assets = new ArrayList<>();
+        Path meshOutput = assetRegistry.getBakedDir().resolve("meshes");
+        ensureDirectory(meshOutput);
         //Register meshes
         for (MeshModel meshModel : gltfModel.getMeshModels()) {
             AssetSourceKey assetSourceKey = new AssetSourceKey();
             assetSourceKey.setAssetName(meshModel.getName());
             assetSourceKey.setAssetType(AssetType.MESH);
-            assetSourceKey.setContainerName(sourceFile == null ? meshModel.getName() : containerName(sourceFile));
+            assetSourceKey.setLogicalName(sourceFile == null ? meshModel.getName() : containerName(sourceFile));
             if (sourceFile != null) {
                 assetSourceKey.setSourcePath(sourceFile.toString());
             }
             assetSourceKey.setImportVersion(1);
+
 
             for (MeshPrimitiveModel primitive : meshModel.getMeshPrimitiveModels()) {
                 AttributeHolder[] buffers = new AttributeHolder[VertexAttribute.values().length];
@@ -61,12 +57,38 @@ public class AssetExtractor {
                 IntBuffer finalizedEbo = createEBO(primitive);
 
                 MeshData data = new MeshData(finalizedVbo, finalizedEbo);
-                AssetArtifact artifact = new AssetArtifact("TODO_UNIQUE_PATH", null, assetSourceKey, null);
+                //TODO figure out dependencies...
+
+                Path finalizedOutTarget = meshOutput.resolve(meshModel.getName() + ".meshbin");
+                ensureDirectory(finalizedOutTarget.getParent());
+
+                AssetArtifact artifact = new AssetArtifact(
+                    finalizedOutTarget.toString(),
+                    null,
+                    assetSourceKey,
+                    null
+                );
                 AssetCandidate candidate = new AssetCandidate(assetSourceKey, data, artifact);
                 assets.add(candidate);
             }
         }
-        return assets;
+
+        MeshDataSerializer serializer = new MeshDataSerializer();
+        for (AssetCandidate candidate : assets) {
+            if (assetRegistry.createNewEntry(candidate)) {
+                if (candidate.assetData() instanceof MeshData meshData) {
+                    try (
+                        OutputStream outputStream = Files.newOutputStream(candidate.artifact().filepath());
+                        Output output = new Output(outputStream)) {
+                        serializer.writeObject(meshData, output);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+
     }
 
     private static String containerName(java.nio.file.Path sourceFile) {
@@ -150,6 +172,14 @@ public class AssetExtractor {
             //TODO
         }
         return assets;
+    }
+
+    public static Path ensureDirectory(Path dir) {
+        try {
+            return Files.createDirectories(dir);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
 

@@ -1,17 +1,18 @@
 [
 {
 	"class": "ore.forge.engine.importing.AssetRegistry$AssetRegistryData",
-	"uuid": "040513d5-5190-480b-a320-e3be66edc8ce",
+	"uuid": "da2b7f26-4f6b-42c6-9122-a8713c35bb92",
 	"artifact": {
-		"filePath": "TODO_UNIQUE_PATH",
+		"filePath": "/tmp/junit12217429570309713268/meshes/Cube.meshbin",
 		"sourceKey": {
 			"assetType": "MESH",
-			"containerName": "Cube",
+			"logicalName": "cube",
 			"AssetName": "Cube",
+			"sourcePath": "/home/nathan/Projects/Ore-Forge/core/build/resources/test/models/Cube.gltf",
 			"importVersion": 1
 		},
 		"dependencies": null,
-		"uuid": "040513d5-5190-480b-a320-e3be66edc8ce"
+		"uuid": "da2b7f26-4f6b-42c6-9122-a8713c35bb92"
 	}
 }
 ]

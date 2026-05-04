@@ -12,17 +12,13 @@ public class AssetImporter {
     protected static final int IMPORT_VERSION = 1;
     protected final AssetRegistry registry;
 
-    public AssetImporter(AssetRegistry registry, Path registrySource) {
+    public AssetImporter(AssetRegistry registry) {
         this.registry = registry;
     }
 
     public void importGlbFile(Path file) {
         GltfModel contents = loadGlbFile(file);
-        List<AssetCandidate> assets = AssetExtractor.extractAssets(contents);
-        for (AssetCandidate asset : assets) {
-            //Case 1: Brand-new Asset
-            registry.createNewEntry(asset);
-        }
+        AssetExtractor.extractAssets(contents, file, registry);
     }
 
 

@@ -1,5 +1,6 @@
 package ore.forge.engine.importing;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import ore.forge.engine.serialization.Registry;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,11 +17,16 @@ import java.util.UUID;
 public class AssetRegistry {
     protected HashMap<AssetSourceKey, AssetID> idLookup;
     protected HashMap<AssetID, AssetArtifact> artifactLookup;
+    protected final Path bakedDir;
 
-    public AssetRegistry() {
+    public AssetRegistry(String bakedOutputDir) {
+        bakedDir = Path.of(bakedOutputDir);
         artifactLookup = new HashMap<>();
         idLookup = new HashMap<>();
-        //TODO: load registry from disk.
+    }
+
+    public AssetRegistry() {
+        this("assets");
     }
 
     public boolean createNewEntry(AssetCandidate candidate) {
@@ -35,12 +42,14 @@ public class AssetRegistry {
             candidate.artifact().setAssetID(id);
             artifactLookup.put(id, candidate.artifact());
             assert candidate.artifact().sourceKey().equals(candidate.sourceKey());
+            return true;
         }
-        return true;
+        throw new RuntimeException("Should not be here!");
     }
 
     public AssetArtifact lookUp(AssetSourceKey sourceKey) {
-        return artifactLookup.get(idLookup.get(sourceKey));
+        var key = idLookup.get(sourceKey);
+        return artifactLookup.get(key);
     }
 
     public void reverseLookup(AssetID id) {
@@ -76,6 +85,10 @@ public class AssetRegistry {
         return json;
     }
 
+    public Path getBakedDir() {
+        return bakedDir;
+    }
+
     @Override
     public String toString() {
         return "AssetRegistry{" +
@@ -87,7 +100,6 @@ public class AssetRegistry {
     private static class AssetRegistryData {
         private String uuid;
         private AssetArtifact artifact;
-
     }
 
     private static class AssetArtifactSerializer implements Json.Serializer<AssetArtifact> {

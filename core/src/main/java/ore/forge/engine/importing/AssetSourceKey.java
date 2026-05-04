@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class AssetSourceKey {
     private AssetType assetType; //Type of the asset (mesh, material, texture, animation)
-    private String containerName; // [CONTAINER_NAME]
+    private String logicalName; // [CONTAINER_NAME]
     private String AssetName; // [AssetName]
     private String sourcePath; //FilePath to the Object
     private int importVersion;
@@ -26,7 +26,7 @@ public class AssetSourceKey {
                           int importVersion,
                           int[] dependencyIndices) {
         this.assetType = assetType;
-        this.containerName = logicalName;
+        this.logicalName = logicalName;
         this.AssetName = displayName;
         this.sourcePath = sourcePath;
         this.importVersion = importVersion;
@@ -41,11 +41,11 @@ public class AssetSourceKey {
     }
 
     public String logicalName() {
-        return containerName;
+        return logicalName;
     }
 
-    public void setContainerName(String containerName) {
-        this.containerName = containerName;
+    public void setLogicalName(String logicalName) {
+        this.logicalName = logicalName;
     }
 
     public String displayName() {
@@ -77,26 +77,26 @@ public class AssetSourceKey {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AssetSourceKey that)) {
+        if (!(o instanceof AssetSourceKey other)) {
             return false;
         }
-        return importVersion == that.importVersion
-            && assetType == that.assetType
-            && Objects.equals(containerName, that.containerName)
-            && Objects.equals(AssetName, that.AssetName)
-            && Objects.equals(sourcePath, that.sourcePath);
+        return importVersion == other.importVersion
+            && assetType == other.assetType
+            && Objects.equals(logicalName, other.logicalName)
+            && Objects.equals(AssetName, other.AssetName)
+            && Objects.equals(sourcePath, other.sourcePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(assetType, containerName, AssetName, sourcePath, importVersion);
+        return Objects.hash(assetType, logicalName, AssetName, sourcePath, importVersion);
     }
 
     @Override
     public String toString() {
         return "AssetSourceKey{" +
             "assetType=" + assetType +
-            ", logicalName='" + containerName + '\'' +
+            ", logicalName='" + logicalName + '\'' +
             ", displayName='" + AssetName + '\'' +
             ", sourcePath='" + sourcePath + '\'' +
             ", importVersion=" + importVersion +
