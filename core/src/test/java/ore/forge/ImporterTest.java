@@ -31,7 +31,7 @@ class ImporterTest {
 
 
     @Test
-    void testImport() throws IOException {
+    void testImport() {
         AssetRegistry registry = new AssetRegistry(tmpDir.toString());
         AssetImporter importer = new AssetImporter(registry);
         Path sourceModel = modelFixture("Cube.gltf");

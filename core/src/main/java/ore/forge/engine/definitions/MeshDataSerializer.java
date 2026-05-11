@@ -43,8 +43,6 @@ public class MeshDataSerializer {
     }
 
     public void writeObject(MeshData meshData, Output output) {
-        Objects.requireNonNull(meshData, "meshData");
-        Objects.requireNonNull(output, "output");
         kryo.writeObject(output, meshData);
         output.flush();
     }

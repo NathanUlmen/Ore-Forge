@@ -2,12 +2,13 @@ package ore.forge.engine.importing;
 
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.io.GltfModelReader;
-import ore.forge.engine.AssetExtractor;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
+/** @author Nathan Ulmen
+ * AssetImporter is responsible for
+ * */
 public class AssetImporter {
     protected static final int IMPORT_VERSION = 1;
     protected final AssetRegistry registry;

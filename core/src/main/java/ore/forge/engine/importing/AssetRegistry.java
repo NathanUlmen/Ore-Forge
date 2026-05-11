@@ -1,11 +1,9 @@
 package ore.forge.engine.importing;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
-import ore.forge.engine.serialization.Registry;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -44,11 +42,11 @@ public class AssetRegistry {
             assert candidate.artifact().sourceKey().equals(candidate.sourceKey());
             return true;
         }
-        throw new RuntimeException("Should not be here!");
+        throw new IllegalStateException();
     }
 
     public AssetArtifact lookUp(AssetSourceKey sourceKey) {
-        var key = idLookup.get(sourceKey);
+        AssetID key = idLookup.get(sourceKey);
         return artifactLookup.get(key);
     }
 
@@ -58,7 +56,7 @@ public class AssetRegistry {
 
     public void load(JsonValue jsonValue) {
         Json json = getJson();
-        for (var value : jsonValue) {
+        for (JsonValue value : jsonValue) {
             AssetRegistryData data = json.readValue(AssetRegistryData.class, value);
             AssetID identifier = new AssetID(data.uuid);
             artifactLookup.put(identifier, data.artifact);
@@ -87,6 +85,14 @@ public class AssetRegistry {
 
     public Path getBakedDir() {
         return bakedDir;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AssetRegistry other) {
+            return artifactLookup.equals(other.artifactLookup) && idLookup.equals(other.idLookup);
+        }
+        return false;
     }
 
     @Override
@@ -126,12 +132,5 @@ public class AssetRegistry {
         }
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof AssetRegistry other) {
-            var result = artifactLookup.equals(other.artifactLookup) && idLookup.equals(other.idLookup);
-            return result;
-        }
-        return false;
-    }
+
 }

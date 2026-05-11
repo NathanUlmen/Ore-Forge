@@ -10,6 +10,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.TestScene;
+import ore.forge.engine.importing.AssetImporter;
+import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.profiling.Profiler;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.temp.TestItemEntity;
@@ -27,6 +29,8 @@ public class OreForge extends Game {
         initGL();
 
         //TODO: load in assets(item definitions depend/have handles to these)
+        produceRegistry();
+
 
         //TODO: load in item definitions
 
@@ -42,7 +46,7 @@ public class OreForge extends Game {
 
         //TODO: finally set screen to main gameplay
 
-        setScreen(new TestItemEntity());
+//        setScreen(new TestItemEntity());
 
 
 //        GameContext context = GameContext.INSTANCE;
@@ -84,6 +88,13 @@ public class OreForge extends Game {
         } else {
             Gdx.app.error("GL ERROR", "GL30 is not available.");
         }
+    }
+
+    private void produceRegistry() {
+//        AssetRegistry registry = new AssetRegistry();
+//        AssetImporter importer = new AssetImporter(registry);
+//        importer.importGlbFile(Gdx.files.internal("assets/models/Emerald.gltf").file().toPath());
+//        registry.save(Gdx.files.internal("registry.json").file());
     }
 
 }

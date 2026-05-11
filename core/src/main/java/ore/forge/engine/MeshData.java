@@ -32,5 +32,14 @@ public final class MeshData implements AssetData {
     public IntBuffer ebo() {
         return ebo;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MeshData other) {
+            return vbo.equals(other.vbo) && ebo.equals(other.ebo);
+        }
+        return false;
+    }
+
 }
 

@@ -1,11 +1,12 @@
-package ore.forge.engine;
+package ore.forge.engine.importing;
 
-import com.badlogic.gdx.files.FileHandle;
+import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
+import ore.forge.engine.MeshData;
+import ore.forge.engine.VertexAttribute;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
-import ore.forge.engine.importing.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,7 +21,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
 public class AssetExtractor {
+
+    enum BakedType {
+        MESH_BIN,
+        TEXTURE_BIN,
+    }
 
     public static void extractAssets(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         AssetExtractor.extractMeshes(gltfModel, sourceFile, assetRegistry);
@@ -34,6 +41,7 @@ public class AssetExtractor {
         //Register meshes
         for (MeshModel meshModel : gltfModel.getMeshModels()) {
             AssetSourceKey assetSourceKey = new AssetSourceKey();
+            meshModel.getExtras();
             assetSourceKey.setAssetName(meshModel.getName());
             assetSourceKey.setAssetType(AssetType.MESH);
             assetSourceKey.setLogicalName(sourceFile == null ? meshModel.getName() : containerName(sourceFile));
@@ -45,7 +53,6 @@ public class AssetExtractor {
 
             for (MeshPrimitiveModel primitive : meshModel.getMeshPrimitiveModels()) {
                 AttributeHolder[] buffers = new AttributeHolder[VertexAttribute.values().length];
-
                 for (Map.Entry<String, AccessorModel> entry : primitive.getAttributes().entrySet()) {
                     String attributeName = entry.getKey();
                     VertexAttribute attribute = VertexAttribute.valueOf(attributeName);
@@ -73,6 +80,7 @@ public class AssetExtractor {
             }
         }
 
+        //TODO: Extract into own method
         MeshDataSerializer serializer = new MeshDataSerializer();
         for (AssetCandidate candidate : assets) {
             if (assetRegistry.createNewEntry(candidate)) {
