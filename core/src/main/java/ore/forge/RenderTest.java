@@ -1,19 +1,12 @@
 package ore.forge;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.loaders.AssetLoader;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.badlogic.gdx.graphics.glutils.VertexBufferObject;
-import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import ore.forge.engine.MeshData;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
 import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.importing.AssetSourceKey;
-import ore.forge.engine.render.Renderer;
 
 public class RenderTest implements Screen {
     AssetRegistry registry;
@@ -26,13 +19,8 @@ public class RenderTest implements Screen {
         key.setAssetType(AssetType.MESH);
         key.setLogicalName("");
         AssetArtifact artifact = registry.lookUp(key);
-
         MeshDataSerializer serializer = new MeshDataSerializer();
         MeshData data = serializer.readObject(artifact.filepath());
-
-
-
-
     }
 
     @Override

@@ -1,7 +1,9 @@
-package ore.forge.engine.render;
+package ore.forge.engine.render.passes;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import ore.forge.engine.render.RenderCommand;
+import ore.forge.engine.render.RenderPart;
 
 import java.util.ArrayList;
 
@@ -20,7 +22,7 @@ public abstract class RenderPass {
         configureState();
     }
 
-    protected void bindShader(ShaderProgram shader, Camera camera) {
+    public void bindShader(ShaderProgram shader, Camera camera) {
         if (this.currentShader == shader) return;
         shader.bind();
         shader.setUniformMatrix("u_projView", camera.combined);

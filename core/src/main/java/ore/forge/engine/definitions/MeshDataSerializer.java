@@ -1,5 +1,7 @@
 package ore.forge.engine.definitions;
 
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
@@ -60,48 +62,48 @@ public class MeshDataSerializer {
         }
     }
 
-    private static class MeshDataKryoSerializer extends Serializer<MeshData> {
+    public static class MeshDataKryoSerializer extends Serializer<MeshData> {
         @Override
         public void write(Kryo kryo, Output output, MeshData meshData) {
-//            Objects.requireNonNull(meshData, "meshData");
-//            kryo.writeObject(output, meshData.record());
+            //VBO
+            output.writeInt(meshData.vbo().length);
+            output.writeFloats(meshData.vbo(), 0, meshData.vbo().length);
 
-            ByteBuffer vbo = meshData.vbo().duplicate();
-            vbo.rewind();
-            int vboLen = vbo.remaining();
-            output.writeInt(vboLen);
-            for (int i = 0; i < vboLen; i++) {
-                output.writeByte(vbo.get());
-            }
+            //IBO
+            output.writeInt(meshData.ibo().length);
+            output.writeShorts(meshData.ibo(), 0, meshData.ibo().length);
 
-            IntBuffer ebo = meshData.ebo().duplicate();
-            ebo.rewind();
-            int eboLen = ebo.remaining();
-            output.writeInt(eboLen);
-            for (int i = 0; i < eboLen; i++) {
-                output.writeInt(ebo.get());
+            //VertexAttributes
+            output.writeInt(meshData.attributes().size());
+            for (VertexAttribute attribute : meshData.attributes()) {
+                output.writeInt(attribute.usage);
+                output.writeInt(attribute.numComponents);
+                output.writeString(attribute.alias);
             }
         }
 
         @Override
         public MeshData read(Kryo kryo, Input input, Class<? extends MeshData> type) {
-//            AssetRecord record = kryo.readObject(input, AssetRecord.class);
+            //VBO
+            int length = input.readInt();
+            float[] vbo = input.readFloats(length);
 
-            int vboLen = input.readInt();
-            ByteBuffer vbo = ByteBuffer.allocate(vboLen);
-            for (int i = 0; i < vboLen; i++) {
-                vbo.put(input.readByte());
+            //IBO
+            int iboLen = input.readInt();
+            short[] ebo = input.readShorts(iboLen);
+
+
+            //Vertex Attributes
+            int numAttributes = input.readInt();
+            VertexAttribute[] attributes = new VertexAttribute[numAttributes];
+            for (int i = 0; i < numAttributes; i++) {
+                int usage = input.readInt();
+                int numComponents = input.readInt();
+                String alias = input.readString();
+                attributes[i] = new VertexAttribute(usage, numComponents, alias);
             }
-            vbo.flip();
 
-            int eboLen = input.readInt();
-            IntBuffer ebo = IntBuffer.allocate(eboLen);
-            for (int i = 0; i < eboLen; i++) {
-                ebo.put(input.readInt());
-            }
-            ebo.flip();
-
-            return new MeshData(vbo, ebo);
+            return new MeshData(new VertexAttributes(attributes), vbo, ebo);
         }
     }
 }

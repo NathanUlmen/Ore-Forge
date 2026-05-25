@@ -1,4 +1,8 @@
 package ore.forge.engine;
 
-public sealed interface AssetData permits MeshData, TextureData {
+/**@author Nathan Ulmen
+ *
+ *
+ * */
+public sealed interface AssetData permits AnimationData, MaterialData, MeshData, TextureData {
 }

@@ -1,4 +1,4 @@
-package ore.forge;
+package ore.forge.serialization;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;

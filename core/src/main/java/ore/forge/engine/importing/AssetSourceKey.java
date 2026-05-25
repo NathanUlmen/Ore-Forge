@@ -6,16 +6,21 @@ import ore.forge.engine.definitions.AssetType;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * @author Nathan Ulmen
+ * <p>
+ * An {@link AssetSourceKey} is used to map to an {@link AssetID}. It should not be used in any gameplay systems and is
+ * only used at the beginning of the import pipeline
+ */
 public class AssetSourceKey {
     private AssetType assetType; //Type of the asset (mesh, material, texture, animation)
     private String logicalName; // [CONTAINER_NAME]
-    private String AssetName; // [AssetName]
+    private String assetName; // [AssetName]
     private String sourcePath; //FilePath to the Object
     private int importVersion;
 
 
     public AssetSourceKey() {
-
     }
 
     public AssetSourceKey(UUID guid,
@@ -27,11 +32,15 @@ public class AssetSourceKey {
                           int[] dependencyIndices) {
         this.assetType = assetType;
         this.logicalName = logicalName;
-        this.AssetName = displayName;
+        this.assetName = displayName;
         this.sourcePath = sourcePath;
         this.importVersion = importVersion;
     }
 
+    /**
+     *
+     * @return The type of the asset that this source key corresponds to.
+     */
     public AssetType assetType() {
         return assetType;
     }
@@ -40,6 +49,10 @@ public class AssetSourceKey {
         this.assetType = assetType;
     }
 
+    /**
+     * @return the name of the container that this asset came from.
+     *
+     */
     public String logicalName() {
         return logicalName;
     }
@@ -49,11 +62,11 @@ public class AssetSourceKey {
     }
 
     public String displayName() {
-        return AssetName;
+        return assetName;
     }
 
     public void setAssetName(String assetName) {
-        this.AssetName = assetName;
+        this.assetName = assetName;
     }
 
     public String sourcePath() {
@@ -83,13 +96,13 @@ public class AssetSourceKey {
         return importVersion == other.importVersion
             && assetType == other.assetType
             && Objects.equals(logicalName, other.logicalName)
-            && Objects.equals(AssetName, other.AssetName)
+            && Objects.equals(assetName, other.assetName)
             && Objects.equals(sourcePath, other.sourcePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(assetType, logicalName, AssetName, sourcePath, importVersion);
+        return Objects.hash(assetType, logicalName, assetName, sourcePath, importVersion);
     }
 
     @Override
@@ -97,7 +110,7 @@ public class AssetSourceKey {
         return "AssetSourceKey{" +
             "assetType=" + assetType +
             ", logicalName='" + logicalName + '\'' +
-            ", displayName='" + AssetName + '\'' +
+            ", displayName='" + assetName + '\'' +
             ", sourcePath='" + sourcePath + '\'' +
             ", importVersion=" + importVersion +
             '}';

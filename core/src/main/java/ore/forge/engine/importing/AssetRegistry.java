@@ -7,16 +7,26 @@ import com.badlogic.gdx.utils.JsonWriter;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+/**
+ * @author Nathan Ulmen
+ * <p>
+ * An AssetRegisty enables the engine to Map references/ids
+ * to assets that are stored on disk.
+ * <p>
+ * The registry is populated using via JSON.
+ *
+ */
 public class AssetRegistry {
     protected HashMap<AssetSourceKey, AssetID> idLookup;
     protected HashMap<AssetID, AssetArtifact> artifactLookup;
     protected final Path bakedDir;
 
+    /**
+     * @param bakedOutputDir directory registry will save to.
+     *
+     */
     public AssetRegistry(String bakedOutputDir) {
         bakedDir = Path.of(bakedOutputDir);
         artifactLookup = new HashMap<>();
@@ -27,6 +37,12 @@ public class AssetRegistry {
         this("assets");
     }
 
+    /**
+     * Creates a new entry in the registry if it's not currently present.
+     *
+     * @param candidate - Asset candidate that might not already be present in the registry.
+     * @return true if new entry was created, false if already present.
+     */
     public boolean createNewEntry(AssetCandidate candidate) {
         //Case 1: source Key already mapped to a UUID: do nothing
         if (idLookup.get(candidate.sourceKey()) != null) {
@@ -50,10 +66,29 @@ public class AssetRegistry {
         return artifactLookup.get(key);
     }
 
-    public void reverseLookup(AssetID id) {
-
+    /**
+     *
+     * @param id a reference to an asset.
+     * @return an {@link AssetArtifact} that the corresponding id references.
+     */
+    public AssetArtifact lookUp(AssetID id) {
+        return artifactLookup.get(id);
     }
 
+    /**
+     * @return {@link Iterable}of all {@link AssetID}'s stored in the registry.
+     */
+    public Iterable<AssetID> getIDs() {
+        return idLookup.values();
+    }
+
+    /**
+     * Extracts {@link AssetRegistryData} from a {@link JsonValue} and appends it to the {@link AssetRegistry}.
+     * This operation doesn't overwrite existing values, but does add/append to the data currently stored in the {@link AssetRegistry}.
+     *
+     * @param jsonValue JSON data comprised of {@link AssetRegistryData} to be loaded into the {@link AssetRegistry}
+     *
+     */
     public void load(JsonValue jsonValue) {
         Json json = getJson();
         for (JsonValue value : jsonValue) {
@@ -64,7 +99,13 @@ public class AssetRegistry {
         }
     }
 
-    public void save(File output) {
+    /**
+     * Saves the {@link AssetRegistry} and all data to disk.
+     * Does not mutate it in any way.
+     *
+     * @param outputFile Location the registry data will be written to.
+     */
+    public void save(File outputFile) {
         ArrayList<AssetRegistryData> data = new ArrayList<>();
         for (Map.Entry<AssetID, AssetArtifact> entry : artifactLookup.entrySet()) {
             AssetRegistryData dataItem = new AssetRegistryData();
@@ -73,7 +114,7 @@ public class AssetRegistry {
             data.add(dataItem);
         }
         Json json = this.getJson();
-        new FileHandle(output).writeString(json.prettyPrint(data), false);
+        new FileHandle(outputFile).writeString(json.prettyPrint(data), false);
     }
 
     private Json getJson() {

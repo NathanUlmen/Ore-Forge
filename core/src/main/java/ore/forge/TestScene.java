@@ -7,8 +7,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector3;
-import ore.forge.engine.profiling.Profiler;
+import ore.forge.engine.GpuResourceManager;
+import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.render.*;
+import ore.forge.engine.render.passes.BasicRenderPass;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
 import ore.forge.engine.profiling.Stopwatch;
@@ -31,15 +33,14 @@ public class TestScene implements Screen {
     // Keep all parts around (don’t recreate every frame)
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(1_000);
 
-    public TestScene() {
+    public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
         profiler = new GLProfiler(Gdx.graphics);
         profiler.enable();
 
         basicRenderPass = new BasicRenderPass();
 
-        AssetHandler handler = new AssetHandler();
-        renderer = new Renderer();
+        renderer = new Renderer(resourceManager);
         renderer.addRenderPass(basicRenderPass);
 
         camera = new PerspectiveCamera(67f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -54,7 +55,6 @@ public class TestScene implements Screen {
 
         // Shared material (same shader)
         MaterialHandle materialHandle = new MaterialHandle();
-        materialHandle.shader = renderer.renderPasses().getFirst().currentShader;
 
         // ---- Build 1000 parts in a grid ----
         final int cols = 50;             // 40 * 25 = 1000
@@ -70,8 +70,7 @@ public class TestScene implements Screen {
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                var meshHandles = handler.meshHandles;
-                MeshHandle meshHandle = meshHandles.get(x % meshHandles.size());
+                MeshHandle meshHandle = (MeshHandle) resourceManager.getHandle(assetRegistry.getIDs().iterator().next());
                 RenderPart part = RenderPart.defaultRenderPart(meshHandle);
 
                 // IMPORTANT: don’t mutate an existing transform with translate() chaining if it accumulates
@@ -116,7 +115,6 @@ public class TestScene implements Screen {
         stopwatch.stop();
         System.out.println("Draw Calls: " + profiler.getDrawCalls());
         profiler.reset();
-        Profiler.INSTANCE.log(stopwatch.elapsed(), Gdx.graphics.getFramesPerSecond());
     }
 
     @Override public void resize(int width, int height) {

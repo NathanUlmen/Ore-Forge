@@ -1,111 +1,163 @@
 package ore.forge.engine.render;
 
-import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.OrientedBoundingBox;
+import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import com.badlogic.gdx.utils.BufferUtils;
-import com.badlogic.gdx.utils.Pool;
+import ore.forge.engine.GpuResourceManager;
+import ore.forge.engine.render.passes.RenderPass;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Nathan Ulmen
- * Is responsible For sorting, batching, and instancing draw calls. *
- */
-public class Renderer extends EntitySystem {
-    public static final int MAX_INSTANCED_DRAW = 10_000;
-    private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
-    private final FloatBuffer instanceBuffer;
+public class Renderer {
+    private static final int FLOATS_PER_INSTANCE = 16;
+    private static final int BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * Float.BYTES;
+    private static final int INSTANCE_ATTRIB_LOCATION = 4;
     private final int instanceVbo;
-    private final Pool<RenderCommand> renderCommandPool;
+    private FloatBuffer instanceBuffer;
+    private int instanceCapacity;
 
-    public Renderer() {
-        instanceBuffer = BufferUtils.newFloatBuffer(10_000_000);
-        instanceVbo = Gdx.gl30.glGenBuffer();
-        renderCommandPool = new Pool<>(10_000) {
-            @Override
-            protected RenderCommand newObject() {
-                return new RenderCommand();
-            }
-        };
+    private final GpuResourceManager gpuResourceManager;
+    private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
+    private final ArrayList<RenderCommand> commandBuffer = new ArrayList<>();
 
 
+    public Renderer(GpuResourceManager gpuResourceManager) {
+        this.gpuResourceManager = gpuResourceManager;
+        this.instanceCapacity = 1024;
+        this.instanceBuffer = BufferUtils.newFloatBuffer(instanceCapacity * FLOATS_PER_INSTANCE);
+        this.instanceVbo = Gdx.gl30.glGenBuffer();
         Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
         Gdx.gl30.glBufferData(
             GL30.GL_ARRAY_BUFFER,
-            instanceBuffer.capacity() * Float.BYTES,
+            instanceCapacity * BYTES_PER_INSTANCE,
             null,
             GL30.GL_STREAM_DRAW
         );
+        Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
     }
 
     public void render(List<RenderPart> toRender, Camera camera) {
-//        toRender = frustumCull(camera, toRender);
-        for (RenderPass pass : renderPasses) {
-            ArrayList<RenderCommand> commands = new ArrayList<>(toRender.size());
-            for (RenderPart part : toRender) {
-                if (pass.accepts(part)) {
-                    RenderCommand command = renderCommandPool.obtain();
-                    command.init(part);
-                    commands.add(command);
+        for (RenderPass renderPass : renderPasses) {
+            commandBuffer.clear();
+
+            //Create RenderCommands
+            for (RenderPart renderPart : toRender) {
+                if (renderPass.accepts(renderPart)) {
+                    RenderCommand renderCommand = new RenderCommand();
+                    renderCommand.init(renderPart);
+                    commandBuffer.add(renderCommand);
                 }
             }
 
-            if (!commands.isEmpty()) {
-                pass.sort(commands);
+            if (!commandBuffer.isEmpty()) {
+                renderPass.sort(commandBuffer);
 
-                pass.begin(camera);
+                renderPass.begin(camera);
 
-                drawCommands(commands, pass, camera);
+                drawCommands(renderPass, camera);
 
-                pass.end();
+                renderPass.end();
             }
-            for (RenderCommand command : commands) {
-                renderCommandPool.free(command);
-            }
+
         }
     }
 
-    /**
-     * @param commands - a list of objects that are within camera frustum.
-     *
-     */
-    private void drawCommands(ArrayList<RenderCommand> commands, RenderPass pass, Camera camera) {
+    private void drawCommands(RenderPass renderPass, Camera camera) {
         int startIndex = 0;
 
-        while (startIndex < commands.size()) {
-            RenderCommand first = commands.get(startIndex);
+        while (startIndex < commandBuffer.size()) {
+            RenderCommand first = commandBuffer.get(startIndex);
 
             int endIndex = startIndex + 1;
-            while (endIndex < commands.size()
-                && canInstance(first, commands.get(endIndex))) {
+            while (endIndex < commandBuffer.size()
+                && canInstance(first, commandBuffer.get(endIndex))) {
                 endIndex++;
             }
 
-            MaterialHandle material = first.materialHandle;
-            pass.bindShader(material.shader, camera);
+            GpuMeshResource meshResource = (GpuMeshResource) gpuResourceManager.getGpuResource(first.meshHandle);
+            renderPass.bindShader(renderPass.currentShader, camera);
+            VertexBufferObjectWithVAO vbo = meshResource.vbo();
+            vbo.bind(renderPass.currentShader);
+            meshResource.ibo().bind();
 
-            material.bind();
+            int instanceCount = endIndex - startIndex;
+            ensureInstanceCapacity(instanceCount);
+            bindInstanceAttributes();
+            uploadInstanceData(startIndex, endIndex);
+            drawInstanced(meshResource, instanceCount);
 
-            MeshHandle mesh = first.meshHandle;
-            Gdx.gl30.glBindVertexArray(mesh.vao);
-
-            int count = endIndex - startIndex;
-            if (count > 1) {
-                drawInstanced(commands, startIndex, endIndex);
-            } else {
-                drawInstanced(commands, startIndex, startIndex + 1);
-            }
-
+            meshResource.ibo().unbind();
+            vbo.unbind(renderPass.currentShader);
             startIndex = endIndex;
         }
+    }
+
+    private void ensureInstanceCapacity(int instanceCount) {
+        if (instanceCount <= instanceCapacity) {
+            return;
+        }
+
+        instanceCapacity = Math.max(instanceCapacity * 2, instanceCount);
+        instanceBuffer = BufferUtils.newFloatBuffer(instanceCapacity * FLOATS_PER_INSTANCE);
+        Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
+        Gdx.gl30.glBufferData(
+            GL30.GL_ARRAY_BUFFER,
+            instanceCapacity * BYTES_PER_INSTANCE,
+            null,
+            GL30.GL_STREAM_DRAW
+        );
+        Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, 0);
+    }
+
+    private void bindInstanceAttributes() {
+        Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
+
+        for (int column = 0; column < 4; column++) {
+            int location = INSTANCE_ATTRIB_LOCATION + column;
+            int offsetBytes = column * 4 * Float.BYTES;
+
+            Gdx.gl30.glEnableVertexAttribArray(location);
+            Gdx.gl30.glVertexAttribPointer(
+                location,
+                4,
+                GL20.GL_FLOAT,
+                false,
+                BYTES_PER_INSTANCE,
+                offsetBytes
+            );
+            Gdx.gl30.glVertexAttribDivisor(location, 1);
+        }
+    }
+
+    private void uploadInstanceData(int startIndex, int endIndex) {
+        instanceBuffer.clear();
+        for (int i = startIndex; i < endIndex; i++) {
+            instanceBuffer.put(commandBuffer.get(i).worldTransform.val);
+        }
+        instanceBuffer.flip();
+
+        Gdx.gl30.glBindBuffer(GL30.GL_ARRAY_BUFFER, instanceVbo);
+        Gdx.gl30.glBufferSubData(
+            GL30.GL_ARRAY_BUFFER,
+            0,
+            instanceBuffer.remaining() * Float.BYTES,
+            instanceBuffer
+        );
+    }
+
+    private void drawInstanced(GpuMeshResource meshResource, int instanceCount) {
+        Gdx.gl30.glDrawElementsInstanced(
+            GL20.GL_TRIANGLES,
+            meshResource.indexCount(),
+            meshResource.indexType(),
+            meshResource.indexOffsetBytes(),
+            instanceCount
+        );
     }
 
     public boolean canInstance(RenderCommand a, RenderCommand b) {
@@ -114,67 +166,13 @@ public class Renderer extends EntitySystem {
             a.flags == b.flags;
     }
 
-    public void drawInstanced(ArrayList<RenderCommand> commands, int start, int end) {
-        final var gl = Gdx.gl30;
+    public void addRenderPass(RenderPass renderPass) {
+        renderPasses.add(renderPass);
+    }
 
-        int instanceCount = end - start;
-        MeshHandle mesh = commands.get(start).meshHandle;
-
-        // Build instance data
-        instanceBuffer.clear();
-        for (int i = start; i < end; i++) {
-            RenderCommand cmd = commands.get(i);
-            // write mat4
-            instanceBuffer.put(cmd.worldTransform.val);
-        }
-        instanceBuffer.flip();
-
-        //Upload instance buffer
-        gl.glBindBuffer(GL30.GL_ARRAY_BUFFER, mesh.instanceVBO);
-        gl.glBufferSubData(
-            GL30.GL_ARRAY_BUFFER,
-            0,
-            instanceBuffer.remaining() * Float.BYTES,
-            instanceBuffer
-        );
-
-        //instanced draw call
-        gl.glDrawElementsInstanced(
-            GL20.GL_TRIANGLES,
-            mesh.indexCount,
-            GL20.GL_UNSIGNED_INT,
-            mesh.indexOffsetBytes,
-            instanceCount
-        );
-
+    public void removeRenderPass(RenderPass targetPass) {
+        renderPasses.remove(targetPass);
     }
 
 
-    /*
-    * To make this faster in the future we could:
-    * Break it down so hot spot will vectorize it.
-    * Ensure that toCull is built from an acceleration structure to cut large parts of world out
-    * Have OrientedBoundingBox be a property of RenderPart and update it when it becomes dirty
-    *  */
-    public List<RenderPart> frustumCull(Camera camera, List<RenderPart> toCull) {
-        List<RenderPart> culled = new ArrayList<>(toCull.size());
-        for (RenderPart part : toCull) {
-            Matrix4 transform = part.transform;
-            BoundingBox box = part.meshHandle.boundingBox;
-            OrientedBoundingBox orientedBoundingBox = new OrientedBoundingBox(box, transform);
-            if (camera.frustum.boundsInFrustum(orientedBoundingBox)) {
-                culled.add(part);
-            }
-        }
-
-        return culled;
-    }
-
-    public void addRenderPass(RenderPass pass) {
-        renderPasses.add(pass);
-    }
-
-    public List<RenderPass> renderPasses() {
-        return renderPasses;
-    }
 }

@@ -1,18 +1,18 @@
-package ore.forge;
+package ore.forge.serialization;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
+import ore.forge.engine.AssetData;
+import ore.forge.engine.AssetDataSerializer;
+import ore.forge.engine.GpuResourceManager;
 import ore.forge.engine.MeshData;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
-import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetImporter;
-import ore.forge.engine.importing.AssetRegistry;
-import ore.forge.engine.importing.AssetSourceKey;
+import ore.forge.engine.importing.*;
+import ore.forge.engine.render.AssetHandle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,22 +57,15 @@ class ImporterTest {
         MeshData importedMesh = new MeshDataSerializer().readObject(importedArtifact.filepath());
         assertNotNull(importedMesh);
         assertInstanceOf(MeshData.class, importedMesh);
-        assertTrue(importedMesh.vbo().remaining() > 0);
-        assertTrue(importedMesh.ebo().remaining() > 0);
+        assertTrue(importedMesh.vbo().length > 0);
+        assertTrue(importedMesh.ibo().length > 0);
     }
 
     @Test
     void testRegistryLoadSaveLoad() throws URISyntaxException {
         // Load registry from test resource
-        Path resourcePath = Paths.get(
-            Objects.requireNonNull(
-                getClass().getClassLoader().getResource("registry/basicRegistry.json")
-            ).toURI()
-        );
-
         AssetRegistry registry = new AssetRegistry();
-        JsonReader reader = new JsonReader();
-        registry.load(reader.parse(new FileHandle(resourcePath.toFile())));
+        initRegistry(registry);
 
         // Save it to a temp file
         Path output = tmpDir.resolve("savedRegistry.json");
@@ -82,10 +75,36 @@ class ImporterTest {
 
         // Load saved registry again
         AssetRegistry loadedRegistry = new AssetRegistry();
+        JsonReader reader = new JsonReader();
         loadedRegistry.load(reader.parse(new FileHandle(output.toFile())));
 
         // Verify round-trip result
         assertEquals(registry, loadedRegistry);
+    }
+
+    private void initRegistry(AssetRegistry registry) throws URISyntaxException {
+        Path resourcePath = Paths.get(
+            Objects.requireNonNull(
+                getClass().getClassLoader().getResource("registry/basicRegistry.json")
+            ).toURI()
+        );
+
+        JsonReader reader = new JsonReader();
+        registry.load(reader.parse(new FileHandle(resourcePath.toFile())));
+    }
+
+
+    @Test
+    void testSerialization() throws URISyntaxException {
+        TestRegistry registry = new TestRegistry();
+        AssetImporter importer = new AssetImporter(registry);
+        importer.importGlbFile(modelFixture("Cube.gltf"));
+        GpuResourceManager resourceManager = new GpuResourceManager(registry);
+
+
+        for (AssetID id : registry.getIds()) {
+            assertNotNull(resourceManager.retrieveData(id));
+        }
     }
 
     private Path modelFixture(String fileName) {
@@ -94,6 +113,14 @@ class ImporterTest {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to resolve fixture: " + fileName, e);
         }
+    }
+
+    private static class TestRegistry extends AssetRegistry {
+
+        public Iterable<AssetID> getIds() {
+            return idLookup.values();
+        }
+
     }
 
 }

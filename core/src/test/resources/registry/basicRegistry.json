@@ -7,7 +7,7 @@
 		"sourceKey": {
 			"assetType": "MESH",
 			"logicalName": "cube",
-			"AssetName": "Cube",
+			"assetName": "Cube",
 			"sourcePath": "/home/nathan/Projects/Ore-Forge/core/build/resources/test/models/Cube.gltf",
 			"importVersion": 1
 		},

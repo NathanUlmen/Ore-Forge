@@ -1,4 +1,5 @@
 package ore.forge.engine.render;
 
-public class TextureHandle {
+public final class TextureHandle implements AssetHandle {
+
 }

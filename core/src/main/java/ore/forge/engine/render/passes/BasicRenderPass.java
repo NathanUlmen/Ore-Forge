@@ -1,9 +1,11 @@
-package ore.forge.engine.render;
+package ore.forge.engine.render.passes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import ore.forge.engine.render.RenderCommand;
+import ore.forge.engine.render.RenderPart;
 
 import java.util.ArrayList;
 
