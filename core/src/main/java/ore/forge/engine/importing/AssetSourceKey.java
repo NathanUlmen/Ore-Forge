@@ -23,8 +23,7 @@ public class AssetSourceKey {
     public AssetSourceKey() {
     }
 
-    public AssetSourceKey(UUID guid,
-                          AssetType assetType,
+    public AssetSourceKey(AssetType assetType,
                           String logicalName,
                           String displayName,
                           String sourcePath,

@@ -1,13 +1,10 @@
 package ore.forge.engine.importing;
 
-import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
-import ore.forge.engine.MeshData;
-import ore.forge.engine.VertexAttribute;
+import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.definitions.MeshDataSerializer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +34,7 @@ public class AssetExtractor {
 
     public static void extractAssets(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         AssetExtractor.extractMeshes(gltfModel, sourceFile, assetRegistry);
-        AssetExtractor.extractTextures(gltfModel);
+        AssetExtractor.extractTextures(gltfModel, sourceFile, assetRegistry);
     }
 
     public static void extractMeshes(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
@@ -46,16 +43,7 @@ public class AssetExtractor {
         ensureDirectory(meshOutput);
         //Register meshes
         for (MeshModel meshModel : gltfModel.getMeshModels()) {
-            AssetSourceKey assetSourceKey = new AssetSourceKey();
-            meshModel.getExtras();
-            assetSourceKey.setAssetName(meshModel.getName());
-            assetSourceKey.setAssetType(AssetType.MESH);
-            assetSourceKey.setLogicalName(sourceFile == null ? meshModel.getName() : containerName(sourceFile));
-            if (sourceFile != null) {
-                assetSourceKey.setSourcePath(sourceFile.toString());
-            }
-            assetSourceKey.setImportVersion(AssetImporter.IMPORT_VERSION);
-
+            AssetSourceKey sourceKey = createAssetSourceKey(AssetType.MESH, meshModel, sourceFile);
 
             for (MeshPrimitiveModel primitive : meshModel.getMeshPrimitiveModels()) {
                 AttributeHolder[] buffers = new AttributeHolder[VertexAttribute.values().length];
@@ -73,22 +61,16 @@ public class AssetExtractor {
                 MeshData data = new MeshData(attributes, finalizedVbo, finalizedEbo);
                 //TODO figure out dependencies...
 
-                Path finalizedOutTarget = meshOutput.resolve(meshModel.getName() + ".meshbin");
-                ensureDirectory(finalizedOutTarget.getParent());
-
-                AssetArtifact artifact = new AssetArtifact(
-                    finalizedOutTarget.toString(),
-                    null,
-                    assetSourceKey,
-                    null
-                );
-                AssetCandidate candidate = new AssetCandidate(assetSourceKey, data, artifact);
-                assets.add(candidate);
+                assets.add(createCandidate(meshModel, meshOutput, sourceKey, data));
             }
         }
 
-        //TODO: Extract into own method
-        MeshDataSerializer serializer = new MeshDataSerializer();
+        bakeToDisk(assetRegistry, assets);
+
+    }
+
+    private static void bakeToDisk(AssetRegistry assetRegistry, ArrayList<AssetCandidate> assets) {
+        AssetDataSerializer serializer = new AssetDataSerializer();
         for (AssetCandidate candidate : assets) {
             if (assetRegistry.createNewEntry(candidate)) {
                 if (candidate.assetData() instanceof MeshData meshData) {
@@ -103,7 +85,19 @@ public class AssetExtractor {
                 }
             }
         }
+    }
 
+    private static AssetCandidate createCandidate(NamedModelElement modelElement, Path assetOutput, AssetSourceKey sourceKey, AssetData data) {
+        Path finalizedOutTarget = assetOutput.resolve(modelElement.getName() + ".meshbin");
+        ensureDirectory(finalizedOutTarget.getParent());
+
+        AssetArtifact artifact = new AssetArtifact(
+            finalizedOutTarget.toString(),
+            null,
+            sourceKey,
+            null
+        );
+        return new AssetCandidate(sourceKey, data, artifact);
     }
 
     private static VertexAttributes createAttributes(AttributeHolder... attributes) {
@@ -207,11 +201,24 @@ public class AssetExtractor {
         return finalizedIndexBuffer;
     }
 
-    public static List<AssetCandidate> extractTextures(GltfModel gltfModel) {
+    public static void extractTextures(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         ArrayList<AssetCandidate> assets = new ArrayList<>();
+
+        Path textureOutput = assetRegistry.getBakedDir().resolve("meshes");
+        ensureDirectory(textureOutput);
         for (TextureModel textureModel : gltfModel.getTextureModels()) {
+            AssetSourceKey assetSourceKey = createAssetSourceKey(AssetType.TEXTURE, textureModel, sourceFile);
+            int byteLength = textureModel.getImageModel().getBufferViewModel().getByteLength();
+            int offset = textureModel.getImageModel().getBufferViewModel().getByteOffset();
+
+            ByteBuffer imageData = textureModel.getImageModel().getImageData();
+            TextureData textureData = new TextureData(imageData, offset, byteLength);
+
+            assets.add(createCandidate(textureModel, textureOutput, assetSourceKey, textureData));
+
         }
-        return assets;
+
+        bakeToDisk(assetRegistry, assets);
     }
 
     public static Path ensureDirectory(Path dir) {
@@ -222,5 +229,10 @@ public class AssetExtractor {
         }
     }
 
+    private static AssetSourceKey createAssetSourceKey(AssetType assetType, NamedModelElement namedModelElement, Path sourceFile) {
+        String assetName = namedModelElement.getName();
+        String logicalName = sourceFile == null ? namedModelElement.getName() : containerName(sourceFile);
+        return new AssetSourceKey(assetType, logicalName, assetName, sourceFile.toString(), AssetImporter.IMPORT_VERSION, null);
+    }
 
 }

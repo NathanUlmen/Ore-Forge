@@ -54,6 +54,13 @@ public class AssetDataSerializer {
         this(POOL_MAX);
     }
 
+    public void writeObject(AssetData assetData, Output output) {
+        Kryo kryo = kryoPool.obtain();
+        kryo.writeObject(output, assetData);
+        output.flush();
+    }
+
+
     public AssetData load(AssetArtifact assetArtifact) {
         Kryo kryo = kryoPool.obtain();
         try (Input input = new Input(Files.newInputStream(assetArtifact.filepath()))) {
