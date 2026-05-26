@@ -2,6 +2,15 @@ package ore.forge.engine.importing;
 
 import java.util.UUID;
 
+/**
+ * @author Nathan Ulmen
+ * An AssetID can be used to reference assets
+ * in the engine.
+ * <p>
+ * Each AssetID should map to exactly one Asset.
+ *
+ *
+ */
 public class AssetID {
     private final UUID uuid;
 

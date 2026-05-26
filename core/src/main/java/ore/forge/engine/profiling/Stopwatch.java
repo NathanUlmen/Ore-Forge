@@ -27,6 +27,12 @@ public final class Stopwatch {
         this.unit = unit;
     }
 
+    public Stopwatch(TimeUnit unit, boolean startOnCreate) {
+        if (unit == null) throw new IllegalArgumentException("TimeUnit must not be null");
+        this.unit = unit;
+        if (startOnCreate) this.start();
+    }
+
     /**
      * Starts if NEW or STOPPED; no-op if already RUNNING.
      */

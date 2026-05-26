@@ -2,16 +2,16 @@ package ore.forge.engine;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import ore.forge.engine.importing.AssetArtifact;
 import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
-import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.render.*;
 
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Nathan Ulmen
@@ -27,7 +27,6 @@ public class GpuResourceManager {
     private final HashMap<AssetID, AssetData> lookup;
     private final HashMap<AssetID, AssetHandle> handles;
     private final HashMap<AssetHandle, GpuResource> gpuResources;
-
 
     public GpuResourceManager(AssetRegistry registry) {
         this.registry = registry;
