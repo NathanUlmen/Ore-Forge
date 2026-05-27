@@ -2,10 +2,7 @@ package ore.forge.serialization;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
-import ore.forge.engine.AssetData;
-import ore.forge.engine.AssetDataSerializer;
-import ore.forge.engine.GpuResourceManager;
-import ore.forge.engine.MeshData;
+import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
 import ore.forge.engine.importing.*;
@@ -13,16 +10,15 @@ import ore.forge.engine.render.AssetHandle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ImporterTest {
 
@@ -48,7 +44,6 @@ class ImporterTest {
         registry.save(output.toFile());
 
         AssetArtifact importedArtifact = registry.lookUp(sourceKey);
-        System.out.println(importedArtifact);
         assertNotNull(importedArtifact);
         assertEquals(sourceKey, importedArtifact.sourceKey());
         assertTrue(importedArtifact.filepath().startsWith(tmpDir));
@@ -93,7 +88,6 @@ class ImporterTest {
         registry.load(reader.parse(new FileHandle(resourcePath.toFile())));
     }
 
-
     @Test
     void testSerialization() throws URISyntaxException {
         TestRegistry registry = new TestRegistry();
@@ -106,6 +100,29 @@ class ImporterTest {
             assertNotNull(resourceManager.retrieveData(id));
         }
     }
+
+    @Test
+    void testTextureImport() throws IOException {
+        AssetRegistry registry = new AssetRegistry(tmpDir.toString());
+        AssetImporter importer = new AssetImporter(registry);
+        GpuResourceManager resourceManager = new GpuResourceManager(registry);
+        importer.importGlbFile(modelFixture("texture_test.glb"));
+
+        byte[] pngBytes = Files.readAllBytes(modelFixture("test_tex01.png"));
+        AssetData data = null;
+
+        for (AssetID id : registry.getIDs()) {
+            if (registry.lookUp(id).sourceKey().assetType() == AssetType.TEXTURE) {
+                System.out.println(registry.lookUp(id));
+                data = resourceManager.retrieveData(id);
+            }
+        }
+
+        if (data instanceof TextureData textureData) {
+            assertArrayEquals(pngBytes, textureData.encodedBytes());
+        }
+    }
+
 
     private Path modelFixture(String fileName) {
         try {

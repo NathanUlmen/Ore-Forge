@@ -9,6 +9,7 @@ import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
 import ore.forge.engine.importing.AssetArtifact;
 import ore.forge.engine.importing.AssetSourceKey;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +20,7 @@ public class AssetDataSerializer {
     private final Pool<Kryo> kryoPool;
 
     public AssetDataSerializer(int poolMax) {
-        kryoPool = new  Pool<>(false, true, poolMax) {
+        kryoPool = new Pool<>(false, true, poolMax) {
             protected Kryo create() {
                 Kryo kryo = new Kryo();
 
@@ -32,7 +33,7 @@ public class AssetDataSerializer {
 
                     @Override
                     public UUID read(Kryo kryo, Input input, Class<? extends UUID> type) {
-                        long hi =  input.readLong();
+                        long hi = input.readLong();
                         long lo = input.readLong();
                         return new UUID(hi, lo);
                     }
@@ -44,6 +45,20 @@ public class AssetDataSerializer {
 
                 kryo.register(MeshData.class, new MeshDataSerializer.MeshDataKryoSerializer());
                 //TODO: Register other loaders for each type of AssetData.
+                kryo.register(TextureData.class, new Serializer<TextureData>() {
+                    @Override
+                    public void write(Kryo kryo, Output output, TextureData object) {
+                        output.writeInt(object.encodedBytes().length);
+                        output.writeBytes(object.encodedBytes());
+                    }
+
+                    @Override
+                    public TextureData read(Kryo kryo, Input input, Class type) {
+                        int length = input.readInt();
+                        byte[] bytes = input.readBytes(length);
+                        return new TextureData(bytes);
+                    }
+                });
 
                 return kryo;
             }
@@ -72,7 +87,7 @@ public class AssetDataSerializer {
             };
         } catch (IOException e) {
             System.out.println(e);
-            throw new RuntimeException("Failed to read mesh data from: " + assetArtifact.filepath(), e);
+            throw new RuntimeException("Failed to read data from: " + assetArtifact.filepath(), e);
         } finally {
             kryoPool.free(kryo);
         }

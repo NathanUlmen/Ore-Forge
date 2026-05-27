@@ -73,22 +73,27 @@ public class AssetExtractor {
         AssetDataSerializer serializer = new AssetDataSerializer();
         for (AssetCandidate candidate : assets) {
             if (assetRegistry.createNewEntry(candidate)) {
-                if (candidate.assetData() instanceof MeshData meshData) {
-                    try (
-                        OutputStream outputStream = Files.newOutputStream(candidate.artifact().filepath());
-                        Output output = new Output(outputStream)) {
-                        serializer.writeObject(meshData, output);
-
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                try (
+                    OutputStream outputStream = Files.newOutputStream(candidate.artifact().filepath());
+                    Output output = new Output(outputStream)) {
+                    serializer.writeObject(candidate.assetData(), output);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
     }
 
+    private static String outputExtension(AssetType assetType) {
+        return switch (assetType) {
+            case MESH -> ".meshbin";
+            case TEXTURE -> ".texbin";
+            default -> throw new UnsupportedOperationException("Importer does not support asset of type: " + assetType);
+        };
+    }
+
     private static AssetCandidate createCandidate(NamedModelElement modelElement, Path assetOutput, AssetSourceKey sourceKey, AssetData data) {
-        Path finalizedOutTarget = assetOutput.resolve(modelElement.getName() + ".meshbin");
+        Path finalizedOutTarget = assetOutput.resolve(modelElement.getName() + outputExtension(sourceKey.assetType()));
         ensureDirectory(finalizedOutTarget.getParent());
 
         AssetArtifact artifact = new AssetArtifact(
@@ -204,20 +209,20 @@ public class AssetExtractor {
     public static void extractTextures(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         ArrayList<AssetCandidate> assets = new ArrayList<>();
 
-        Path textureOutput = assetRegistry.getBakedDir().resolve("meshes");
+        Path textureOutput = assetRegistry.getBakedDir().resolve("textures");
         ensureDirectory(textureOutput);
         for (TextureModel textureModel : gltfModel.getTextureModels()) {
             AssetSourceKey assetSourceKey = createAssetSourceKey(AssetType.TEXTURE, textureModel, sourceFile);
             int byteLength = textureModel.getImageModel().getBufferViewModel().getByteLength();
             int offset = textureModel.getImageModel().getBufferViewModel().getByteOffset();
 
-            ByteBuffer imageData = textureModel.getImageModel().getImageData();
-            TextureData textureData = new TextureData(imageData, offset, byteLength);
+            ByteBuffer imageData = textureModel.getImageModel().getImageData().duplicate();
+            byte[] bytes = new byte[imageData.remaining()];
+            imageData.get(bytes);
+            TextureData textureData = new TextureData(bytes);
 
             assets.add(createCandidate(textureModel, textureOutput, assetSourceKey, textureData));
-
         }
-
         bakeToDisk(assetRegistry, assets);
     }
 
@@ -232,6 +237,7 @@ public class AssetExtractor {
     private static AssetSourceKey createAssetSourceKey(AssetType assetType, NamedModelElement namedModelElement, Path sourceFile) {
         String assetName = namedModelElement.getName();
         String logicalName = sourceFile == null ? namedModelElement.getName() : containerName(sourceFile);
+        assert sourceFile != null;
         return new AssetSourceKey(assetType, logicalName, assetName, sourceFile.toString(), AssetImporter.IMPORT_VERSION, null);
     }
 

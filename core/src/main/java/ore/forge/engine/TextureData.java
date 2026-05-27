@@ -6,16 +6,32 @@ import com.badlogic.gdx.utils.Disposable;
 
 import java.nio.ByteBuffer;
 
-/**@author Nathan Ulmen
+/**
+ * @author Nathan Ulmen
  * Stores Image/Texture data in memory.
  *
- * */
+ *
+ */
 public final class TextureData implements AssetData, Disposable {
-    private final Pixmap pixmap;
+    private final byte[] encodedData;
+    private Pixmap pixmap;
 
-    public  TextureData(ByteBuffer imageData, int offset, int length) {
-        this.pixmap = new Pixmap(imageData, offset, length);
+    public TextureData(byte[] encodedData) {
+        this.encodedData = encodedData;
+        pixmap = null;
     }
+
+    public Pixmap pixmap() {
+        if (pixmap == null) {
+            pixmap = new Pixmap(encodedData, 0, encodedData.length);
+        }
+        return pixmap;
+    }
+
+    public byte[] encodedBytes() {
+        return encodedData;
+    }
+
 
     @Override
     public void dispose() {
