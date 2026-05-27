@@ -42,4 +42,9 @@ public final class GpuMeshResource implements GpuResource {
         return indexBufferObject;
     }
 
+    @Override
+    public void dispose() {
+        vertexBufferObject.dispose();
+        indexBufferObject.dispose();
+    }
 }

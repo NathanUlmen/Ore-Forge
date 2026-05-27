@@ -80,6 +80,8 @@ public class Renderer {
             }
 
             GpuMeshResource meshResource = (GpuMeshResource) gpuResourceManager.getGpuResource(first.meshHandle);
+            GpuTextureResource textureResource = (GpuTextureResource) gpuResourceManager.getGpuResource(first.materialHandle.baseColorTexture);
+            textureResource.texture().bind();
             renderPass.bindShader(renderPass.currentShader, camera);
             VertexBufferObjectWithVAO vbo = meshResource.vbo();
             vbo.bind(renderPass.currentShader);

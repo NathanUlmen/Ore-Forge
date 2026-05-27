@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.engine.GpuResourceManager;
+import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.render.*;
 import ore.forge.engine.render.passes.BasicRenderPass;
@@ -70,8 +71,19 @@ public class TestScene implements Screen {
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                MeshHandle meshHandle = (MeshHandle) resourceManager.getHandle(assetRegistry.getIDs().iterator().next());
+                MeshHandle meshHandle = null;
+                TextureHandle textureHandle = null;
+                for (AssetID id : assetRegistry.getIDs()) {
+                    switch (resourceManager.getHandle(id)) {
+                        case MeshHandle m ->  meshHandle = m;
+                        case TextureHandle t -> textureHandle = t;
+                        default ->
+                            throw new IllegalStateException("Unexpected value: " + resourceManager.getHandle(id));
+                    }
+                }
+                materialHandle.baseColorTexture =  textureHandle;
                 RenderPart part = RenderPart.defaultRenderPart(meshHandle);
+                part.material = materialHandle;
 
                 // IMPORTANT: don’t mutate an existing transform with translate() chaining if it accumulates
                 // Create a fresh transform per part (setToTranslation + scale)
@@ -91,7 +103,8 @@ public class TestScene implements Screen {
     }
 
     @Override
-    public void show() { }
+    public void show() {
+    }
 
     @Override
     public void render(float delta) {
@@ -117,7 +130,8 @@ public class TestScene implements Screen {
         profiler.reset();
     }
 
-    @Override public void resize(int width, int height) {
+    @Override
+    public void resize(int width, int height) {
         if (camera instanceof PerspectiveCamera pc) {
             pc.viewportWidth = width;
             pc.viewportHeight = height;
@@ -125,9 +139,17 @@ public class TestScene implements Screen {
         }
     }
 
-    @Override public void pause() { }
-    @Override public void resume() { }
-    @Override public void hide() { }
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+    }
 
     @Override
     public void dispose() {

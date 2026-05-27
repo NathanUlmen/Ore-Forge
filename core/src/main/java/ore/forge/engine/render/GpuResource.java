@@ -1,5 +1,7 @@
 package ore.forge.engine.render;
 
 
-public sealed interface GpuResource permits GpuMeshResource {
+import com.badlogic.gdx.utils.Disposable;
+
+public sealed interface GpuResource extends Disposable permits GpuMeshResource, GpuTextureResource {
 }

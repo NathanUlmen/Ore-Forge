@@ -54,8 +54,7 @@ public class GpuResourceManager {
 
         return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
-            case TextureData textureData ->
-                throw new UnsupportedOperationException("Texture upload not implemented yet.");
+            case TextureData textureData -> uploadTexture(id, textureData);
             case MaterialData materialData ->
                 throw new UnsupportedOperationException("Material upload not implemented yet.");
             case AnimationData animationData ->
@@ -97,9 +96,27 @@ public class GpuResourceManager {
     }
 
     /**
+     * Uploads {@link Pixmap} data to the GPU to be used as a texture. If the
+     * {@link Pixmap} has not been constructed from the encoded bytes yet, that operation will
+     * be performed.
+     *
+     * @param id to be mapped to the {@link TextureHandle}.
+     * @return TextureHandle that points to the {@link GpuTextureResource}
+     */
+    private TextureHandle uploadTexture(AssetID id, TextureData textureData) {
+        Pixmap map = textureData.pixmap();
+        GpuTextureResource textureResource = new GpuTextureResource(map);
+        TextureHandle handle = new TextureHandle();
+
+        handles.put(id, handle);
+        gpuResources.put(handle, textureResource);
+        return handle;
+    }
+
+    /**
      * Used to reference resources stored on the GPU
      *
-     * @param assetHandle - Handle to the resource on that you want to reference on that's stored on the GPU.
+     * @param assetHandle Handle to the resource on that you want to reference on that's stored on the GPU.
      * @return resource that the assetHandle references.
      */
     public GpuResource getGpuResource(AssetHandle assetHandle) {

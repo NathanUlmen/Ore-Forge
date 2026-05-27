@@ -46,7 +46,7 @@ public class OreForge extends Game {
 
         AssetRegistry registry = new AssetRegistry();
         AssetImporter importer = new AssetImporter(registry);
-        importer.importGlbFile(Gdx.files.internal("assets/models/Emerald.gltf").file().toPath());
+        importer.importGlbFile(Gdx.files.internal("assets/models/texture_test.glb").file().toPath());
         registry.save(Gdx.files.internal("registry.json").file());
         GpuResourceManager resourceManager = new GpuResourceManager(registry);
         setScreen(new TestScene(resourceManager, registry));

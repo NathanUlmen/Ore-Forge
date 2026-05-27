@@ -13,7 +13,7 @@ public final class MaterialHandle implements AssetHandle {
     public com.badlogic.gdx.graphics.g3d.Material gdxMaterial;
 
     // Textures
-    public Texture baseColorTexture;
+    public TextureHandle baseColorTexture;
     public Texture normalTexture;
     public Texture metallicRoughnessTexture;
     public Texture emissiveTexture;
