@@ -1,14 +1,25 @@
 package ore.forge;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
+import com.kotcrab.vis.ui.widget.VisScrollPane;
+import com.kotcrab.vis.ui.widget.VisTable;
+import com.kotcrab.vis.ui.widget.VisTextButton;
+import com.kotcrab.vis.ui.widget.VisTextArea;
+import com.kotcrab.vis.ui.widget.VisWindow;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import ore.forge.engine.GpuResourceManager;
+import ore.forge.engine.UISchemaBuilder;
 import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.render.*;
@@ -27,18 +38,21 @@ public class TestScene implements Screen {
     private BasicRenderPass basicRenderPass;
     private GLProfiler profiler;
     private Stopwatch stopwatch;
+    private Stage harnessStage;
+    private VisWindow harnessWindow;
+    private VisTable builderPreviewContainer;
+    private VisTextArea schemaSourceArea;
 
     private float rotationDeg = 0f;
     private float rotationSpeedDegPerSec = 45f; // tweak
     private final Vector3 rotationAxis = new Vector3(1, 1, 1);
+    private static final String TEST_SCHEMA_PATH = "TestSchema.json";
 
     // Keep all parts around (don’t recreate every frame)
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(1_000);
 
     public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
-        profiler = new GLProfiler(Gdx.graphics);
-        profiler.enable();
 
         basicRenderPass = new BasicRenderPass();
 
@@ -54,6 +68,7 @@ public class TestScene implements Screen {
         camera.update(true);
 
         cameraController = new FreeCamController((PerspectiveCamera) camera);
+        initializeHarness();
 
         // Shared material (same shader)
         MaterialHandle materialHandle = new MaterialHandle();
@@ -107,6 +122,61 @@ public class TestScene implements Screen {
     public void show() {
     }
 
+    private void initializeHarness() {
+        if (!VisUI.isLoaded()) {
+            VisUI.load(VisUI.SkinScale.X2);
+        }
+
+        harnessStage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(new InputMultiplexer(harnessStage));
+
+        harnessWindow = new VisWindow("UISchemaBuilder Harness");
+        harnessWindow.setResizable(true);
+        harnessWindow.setMovable(true);
+        harnessWindow.setSize(640f, Math.min(760f, Gdx.graphics.getHeight() - 40f));
+        harnessWindow.setPosition(20f, Gdx.graphics.getHeight() - harnessWindow.getHeight() - 20f);
+
+        VisTable content = new VisTable(true);
+        content.top().left();
+        content.defaults().growX().pad(8f);
+
+        VisTextButton rebuildButton = new VisTextButton("Rebuild Preview");
+        rebuildButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                rebuildBuilderPreview();
+            }
+        });
+
+        builderPreviewContainer = new VisTable(true);
+        builderPreviewContainer.top().left();
+        builderPreviewContainer.defaults().growX().pad(6f);
+
+        schemaSourceArea = new VisTextArea(loadSchemaSource());
+        schemaSourceArea.setDisabled(true);
+        schemaSourceArea.setPrefRows(16);
+
+        content.add(rebuildButton).left().width(220f).row();
+        content.add(new VisScrollPane(builderPreviewContainer)).grow().minHeight(260f).row();
+        content.add(new VisScrollPane(schemaSourceArea)).grow().minHeight(220f).row();
+
+        harnessWindow.add(content).grow();
+        harnessStage.addActor(harnessWindow);
+
+        rebuildBuilderPreview();
+    }
+
+    private void rebuildBuilderPreview() {
+        builderPreviewContainer.clearChildren();
+        UISchemaBuilder builder = new UISchemaBuilder();
+        Actor preview = builder.foo(TEST_SCHEMA_PATH);
+        builderPreviewContainer.add(preview).growX().top().left().row();
+    }
+
+    private String loadSchemaSource() {
+        return Gdx.files.internal(TEST_SCHEMA_PATH).readString();
+    }
+
     @Override
     public void render(float delta) {
         stopwatch.restart();
@@ -125,10 +195,14 @@ public class TestScene implements Screen {
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
         renderer.render(renderParts, camera);
-        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
+        Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
+        harnessStage.act(delta);
+        harnessStage.draw();
+
+
+//        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
         stopwatch.stop();
-        System.out.println("Draw Calls: " + profiler.getDrawCalls());
-        profiler.reset();
+//        System.out.println("Draw Calls: " + profiler.getDrawCalls());
     }
 
     @Override
@@ -138,6 +212,9 @@ public class TestScene implements Screen {
             pc.viewportHeight = height;
             pc.update(true);
         }
+        harnessStage.getViewport().update(width, height, true);
+        harnessWindow.setHeight(Math.min(760f, height - 40f));
+        harnessWindow.setPosition(20f, height - harnessWindow.getHeight() - 20f);
     }
 
     @Override
@@ -155,6 +232,6 @@ public class TestScene implements Screen {
     @Override
     public void dispose() {
         profiler.disable();
+        harnessStage.dispose();
     }
 }
-
