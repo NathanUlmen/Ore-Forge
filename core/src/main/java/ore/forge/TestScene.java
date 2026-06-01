@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector3;
+import com.kotcrab.vis.ui.VisUI;
 import ore.forge.engine.GpuResourceManager;
 import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;

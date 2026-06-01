@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ore Forge Schema Designer</title>
+  <style>
+    :root {
+      --bg: #f2ede3;
+      --panel: #fffaf2;
+      --panel-strong: #f8f1e4;
+      --line: #c8b79f;
+      --text: #2c2318;
+      --muted: #6e5d49;
+      --accent: #9b5a2e;
+      --accent-strong: #6f3e1e;
+      --danger: #a4372d;
+      --shadow: 0 12px 28px rgba(76, 52, 30, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 40%),
+        linear-gradient(180deg, #efe6d7 0%, var(--bg) 100%);
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+      min-height: calc(100vh - 48px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 300px minmax(340px, 1fr) minmax(360px, 1.1fr);
+      gap: 18px;
+      min-height: 0;
+    }
+
+    .panel-body {
+      padding: 18px;
+      height: 100%;
+    }
+
+    .fields-panel .panel-body,
+    .json-panel .panel-body {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .editor-panel .panel-body {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.95em;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fffdf8;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 92px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-row input {
+      width: auto;
+    }
+
+    .field-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: auto;
+    }
+
+    .field-item {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel-strong);
+      cursor: pointer;
+      transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+    }
+
+    .field-item:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .field-item.active {
+      border-color: var(--accent-strong);
+      background: #f3dfc4;
+    }
+
+    .field-name {
+      font-weight: 700;
+    }
+
+    .field-meta {
+      margin-top: 4px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: var(--accent);
+      color: #fff8ef;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button.secondary {
+      background: #d8c5ab;
+      color: var(--text);
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button:disabled,
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .json-output {
+      flex: 1;
+      min-height: 420px;
+      white-space: pre;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fffdf8;
+      font-family: "Consolas", "Menlo", monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .status {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1100px) {
+      .header,
+      .workspace,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        min-height: auto;
+      }
+
+      .json-output {
+        min-height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <section class="panel header">
+        <div>
+          <h1>Schema Designer</h1>
+          <p>Prototype a definition schema that a future engine editor can render.</p>
+        </div>
+        <div>
+          <label for="schemaName">Schema Name</label>
+          <input id="schemaName" value="EntitySchema">
+        </div>
+        <div>
+          <label for="schemaId">Schema Id</label>
+          <input id="schemaId" value="entity.schema">
+        </div>
+        <div>
+          <label for="schemaVersion">Version</label>
+          <input id="schemaVersion" value="1">
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel fields-panel">
+          <div class="panel-body">
+            <div>
+              <h2>Fields</h2>
+              <p>Define the ordered field tree for a schema.</p>
+            </div>
+            <ul id="fieldList" class="field-list"></ul>
+            <div class="button-row">
+              <button id="addFieldBtn" type="button">Add Field</button>
+              <button id="addChildFieldBtn" type="button" class="secondary">Add Child</button>
+              <button id="deleteFieldBtn" type="button" class="danger">Delete</button>
+            </div>
+            <div class="button-row">
+              <button id="moveUpBtn" type="button" class="secondary">Move Up</button>
+              <button id="moveDownBtn" type="button" class="secondary">Move Down</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel editor-panel">
+          <div class="panel-body">
+            <div>
+              <h2>Field Editor</h2>
+              <p>Edit the selected field. Use the <code>object</code> type for nested definitions.</p>
+              <p id="childHint" class="hint">Tip: <code>Add Child</code> will convert the selected field into an <code>object</code> if needed.</p>
+            </div>
+
+            <div class="split">
+              <div>
+                <label for="fieldName">Name</label>
+                <input id="fieldName" value="field1">
+              </div>
+              <div>
+                <label for="fieldType">Type</label>
+                <select id="fieldType"></select>
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
+                <label for="editorHint">Editor Hint</label>
+                <select id="editorHint"></select>
+              </div>
+              <div>
+                <label for="fieldDefault">Default</label>
+                <input id="fieldDefault" value="">
+              </div>
+            </div>
+
+            <div class="split">
+              <div id="itemTypeGroup">
+                <label for="itemType">List Item Type</label>
+                <select id="itemType"></select>
+              </div>
+              <div class="checkbox-row" style="padding-top: 30px;">
+                <input id="fieldRequired" type="checkbox" checked>
+                <label for="fieldRequired" style="margin: 0;">Required</label>
+              </div>
+            </div>
+
+            <div>
+              <label for="fieldDescription">Description</label>
+              <textarea id="fieldDescription"></textarea>
+            </div>
+
+            <div id="enumGroup">
+              <label for="enumOptions">Enum Options</label>
+              <textarea id="enumOptions" placeholder="One option per line"></textarea>
+            </div>
+
+            <div class="button-row">
+              <button id="applyFieldBtn" type="button">Apply Field Changes</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel json-panel">
+          <div class="panel-body">
+            <div>
+              <h2>Generated JSON</h2>
+              <p>Export this schema document directly to a <code>.json</code> file.</p>
+            </div>
+            <pre id="jsonOutput" class="json-output"></pre>
+            <div class="button-row">
+              <button id="downloadBtn" type="button">Download JSON</button>
+              <button id="copyBtn" type="button" class="secondary">Copy JSON</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel status">
+        <div id="statusText" class="hint">Ready.</div>
+        <div class="hint">Open this file directly in a browser.</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const FIELD_TYPES = ["string", "int", "float", "bool", "enum", "vector3", "asset_ref", "list", "object"];
+    const EDITOR_HINTS = ["auto", "text", "textarea", "dropdown", "checkbox", "number", "asset_picker"];
+
+    const state = {
+      fields: [],
+      currentPath: null
+    };
+
+    const elements = {
+      schemaName: document.getElementById("schemaName"),
+      schemaId: document.getElementById("schemaId"),
+      schemaVersion: document.getElementById("schemaVersion"),
+      fieldList: document.getElementById("fieldList"),
+      fieldName: document.getElementById("fieldName"),
+      fieldType: document.getElementById("fieldType"),
+      editorHint: document.getElementById("editorHint"),
+      fieldDefault: document.getElementById("fieldDefault"),
+      itemType: document.getElementById("itemType"),
+      itemTypeGroup: document.getElementById("itemTypeGroup"),
+      fieldRequired: document.getElementById("fieldRequired"),
+      fieldDescription: document.getElementById("fieldDescription"),
+      enumOptions: document.getElementById("enumOptions"),
+      enumGroup: document.getElementById("enumGroup"),
+      jsonOutput: document.getElementById("jsonOutput"),
+      statusText: document.getElementById("statusText"),
+      addFieldBtn: document.getElementById("addFieldBtn"),
+      addChildFieldBtn: document.getElementById("addChildFieldBtn"),
+      childHint: document.getElementById("childHint"),
+      deleteFieldBtn: document.getElementById("deleteFieldBtn"),
+      moveUpBtn: document.getElementById("moveUpBtn"),
+      moveDownBtn: document.getElementById("moveDownBtn"),
+      applyFieldBtn: document.getElementById("applyFieldBtn"),
+      downloadBtn: document.getElementById("downloadBtn"),
+      copyBtn: document.getElementById("copyBtn")
+    };
+
+    function createField(name) {
+      return {
+        name,
+        type: "string",
+        required: true,
+        editor_hint: "auto",
+        fields: []
+      };
+    }
+
+    function populateSelect(select, values) {
+      select.innerHTML = "";
+      for (const value of values) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      }
+    }
+
+    function setStatus(message) {
+      elements.statusText.textContent = message;
+    }
+
+    function pathEquals(a, b) {
+      if (a === null || b === null || a.length !== b.length) {
+        return false;
+      }
+      return a.every((value, index) => value === b[index]);
+    }
+
+    function clonePath(path) {
+      return path === null ? null : [...path];
+    }
+
+    function getFieldAtPath(path) {
+      if (path === null) {
+        return null;
+      }
+
+      let fields = state.fields;
+      let field = null;
+      for (const index of path) {
+        field = fields[index];
+        if (!field) {
+          return null;
+        }
+        fields = field.fields || [];
+      }
+      return field;
+    }
+
+    function getSiblingList(path) {
+      if (path === null || path.length <= 1) {
+        return state.fields;
+      }
+      const parent = getFieldAtPath(path.slice(0, -1));
+      return parent ? (parent.fields || []) : state.fields;
+    }
+
+    function removeFieldAtPath(path) {
+      const siblings = getSiblingList(path);
+      return siblings.splice(path[path.length - 1], 1)[0];
+    }
+
+    function getDisplayPath(path) {
+      if (path === null) {
+        return "";
+      }
+
+      const names = [];
+      const current = [];
+      for (const index of path) {
+        current.push(index);
+        const field = getFieldAtPath(current);
+        names.push(field ? field.name : "?");
+      }
+      return names.join(".");
+    }
+
+    function clearEditor() {
+      elements.fieldName.value = "";
+      elements.fieldType.value = "string";
+      elements.editorHint.value = "auto";
+      elements.fieldDefault.value = "";
+      elements.itemType.value = "string";
+      elements.fieldRequired.checked = true;
+      elements.fieldDescription.value = "";
+      elements.enumOptions.value = "";
+      updateTypeDependentControls();
+    }
+
+    function refreshFieldList() {
+      elements.fieldList.innerHTML = "";
+
+      function renderFields(fields, parentPath = [], depth = 0) {
+        fields.forEach((field, index) => {
+          const path = [...parentPath, index];
+          const item = document.createElement("li");
+          item.className = "field-item";
+          item.style.marginLeft = `${depth * 18}px`;
+          if (pathEquals(path, state.currentPath)) {
+            item.classList.add("active");
+          }
+
+          const childCount = field.type === "object" ? (field.fields || []).length : 0;
+          item.innerHTML = `
+            <div class="field-name">${escapeHtml(field.name)}</div>
+            <div class="field-meta">${escapeHtml(field.type)}${field.required ? " • required" : " • optional"}${field.type === "object" ? ` • ${childCount} child${childCount === 1 ? "" : "ren"}` : ""}</div>
+          `;
+
+          item.addEventListener("click", () => {
+            if (state.currentPath !== null && !applyCurrentField(true)) {
+              return;
+            }
+            loadField(path);
+          });
+
+          elements.fieldList.appendChild(item);
+
+          if (field.fields && field.fields.length > 0) {
+            renderFields(field.fields, path, depth + 1);
+          }
+        });
+      }
+
+      renderFields(state.fields);
+
+      const hasSelection = state.currentPath !== null;
+      const currentField = hasSelection ? getFieldAtPath(state.currentPath) : null;
+      const siblings = hasSelection ? getSiblingList(state.currentPath) : [];
+      const siblingIndex = hasSelection ? state.currentPath[state.currentPath.length - 1] : -1;
+
+      elements.deleteFieldBtn.disabled = !hasSelection;
+      elements.addChildFieldBtn.disabled = !currentField;
+      elements.moveUpBtn.disabled = !hasSelection || siblingIndex === 0;
+      elements.moveDownBtn.disabled = !hasSelection || siblingIndex === siblings.length - 1;
+    }
+
+    function loadField(path) {
+      state.currentPath = clonePath(path);
+      const field = getFieldAtPath(path);
+      if (!field) {
+        return;
+      }
+
+      elements.fieldName.value = field.name || "";
+      elements.fieldType.value = field.type || "string";
+      elements.editorHint.value = field.editor_hint || "auto";
+      elements.fieldDefault.value = field.default || "";
+      elements.itemType.value = field.item_type || "string";
+      elements.fieldRequired.checked = field.required !== false;
+      elements.fieldDescription.value = field.description || "";
+      elements.enumOptions.value = (field.enum_options || []).join("\n");
+
+      updateTypeDependentControls();
+      refreshFieldList();
+      setStatus(`Selected "${getDisplayPath(path)}".`);
+    }
+
+    function updateTypeDependentControls() {
+      const type = elements.fieldType.value;
+      elements.enumGroup.classList.toggle("hidden", type !== "enum");
+      elements.itemTypeGroup.classList.toggle("hidden", type !== "list");
+      elements.fieldDefault.disabled = type === "object";
+      elements.fieldDefault.placeholder = type === "object" ? "Object fields do not use a default value here" : "";
+    }
+
+    function normalizeFieldShape(field) {
+      if (field.type === "object") {
+        field.fields = field.fields || [];
+      } else {
+        delete field.fields;
+      }
+    }
+
+    function applyCurrentField(silent = false) {
+      if (state.currentPath === null) {
+        return true;
+      }
+
+      const name = elements.fieldName.value.trim();
+      if (!name) {
+        if (!silent) {
+          setStatus("Field name cannot be empty.");
+        }
+        return false;
+      }
+
+      const existingField = getFieldAtPath(state.currentPath);
+      const type = elements.fieldType.value;
+      const next = {
+        name,
+        type,
+        required: elements.fieldRequired.checked,
+        editor_hint: elements.editorHint.value
+      };
+
+      const defaultValue = elements.fieldDefault.value.trim();
+      if (defaultValue !== "" && type !== "object") {
+        next.default = defaultValue;
+      }
+
+      const description = elements.fieldDescription.value.trim();
+      if (description !== "") {
+        next.description = description;
+      }
+
+      if (type === "enum") {
+        const enumOptions = elements.enumOptions.value
+          .split("\n")
+          .map(value => value.trim())
+          .filter(Boolean);
+
+        if (enumOptions.length === 0) {
+          if (!silent) {
+            setStatus("Enum fields need at least one option.");
+          }
+          return false;
+        }
+
+        next.enum_options = enumOptions;
+      }
+
+      if (type === "list") {
+        next.item_type = elements.itemType.value;
+      }
+
+      if (type === "object") {
+        next.fields = existingField && existingField.fields ? existingField.fields : [];
+      }
+
+      normalizeFieldShape(next);
+
+      const siblings = getSiblingList(state.currentPath);
+      siblings[state.currentPath[state.currentPath.length - 1]] = next;
+      refreshFieldList();
+      generateJson();
+      setStatus(`Applied changes to "${getDisplayPath(state.currentPath)}".`);
+      return true;
+    }
+
+    function buildSchemaDocument() {
+      return {
+        schemaName: elements.schemaName.value.trim() || "UnnamedSchema",
+        schemaId: elements.schemaId.value.trim() || "unnamed.schema",
+        version: elements.schemaVersion.value.trim() || "1",
+        fields: state.fields
+      };
+    }
+
+    function generateJson() {
+      elements.jsonOutput.textContent = JSON.stringify(buildSchemaDocument(), null, 2);
+    }
+
+    function addField() {
+      const field = createField(`field${state.fields.length + 1}`);
+      state.fields.push(field);
+      loadField([state.fields.length - 1]);
+      generateJson();
+      setStatus(`Added "${field.name}".`);
+    }
+
+    function addChildField() {
+      if (state.currentPath === null) {
+        return;
+      }
+
+      if (!applyCurrentField(true)) {
+        return;
+      }
+
+      const parent = getFieldAtPath(state.currentPath);
+      if (!parent) {
+        return;
+      }
+
+      if (parent.type !== "object") {
+        parent.type = "object";
+        delete parent.default;
+        delete parent.enum_options;
+        delete parent.item_type;
+        parent.fields = parent.fields || [];
+        loadField(state.currentPath);
+        setStatus(`Converted "${getDisplayPath(state.currentPath)}" to an object so it can contain child fields.`);
+      }
+
+      if (parent.type !== "object") {
+        setStatus("Unable to convert the selected field into an object.");
+        return;
+      }
+
+      parent.fields = parent.fields || [];
+      const child = createField(`field${parent.fields.length + 1}`);
+      parent.fields.push(child);
+      const childPath = [...state.currentPath, parent.fields.length - 1];
+      loadField(childPath);
+      generateJson();
+      setStatus(`Added child field to "${getDisplayPath(state.currentPath)}".`);
+    }
+
+    function deleteField() {
+      if (state.currentPath === null) {
+        return;
+      }
+
+      const removedPath = clonePath(state.currentPath);
+      const removed = removeFieldAtPath(removedPath);
+      const siblings = getSiblingList(removedPath);
+
+      if (siblings.length > 0) {
+        const nextIndex = Math.min(removedPath[removedPath.length - 1], siblings.length - 1);
+        loadField([...removedPath.slice(0, -1), nextIndex]);
+      } else if (removedPath.length > 1) {
+        loadField(removedPath.slice(0, -1));
+      } else if (state.fields.length > 0) {
+        loadField([0]);
+      } else {
+        state.currentPath = null;
+        clearEditor();
+        refreshFieldList();
+      }
+
+      generateJson();
+      setStatus(`Deleted "${removed.name}".`);
+    }
+
+    function moveField(direction) {
+      if (state.currentPath === null) {
+        return;
+      }
+
+      if (!applyCurrentField(true)) {
+        return;
+      }
+
+      const siblings = getSiblingList(state.currentPath);
+      const currentIndex = state.currentPath[state.currentPath.length - 1];
+      const newIndex = currentIndex + direction;
+      if (newIndex < 0 || newIndex >= siblings.length) {
+        return;
+      }
+
+      const movedName = siblings[currentIndex].name;
+      const temp = siblings[currentIndex];
+      siblings[currentIndex] = siblings[newIndex];
+      siblings[newIndex] = temp;
+
+      const nextPath = [...state.currentPath];
+      nextPath[nextPath.length - 1] = newIndex;
+      loadField(nextPath);
+      generateJson();
+      setStatus(`Moved "${movedName}".`);
+    }
+
+    async function copyJson() {
+      const text = elements.jsonOutput.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Copied JSON to clipboard.");
+      } catch (error) {
+        setStatus("Clipboard copy failed in this browser context.");
+      }
+    }
+
+    function downloadJson() {
+      if (!applyCurrentField(true)) {
+        return;
+      }
+
+      const schema = buildSchemaDocument();
+      const blob = new Blob([JSON.stringify(schema, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${schema.schemaName || "schema"}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setStatus(`Downloaded ${link.download}.`);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function bindEvents() {
+      elements.addFieldBtn.addEventListener("click", addField);
+      elements.addChildFieldBtn.addEventListener("click", addChildField);
+      elements.deleteFieldBtn.addEventListener("click", deleteField);
+      elements.moveUpBtn.addEventListener("click", () => moveField(-1));
+      elements.moveDownBtn.addEventListener("click", () => moveField(1));
+      elements.applyFieldBtn.addEventListener("click", () => applyCurrentField());
+      elements.downloadBtn.addEventListener("click", downloadJson);
+      elements.copyBtn.addEventListener("click", copyJson);
+      elements.fieldType.addEventListener("change", updateTypeDependentControls);
+
+      [elements.schemaName, elements.schemaId, elements.schemaVersion].forEach(element => {
+        element.addEventListener("input", generateJson);
+      });
+    }
+
+    function init() {
+      populateSelect(elements.fieldType, FIELD_TYPES);
+      populateSelect(elements.editorHint, EDITOR_HINTS);
+      populateSelect(elements.itemType, FIELD_TYPES.filter(type => type !== "list" && type !== "object"));
+      bindEvents();
+      addField();
+    }
+
+    init();
+  </script>
+</body>
+</html>

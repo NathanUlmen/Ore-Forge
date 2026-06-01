@@ -5,7 +5,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.BufferUtils;
+import com.badlogic.gdx.utils.Pool;
 import ore.forge.engine.GpuResourceManager;
 import ore.forge.engine.render.passes.RenderPass;
 
@@ -24,9 +26,17 @@ public class Renderer {
     private final GpuResourceManager gpuResourceManager;
     private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
     private final ArrayList<RenderCommand> commandBuffer = new ArrayList<>();
+    private final Pool<RenderCommand> commandPool;
 
 
     public Renderer(GpuResourceManager gpuResourceManager) {
+        commandPool = new  Pool<RenderCommand>(1024) {
+            @Override
+            public RenderCommand newObject() {
+                return new RenderCommand();
+            }
+        };
+
         this.gpuResourceManager = gpuResourceManager;
         this.instanceCapacity = 1024;
         this.instanceBuffer = BufferUtils.newFloatBuffer(instanceCapacity * FLOATS_PER_INSTANCE);
@@ -43,12 +53,15 @@ public class Renderer {
 
     public void render(List<RenderPart> toRender, Camera camera) {
         for (RenderPass renderPass : renderPasses) {
+            for (RenderCommand command :  commandBuffer) {
+                commandPool.free(command);
+            }
             commandBuffer.clear();
 
             //Create RenderCommands
             for (RenderPart renderPart : toRender) {
                 if (renderPass.accepts(renderPart)) {
-                    RenderCommand renderCommand = new RenderCommand();
+                    RenderCommand renderCommand = commandPool.obtain();
                     renderCommand.init(renderPart);
                     commandBuffer.add(renderCommand);
                 }
