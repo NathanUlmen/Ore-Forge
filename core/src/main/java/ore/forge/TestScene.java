@@ -41,7 +41,6 @@ public class TestScene implements Screen {
     private Stage harnessStage;
     private VisWindow harnessWindow;
     private VisTable builderPreviewContainer;
-    private VisTextArea schemaSourceArea;
 
     private float rotationDeg = 0f;
     private float rotationSpeedDegPerSec = 45f; // tweak
@@ -152,13 +151,9 @@ public class TestScene implements Screen {
         builderPreviewContainer.top().left();
         builderPreviewContainer.defaults().growX().pad(6f);
 
-        schemaSourceArea = new VisTextArea(loadSchemaSource());
-        schemaSourceArea.setDisabled(true);
-        schemaSourceArea.setPrefRows(16);
 
         content.add(rebuildButton).left().width(220f).row();
         content.add(new VisScrollPane(builderPreviewContainer)).grow().minHeight(260f).row();
-        content.add(new VisScrollPane(schemaSourceArea)).grow().minHeight(220f).row();
 
         harnessWindow.add(content).grow();
         harnessStage.addActor(harnessWindow);
