@@ -1,5 +1,6 @@
 package ore.forge;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
@@ -18,12 +19,12 @@ import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisTextArea;
 import com.kotcrab.vis.ui.widget.VisWindow;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import ore.forge.engine.GpuResourceManager;
-import ore.forge.engine.UISchemaBuilder;
+import ore.forge.engine.*;
 import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.render.*;
 import ore.forge.engine.render.passes.BasicRenderPass;
+import ore.forge.engine.serialization.ComponentLoader;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
 import ore.forge.engine.profiling.Stopwatch;
@@ -32,6 +33,9 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class TestScene implements Screen {
+    private static final String LOG_TAG = TestScene.class.getSimpleName();
+    private static final float FRAME_LOG_INTERVAL_SEC = 1.0f;
+
     private Renderer renderer;
     private CameraController cameraController;
     private Camera camera;
@@ -42,8 +46,14 @@ public class TestScene implements Screen {
     private VisWindow harnessWindow;
     private VisTable builderPreviewContainer;
 
+    private Engine engine;
+
     private float rotationDeg = 0f;
     private float rotationSpeedDegPerSec = 45f; // tweak
+    private float frameLogAccumulatorSec = 0f;
+    private long frameTimeTotalMs = 0L;
+    private long maxFrameTimeMs = 0L;
+    private int frameSamples = 0;
     private final Vector3 rotationAxis = new Vector3(1, 1, 1);
     private static final String TEST_SCHEMA_PATH = "TestSchema.json";
 
@@ -52,6 +62,7 @@ public class TestScene implements Screen {
 
     public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
+        engine = new Engine();
 
         basicRenderPass = new BasicRenderPass();
 
@@ -86,14 +97,14 @@ public class TestScene implements Screen {
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                MeshHandle meshHandle = null;
-                TextureHandle textureHandle = null;
+                Handle<GpuResource> meshHandle = null;
+                Handle<GpuResource> textureHandle = null;
                 for (AssetID id : assetRegistry.getIDs()) {
-                    switch (resourceManager.getHandle(id)) {
-                        case MeshHandle m ->  meshHandle = m;
-                        case TextureHandle t -> textureHandle = t;
+                    switch (resourceManager.retrieveData(id)) {
+                        case MeshData m -> meshHandle = resourceManager.getHandle(id);
+                        case TextureData t -> textureHandle = resourceManager.getHandle(id);
                         default ->
-                            throw new IllegalStateException("Unexpected value: " + resourceManager.getHandle(id));
+                            throw new IllegalStateException("Unexpected value: " + resourceManager.retrieveData(id));
                     }
                 }
                 materialHandle.baseColorTexture =  textureHandle;
@@ -164,7 +175,7 @@ public class TestScene implements Screen {
     private void rebuildBuilderPreview() {
         builderPreviewContainer.clearChildren();
         UISchemaBuilder builder = new UISchemaBuilder();
-        Actor preview = builder.foo(TEST_SCHEMA_PATH);
+        Actor preview = builder.build(TEST_SCHEMA_PATH);
         builderPreviewContainer.add(preview).growX().top().left().row();
     }
 
@@ -191,13 +202,39 @@ public class TestScene implements Screen {
 
         renderer.render(renderParts, camera);
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
-        harnessStage.act(delta);
-        harnessStage.draw();
+//        harnessStage.act(delta);
+//        harnessStage.draw();
 
-
-//        System.out.println("FPS: " + Gdx.graphics.getFramesPerSecond());
         stopwatch.stop();
-//        System.out.println("Draw Calls: " + profiler.getDrawCalls());
+        trackFrameTime(delta, stopwatch.elapsed());
+    }
+
+    private void trackFrameTime(float delta, long frameTimeMs) {
+        frameLogAccumulatorSec += delta;
+        frameTimeTotalMs += frameTimeMs;
+        maxFrameTimeMs = Math.max(maxFrameTimeMs, frameTimeMs);
+        frameSamples++;
+
+        if (frameLogAccumulatorSec < FRAME_LOG_INTERVAL_SEC) {
+            return;
+        }
+
+        float averageFrameTimeMs = frameSamples == 0 ? 0f : (float) frameTimeTotalMs / frameSamples;
+        Gdx.app.log(
+            LOG_TAG,
+            String.format(
+                "frame avg=%.2fms max=%dms fps=%d samples=%d",
+                averageFrameTimeMs,
+                maxFrameTimeMs,
+                Gdx.graphics.getFramesPerSecond(),
+                frameSamples
+            )
+        );
+
+        frameLogAccumulatorSec = 0f;
+        frameTimeTotalMs = 0L;
+        maxFrameTimeMs = 0L;
+        frameSamples = 0;
     }
 
     @Override
@@ -211,6 +248,9 @@ public class TestScene implements Screen {
         harnessWindow.setHeight(Math.min(760f, height - 40f));
         harnessWindow.setPosition(20f, height - harnessWindow.getHeight() - 20f);
     }
+
+
+
 
     @Override
     public void pause() {
@@ -229,4 +269,9 @@ public class TestScene implements Screen {
         profiler.disable();
         harnessStage.dispose();
     }
+
+    public void loadEntities() {
+
+    }
+
 }

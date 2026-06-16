@@ -291,6 +291,10 @@
           <label for="schemaVersion">Version</label>
           <input id="schemaVersion" value="1">
         </div>
+        <div>
+          <label for="schemaType">Type</label>
+          <input id="schemaType" value="object">
+        </div>
       </section>
 
       <section class="workspace">
@@ -327,9 +331,17 @@
                 <input id="fieldName" value="field1">
               </div>
               <div>
+                <label for="fieldKey">Key</label>
+                <input id="fieldKey" value="field1">
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
                 <label for="fieldType">Type</label>
                 <select id="fieldType"></select>
               </div>
+              <div></div>
             </div>
 
             <div class="split">
@@ -364,6 +376,12 @@
               <textarea id="enumOptions" placeholder="One option per line"></textarea>
             </div>
 
+            <div id="schemaRefGroup">
+              <label for="schemaRef">Referenced Schema</label>
+              <input id="schemaRef" placeholder="TestSchema.json or entity.schema">
+              <p class="hint">Use the existing schema file name or schema id this field should resolve to.</p>
+            </div>
+
             <div class="button-row">
               <button id="applyFieldBtn" type="button">Apply Field Changes</button>
             </div>
@@ -393,7 +411,7 @@
   </div>
 
   <script>
-    const FIELD_TYPES = ["string", "int", "float", "bool", "enum", "vector3", "asset_ref", "list", "object"];
+    const FIELD_TYPES = ["string", "int", "float", "bool", "enum", "vector3", "asset_ref", "schema_ref", "list", "object"];
     const EDITOR_HINTS = ["auto", "text", "textarea", "dropdown", "checkbox", "number", "asset_picker"];
 
     const state = {
@@ -405,8 +423,10 @@
       schemaName: document.getElementById("schemaName"),
       schemaId: document.getElementById("schemaId"),
       schemaVersion: document.getElementById("schemaVersion"),
+      schemaType: document.getElementById("schemaType"),
       fieldList: document.getElementById("fieldList"),
       fieldName: document.getElementById("fieldName"),
+      fieldKey: document.getElementById("fieldKey"),
       fieldType: document.getElementById("fieldType"),
       editorHint: document.getElementById("editorHint"),
       fieldDefault: document.getElementById("fieldDefault"),
@@ -416,6 +436,8 @@
       fieldDescription: document.getElementById("fieldDescription"),
       enumOptions: document.getElementById("enumOptions"),
       enumGroup: document.getElementById("enumGroup"),
+      schemaRef: document.getElementById("schemaRef"),
+      schemaRefGroup: document.getElementById("schemaRefGroup"),
       jsonOutput: document.getElementById("jsonOutput"),
       statusText: document.getElementById("statusText"),
       addFieldBtn: document.getElementById("addFieldBtn"),
@@ -432,6 +454,7 @@
     function createField(name) {
       return {
         name,
+        key: toFieldKey(name),
         type: "string",
         required: true,
         editor_hint: "auto",
@@ -511,6 +534,7 @@
 
     function clearEditor() {
       elements.fieldName.value = "";
+      elements.fieldKey.value = "";
       elements.fieldType.value = "string";
       elements.editorHint.value = "auto";
       elements.fieldDefault.value = "";
@@ -518,6 +542,7 @@
       elements.fieldRequired.checked = true;
       elements.fieldDescription.value = "";
       elements.enumOptions.value = "";
+      elements.schemaRef.value = "";
       updateTypeDependentControls();
     }
 
@@ -535,9 +560,11 @@
           }
 
           const childCount = field.type === "object" ? (field.fields || []).length : 0;
+          const refMeta = field.type === "schema_ref" && field.schema_ref ? ` • ref ${escapeHtml(field.schema_ref)}` : "";
+          const keyMeta = field.key ? ` • key ${escapeHtml(field.key)}` : "";
           item.innerHTML = `
             <div class="field-name">${escapeHtml(field.name)}</div>
-            <div class="field-meta">${escapeHtml(field.type)}${field.required ? " • required" : " • optional"}${field.type === "object" ? ` • ${childCount} child${childCount === 1 ? "" : "ren"}` : ""}</div>
+            <div class="field-meta">${escapeHtml(field.type)}${field.required ? " • required" : " • optional"}${field.type === "object" ? ` • ${childCount} child${childCount === 1 ? "" : "ren"}` : ""}${keyMeta}${refMeta}</div>
           `;
 
           item.addEventListener("click", () => {
@@ -576,6 +603,8 @@
       }
 
       elements.fieldName.value = field.name || "";
+      elements.fieldKey.value = field.key || toFieldKey(field.name || "");
+      elements.fieldKey.dataset.autoManaged = elements.fieldKey.value === toFieldKey(elements.fieldName.value) ? "true" : "false";
       elements.fieldType.value = field.type || "string";
       elements.editorHint.value = field.editor_hint || "auto";
       elements.fieldDefault.value = field.default || "";
@@ -583,6 +612,7 @@
       elements.fieldRequired.checked = field.required !== false;
       elements.fieldDescription.value = field.description || "";
       elements.enumOptions.value = (field.enum_options || []).join("\n");
+      elements.schemaRef.value = field.schema_ref || "";
 
       updateTypeDependentControls();
       refreshFieldList();
@@ -593,6 +623,7 @@
       const type = elements.fieldType.value;
       elements.enumGroup.classList.toggle("hidden", type !== "enum");
       elements.itemTypeGroup.classList.toggle("hidden", type !== "list");
+      elements.schemaRefGroup.classList.toggle("hidden", type !== "schema_ref");
       elements.fieldDefault.disabled = type === "object";
       elements.fieldDefault.placeholder = type === "object" ? "Object fields do not use a default value here" : "";
     }
@@ -618,10 +649,19 @@
         return false;
       }
 
+      const key = elements.fieldKey.value.trim();
+      if (!key) {
+        if (!silent) {
+          setStatus("Field key cannot be empty.");
+        }
+        return false;
+      }
+
       const existingField = getFieldAtPath(state.currentPath);
       const type = elements.fieldType.value;
       const next = {
         name,
+        key,
         type,
         required: elements.fieldRequired.checked,
         editor_hint: elements.editorHint.value
@@ -657,6 +697,17 @@
         next.item_type = elements.itemType.value;
       }
 
+      if (type === "schema_ref") {
+        const schemaRef = elements.schemaRef.value.trim();
+        if (!schemaRef) {
+          if (!silent) {
+            setStatus("Schema reference fields need a referenced schema.");
+          }
+          return false;
+        }
+        next.schema_ref = schemaRef;
+      }
+
       if (type === "object") {
         next.fields = existingField && existingField.fields ? existingField.fields : [];
       }
@@ -676,6 +727,7 @@
         schemaName: elements.schemaName.value.trim() || "UnnamedSchema",
         schemaId: elements.schemaId.value.trim() || "unnamed.schema",
         version: elements.schemaVersion.value.trim() || "1",
+        type: elements.schemaType.value.trim() || "object",
         fields: state.fields
       };
     }
@@ -817,6 +869,27 @@
         .replaceAll(">", "&gt;");
     }
 
+    function toFieldKey(name) {
+      return String(name)
+        .trim()
+        .replace(/[^a-zA-Z0-9]+/g, " ")
+        .split(" ")
+        .filter(Boolean)
+        .map((part, index) => {
+          const lower = part.toLowerCase();
+          return index === 0 ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
+        })
+        .join("");
+    }
+
+    function syncKeyFromName() {
+      const autoKey = toFieldKey(elements.fieldName.value);
+      if (!elements.fieldKey.value.trim() || elements.fieldKey.dataset.autoManaged === "true") {
+        elements.fieldKey.value = autoKey;
+        elements.fieldKey.dataset.autoManaged = "true";
+      }
+    }
+
     function bindEvents() {
       elements.addFieldBtn.addEventListener("click", addField);
       elements.addChildFieldBtn.addEventListener("click", addChildField);
@@ -827,8 +900,13 @@
       elements.downloadBtn.addEventListener("click", downloadJson);
       elements.copyBtn.addEventListener("click", copyJson);
       elements.fieldType.addEventListener("change", updateTypeDependentControls);
+      elements.fieldName.addEventListener("input", syncKeyFromName);
+      elements.fieldKey.addEventListener("input", () => {
+        const normalizedKey = toFieldKey(elements.fieldName.value);
+        elements.fieldKey.dataset.autoManaged = elements.fieldKey.value.trim() === normalizedKey ? "true" : "false";
+      });
 
-      [elements.schemaName, elements.schemaId, elements.schemaVersion].forEach(element => {
+      [elements.schemaName, elements.schemaId, elements.schemaVersion, elements.schemaType].forEach(element => {
         element.addEventListener("input", generateJson);
       });
     }

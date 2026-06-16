@@ -2,9 +2,10 @@ package ore.forge.engine.render;
 
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector4;
+import ore.forge.engine.Handle;
 
 public class RenderPart {
-    public MeshHandle meshHandle;
+    public Handle<GpuResource> meshHandle;
     public MaterialHandle material;
     public Matrix4 transform; //final transform, used for instancing
     public Vector4 tint, uvParams;
@@ -14,7 +15,7 @@ public class RenderPart {
         this.transform = new Matrix4();
     }
 
-    public static RenderPart defaultRenderPart(MeshHandle handle) {
+    public static RenderPart defaultRenderPart(Handle<GpuResource> handle) {
         RenderPart part = new RenderPart();
         part.meshHandle = handle;
         part.material = new MaterialHandle();
@@ -27,4 +28,3 @@ public class RenderPart {
     }
 
 }
-

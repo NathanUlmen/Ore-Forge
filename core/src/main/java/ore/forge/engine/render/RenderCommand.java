@@ -3,9 +3,10 @@ package ore.forge.engine.render;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector4;
 import com.badlogic.gdx.utils.Pool;
+import ore.forge.engine.Handle;
 
 public class RenderCommand implements Pool.Poolable {
-    public MeshHandle meshHandle;
+    public Handle<GpuResource> meshHandle;
     public MaterialHandle materialHandle;
 
     public final Matrix4 worldTransform;

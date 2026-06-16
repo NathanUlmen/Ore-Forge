@@ -3,21 +3,29 @@ package ore.forge.engine;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
-import ore.forge.engine.definitions.Asset;
 
-import java.util.ArrayList;
 
+/**
+ * @author Nathan Ulmen
+ *
+ */
 public class HandleRegistry<E extends Disposable> {
-    private final Array<Entry<E>> handleLookup = new Array<>(false, 128);
-    private final IntArray freeList = new IntArray(false,32);
-    private int versionCounter = 0;
+    private final Array<Entry<E>> handleLookup = new Array<>(128);
+    private final IntArray freeList = new IntArray(false, 32);
+    private int versionCounter = 1;
 
     public E getResource(Handle<E> handle) {
         int index = handle.index();
-        if (!handle.isValid() || index >= handleLookup.size) {return null;}
+        if (!handle.isValid() || index >= handleLookup.size) {
+            assert false : "Handle is invalid or index is greater than table size.";
+            return null;
+        }
 
-        Entry<E> entry =  handleLookup.get(index);
-        if (entry == null || entry.version != handle.version()) { return null; }
+        Entry<E> entry = handleLookup.get(index);
+        if (entry == null || entry.version != handle.version()) {
+            assert false : "Entry was null or version missmatch";
+            return null;
+        }
 
         return entry.data;
     }
@@ -39,11 +47,10 @@ public class HandleRegistry<E extends Disposable> {
         int index = targetHandle.index();
         if (!targetHandle.isValid()) {
             throw new IllegalStateException("");
-            //throw exception.
         }
 
         Entry<E> entry = handleLookup.get(index);
-        if(entry == null || entry.version != targetHandle.version()) {
+        if (entry == null || entry.version != targetHandle.version()) {
             throw new IllegalStateException();
         }
 
@@ -52,6 +59,22 @@ public class HandleRegistry<E extends Disposable> {
         freeList.add(index);
     }
 
-    private record Entry<E>(int version, E data) {}
+    public int size() {
+        int nonNull = 0;
+        for (Entry<E> entry : handleLookup) {
+            if (entry.data != null) {
+                nonNull++;
+            }
+        }
+        return nonNull;
+    }
 
+    public String toString() {
+        String s = "";
+        s += "{HandleRegistry: activeResources: " + size() + " freeListSize: " + freeList.size + "}";
+        return s;
+    }
+
+    private record Entry<E>(int version, E data) {
+    }
 }

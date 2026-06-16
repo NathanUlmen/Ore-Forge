@@ -4,10 +4,11 @@ import java.util.UUID;
 
 /**
  * @author Nathan Ulmen
- * An AssetID can be used to reference assets
- * in the engine.
+ * An AssetID can be used to reference assets in the engine.
+ *
  * <p>
- * Each AssetID should map to exactly one Asset.
+ * Each AssetID should map to exactly one Asset and is stable (meaning that it is consistent accross
+ * runs of the program).
  *
  *
  */

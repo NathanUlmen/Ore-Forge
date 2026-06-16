@@ -115,7 +115,7 @@ public class ComponentLoader {
         return json.fromJson(type, componentData.toJson(JsonWriter.OutputType.json));
     }
 
-    private PhysicsCompIR createPhysicsCompIR(JsonValue jsonValue) {
+    private PhysicsDefinition createPhysicsCompIR(JsonValue jsonValue) {
         PhysicsMotionType motionType = PhysicsMotionType.valueOf(jsonValue.getString("motionType"));
         PhysicsBodyType bodyType = PhysicsBodyType.valueOf(jsonValue.getString("bodyType"));
         PhysicsCollisionShapeIR ir = shapeIR(jsonValue.get("collisionShape"));
@@ -123,7 +123,7 @@ public class ComponentLoader {
         float mass = jsonValue.getFloat("mass");
         float friction = jsonValue.getFloat("friction");
         float restitution = jsonValue.getFloat("restitution");
-        return new PhysicsCompIR(id, bodyType, motionType, mass, friction, restitution, ir);
+        return new PhysicsDefinition(id, bodyType, motionType, mass, friction, restitution, ir);
     }
 
     private PhysicsCollisionShapeIR shapeIR(JsonValue jsonValue) {

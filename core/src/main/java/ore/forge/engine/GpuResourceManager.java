@@ -3,7 +3,6 @@ package ore.forge.engine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import ore.forge.engine.importing.AssetArtifact;
@@ -25,15 +24,15 @@ public class GpuResourceManager {
     private final AssetRegistry registry;
     private final AssetDataSerializer serializer;
     private final HashMap<AssetID, AssetData> lookup;
-    private final HashMap<AssetID, AssetHandle> handles;
-    private final HashMap<AssetHandle, GpuResource> gpuResources;
+    private final HashMap<AssetID, Handle<GpuResource>> handles;
+    private final HandleRegistry<GpuResource> gpuResources;
 
     public GpuResourceManager(AssetRegistry registry) {
         this.registry = registry;
         lookup = new HashMap<>();
         handles = new HashMap<>();
         serializer = new AssetDataSerializer();
-        gpuResources = new HashMap<>();
+        gpuResources = new HandleRegistry<>();
     }
 
     /**
@@ -44,14 +43,12 @@ public class GpuResourceManager {
      * @param id to an asset that want a handle to.
      * @return A handle to the asset that the id references.
      */
-    public AssetHandle getHandle(AssetID id) {
-        AssetHandle existingHandle = handles.get(id);
+    public Handle<GpuResource> getHandle(AssetID id) {
+        Handle<GpuResource> existingHandle = handles.get(id);
         if (existingHandle != null) {
             return existingHandle;
         }
-
         AssetData data = retrieveData(id);
-
         return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
@@ -65,7 +62,7 @@ public class GpuResourceManager {
     /**
      *
      */
-    private MeshHandle uploadMesh(AssetID id, MeshData meshData) {
+    private Handle<GpuResource> uploadMesh(AssetID id, MeshData meshData) {
         float[] vertices = meshData.vbo();
         short[] indices = meshData.ibo();
 
@@ -88,9 +85,9 @@ public class GpuResourceManager {
             0
         );
 
-        MeshHandle handle = new MeshHandle();
+        Handle<GpuResource> handle = gpuResources.addResource(meshResource);
         handles.put(id, handle);
-        gpuResources.put(handle, meshResource);
+
 
         return handle;
     }
@@ -103,13 +100,12 @@ public class GpuResourceManager {
      * @param id to be mapped to the {@link TextureHandle}.
      * @return TextureHandle that points to the {@link GpuTextureResource}
      */
-    private TextureHandle uploadTexture(AssetID id, TextureData textureData) {
+    private Handle<GpuResource> uploadTexture(AssetID id, TextureData textureData) {
         Pixmap map = textureData.pixmap();
         GpuTextureResource textureResource = new GpuTextureResource(map);
-        TextureHandle handle = new TextureHandle();
-
+        Handle<GpuResource> handle = gpuResources.addResource(textureResource);
         handles.put(id, handle);
-        gpuResources.put(handle, textureResource);
+
         return handle;
     }
 
@@ -119,9 +115,8 @@ public class GpuResourceManager {
      * @param assetHandle Handle to the resource on that you want to reference on that's stored on the GPU.
      * @return resource that the assetHandle references.
      */
-    public GpuResource getGpuResource(AssetHandle assetHandle) {
-        assert gpuResources.get(assetHandle) != null : "AssetHandle: " + assetHandle + "\t Has not been uploaded to the GPU";
-        return gpuResources.get(assetHandle);
+    public GpuResource getGpuResource(Handle<GpuResource> assetHandle) {
+        return gpuResources.getResource(assetHandle);
     }
 
     /**

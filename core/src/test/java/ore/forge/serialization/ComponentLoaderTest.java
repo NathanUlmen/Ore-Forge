@@ -103,7 +103,7 @@ public class ComponentLoaderTest {
         var result = createComponent("physicsComponent.json");
 
         assertNotNull(result);
-        PhysicsCompIR c = (PhysicsCompIR) result;
+        PhysicsDefinition c = (PhysicsDefinition) result;
         assertEquals(PhysicsBodyType.RIGID, c.bodyType());
         assertEquals(PhysicsMotionType.DYNAMIC, c.motionType());
         assertEquals(SphereShapeIR.class, c.collisionShape().getClass());
@@ -133,7 +133,7 @@ public class ComponentLoaderTest {
         var result = new ComponentLoader().createComponent(physicsComponent);
 
         assertNotNull(result);
-        PhysicsCompIR c = (PhysicsCompIR) result;
+        PhysicsDefinition c = (PhysicsDefinition) result;
         assertEquals(PhysicsBodyType.GHOST, c.bodyType());
         assertEquals(PhysicsMotionType.KINEMATIC, c.motionType());
         assertEquals(CapsuleShapeIR.class, c.collisionShape().getClass());
@@ -147,7 +147,7 @@ public class ComponentLoaderTest {
         var result = createComponent("nestedPhysicsComponent.json");
 
         assertNotNull(result);
-        PhysicsCompIR c = (PhysicsCompIR) result;
+        PhysicsDefinition c = (PhysicsDefinition) result;
         //First level
         assertEquals(PhysicsBodyType.RIGID, c.bodyType());
         assertEquals(PhysicsMotionType.DYNAMIC, c.motionType());

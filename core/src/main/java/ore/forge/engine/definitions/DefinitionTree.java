@@ -1,7 +1,9 @@
 package ore.forge.engine.definitions;
 
 import com.badlogic.ashley.core.Component;
+import ore.forge.engine.serialization.ComponentLoader;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,11 +18,19 @@ import java.util.List;
  *
  */
 public class DefinitionTree {
+    private final ArrayList<ComponentNode> nodes;
 
     public DefinitionTree() {
-
+        nodes = new ArrayList<>();
     }
 
+    public Component[]  getComponents() {
+        Component[] components = new Component[nodes.size()];
+        for (int i = 0; i < nodes.size(); i++) {
+            components[i] = nodes.get(i).data();
+        }
+        return components;
+    }
 
     public static class ComponentNode {
         private final Component data;

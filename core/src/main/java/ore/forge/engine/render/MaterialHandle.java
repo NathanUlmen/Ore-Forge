@@ -3,17 +3,15 @@ package ore.forge.engine.render;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import ore.forge.engine.Handle;
 
 public final class MaterialHandle implements AssetHandle {
 
     // Shader used to render this material
     public ShaderProgram shader;
 
-    // glTF backing material (recommended)
-    public com.badlogic.gdx.graphics.g3d.Material gdxMaterial;
-
     // Textures
-    public TextureHandle baseColorTexture;
+    public Handle<GpuResource> baseColorTexture;
     public Texture normalTexture;
     public Texture metallicRoughnessTexture;
     public Texture emissiveTexture;
@@ -51,4 +49,3 @@ public final class MaterialHandle implements AssetHandle {
 //        shader.setUniformf("u_emissiveStrength", emissiveStrength);
     }
 }
-

@@ -1,11 +1,20 @@
 package ore.forge.engine;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.Separator;
 import com.kotcrab.vis.ui.widget.VisCheckBox;
@@ -15,6 +24,8 @@ import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextField;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class UISchemaBuilder {
     private static final float ROOT_PADDING = 8f;
@@ -25,13 +36,19 @@ public class UISchemaBuilder {
     private static final float OBJECT_INNER_PADDING = 8f;
     private static final float OBJECT_HEADER_SCALE = 1.15f;
     private static final float INPUT_MIN_WIDTH = 220f;
+    private static final float SCOPE_GUIDE_WIDTH = 2f;
+    private static final float SCOPE_GUIDE_INSET = 3f;
+    private static final Color SCOPE_GUIDE_COLOR = new Color(0.72f, 0.66f, 0.58f, 0.9f);
+
+    private static Texture scopeGuideTexture;
 
     private final HashMap<String, JsonValue> loadedSchemas = new HashMap<>();
+    private InputNode rootInputNode;
 
     public UISchemaBuilder() {
     }
 
-    public Actor foo(String schemaFileName) {
+    public Actor build(String schemaFileName) {
         JsonValue schemaData = loadedSchemas.computeIfAbsent(schemaFileName, this::loadSchema);
 
         String schemaName = schemaData.getString("schemaName", "Schema");
@@ -41,14 +58,15 @@ public class UISchemaBuilder {
         VisTable root = createVerticalTable(ROOT_PADDING);
         root.add(createSchemaHeader(schemaName, schemaId, version)).growX().row();
 
-        return buildMenu(root, schemaData.get("fields"));
-    }
-
-    public Actor build(String schemaFileName) {
-        return foo(schemaFileName);
+        rootInputNode = new ObjectInputNode();
+        return buildMenu(root, schemaData.get("fields"), (ObjectInputNode) rootInputNode);
     }
 
     public Actor buildMenu(VisTable root, JsonValue schemaData) {
+        return buildMenu(root, schemaData, new ObjectInputNode());
+    }
+
+    private Actor buildMenu(VisTable root, JsonValue schemaData, ObjectInputNode parentNode) {
         if (schemaData == null) {
             return root;
         }
@@ -56,7 +74,8 @@ public class UISchemaBuilder {
         float labelWidth = calculateLabelColumnWidth(schemaData);
 
         for (JsonValue field : schemaData) {
-            String fieldName = field.getString("name");
+            String fieldName = getFieldDisplayName(field);
+            String fieldKey = getFieldKey(field);
             SchemaFieldType fieldType = SchemaFieldType.fromString(field.getString("type"));
             boolean required = field.getBoolean("required", false);
             String editorDescription = field.getString("description", "");
@@ -64,12 +83,14 @@ public class UISchemaBuilder {
 
             switch (fieldType) {
                 case STRING, INT, FLOAT ->
-                    fieldActor = labeledField(fieldName, editorDescription, required, labelWidth);
-                case BOOL -> fieldActor = toggleBox(fieldName, editorDescription, required, labelWidth);
+                    fieldActor = labeledField(fieldName, fieldKey, fieldType, editorDescription, required, labelWidth, parentNode);
+                case BOOL -> fieldActor = toggleBox(fieldName, fieldKey, editorDescription, required, labelWidth, parentNode);
                 case ENUM ->
-                    fieldActor = dropDown(fieldName, extractEnums(field.get("enum_options")), editorDescription, required, labelWidth);
+                    fieldActor = dropDown(fieldName, fieldKey, extractEnums(field.get("enum_options")), editorDescription, required, labelWidth, parentNode);
                 case OBJECT ->
-                    fieldActor = buildObjectField(fieldName, editorDescription, required, field.get("fields"));
+                    fieldActor = buildObjectField(fieldName, fieldKey, editorDescription, required, field.get("fields"), parentNode);
+                case SCHEMA_REF ->
+                    fieldActor = buildSchemaRefField(fieldName, fieldKey, editorDescription, required, field.getString("schema_ref"), parentNode);
                 default -> throw new IllegalArgumentException("Unsupported field type: " + fieldType);
             }
 
@@ -88,43 +109,34 @@ public class UISchemaBuilder {
         return table;
     }
 
-    public VisTable labeledField(String name, String description, boolean required) {
-        return labeledField(name, description, required, INPUT_MIN_WIDTH);
-    }
-
-    private VisTable labeledField(String name, String description, boolean required, float labelWidth) {
-        VisTable table = createFieldRow(name, description, required, labelWidth);
+    private VisTable labeledField(String name, String key, SchemaFieldType type, String description, boolean required, float labelWidth, ObjectInputNode parentNode) {
+        VisTable table = createFieldRow(name, key, description, required, labelWidth);
 
         VisTextField textField = new VisTextField();
         textField.setMessageText(description);
         addInput(table, textField, description);
+        parentNode.put(key, new PrimitiveInputNode(type, textField));
         return table;
     }
 
-    public VisTable toggleBox(String name,  String description, boolean required) {
-        return toggleBox(name,  description, required, INPUT_MIN_WIDTH);
-    }
-
-    private VisTable toggleBox(String name, String description, boolean required, float labelWidth) {
-        VisTable table = createFieldRow(name, description, required, labelWidth);
+    private VisTable toggleBox(String name, String key, String description, boolean required, float labelWidth, ObjectInputNode parentNode) {
+        VisTable table = createFieldRow(name, key, description, required, labelWidth);
 
         VisCheckBox checkBox = new VisCheckBox("");
         addInput(table, checkBox, description);
+        parentNode.put(key, new BooleanInputNode(checkBox));
         return table;
     }
 
-    public VisTable dropDown(String name, Array<String> enums, String description, boolean required) {
-        return dropDown(name, enums, description, required, INPUT_MIN_WIDTH);
-    }
-
-    private VisTable dropDown(String name, Array<String> enums, String description, boolean required, float labelWidth) {
-        VisTable table = createFieldRow(name, description, required, labelWidth);
+    private VisTable dropDown(String name, String key, Array<String> enums, String description, boolean required, float labelWidth, ObjectInputNode parentNode) {
+        VisTable table = createFieldRow(name, key, description, required, labelWidth);
 
         VisSelectBox<String> selectBox = new VisSelectBox<>();
         if (enums.size > 0) {
             selectBox.setItems(enums);
         }
         addInput(table, selectBox, description);
+        parentNode.put(key, new EnumInputNode(selectBox));
         return table;
     }
 
@@ -140,16 +152,45 @@ public class UISchemaBuilder {
         return enums;
     }
 
-    private VisTable buildObjectField(String name, String description, boolean required, JsonValue fields) {
+    private VisTable buildObjectField(String name, String key, String description, boolean required, JsonValue fields, ObjectInputNode parentNode) {
         VisTable table = createVerticalTable(OBJECT_SECTION_PADDING);
-        table.add(createObjectHeader(name, required, description)).growX().row();
+        table.add(createObjectHeader(name, key, required, description)).growX().row();
 
         VisTable body = createVerticalTable(OBJECT_INNER_PADDING);
-        body.padLeft(NESTED_PADDING);
         body.add(new Separator()).growX().padBottom(4f).row();
 
-        VisTable nested = createVerticalTable(6f);
-        buildMenu(nested, fields);
+        VisTable nested = createScopeGuideTable(6f);
+        nested.padLeft(NESTED_PADDING);
+        ObjectInputNode objectNode = new ObjectInputNode();
+        parentNode.put(key, objectNode);
+        buildMenu(nested, fields, objectNode);
+
+        body.add(nested).growX().row();
+        body.add(new Separator()).growX().padTop(4f).row();
+
+        table.add(body).growX().row();
+        return table;
+    }
+
+    private VisTable buildSchemaRefField(String name, String key, String description, boolean required, String schemaRef, ObjectInputNode parentNode) {
+        JsonValue schemaData = loadedSchemas.computeIfAbsent(schemaRef, this::loadSchema);
+
+        VisTable table = createVerticalTable(OBJECT_SECTION_PADDING);
+        table.add(createSchemaRefHeader(name, key, required, description, schemaRef)).growX().row();
+
+        VisTable body = createVerticalTable(OBJECT_INNER_PADDING);
+        body.add(new Separator()).growX().padBottom(4f).row();
+
+        VisTable nested = createScopeGuideTable(6f);
+        nested.padLeft(NESTED_PADDING);
+        nested.add(createSchemaHeader(
+            schemaData.getString("schemaName", "Schema"),
+            schemaData.getString("schemaId", ""),
+            schemaData.getString("version", "")
+        )).growX().row();
+        ObjectInputNode schemaRefNode = new ObjectInputNode();
+        parentNode.put(key, schemaRefNode);
+        buildMenu(nested, schemaData.get("fields"), schemaRefNode);
 
         body.add(nested).growX().row();
         body.add(new Separator()).growX().padTop(4f).row();
@@ -175,34 +216,53 @@ public class UISchemaBuilder {
         return table;
     }
 
-    private VisTable createFieldRow(String name, String description, boolean required) {
-        return createFieldRow(name, description, required, INPUT_MIN_WIDTH);
-    }
-
-    private VisTable createFieldRow(String name, String description, boolean required, float labelWidth) {
+    private VisTable createFieldRow(String name, String key, String description, boolean required, float labelWidth) {
         VisTable table = createLeftAlignedTable(FIELD_PADDING);
 
-        table.add(createFieldTitle(name, required, description)).width(labelWidth).left().padRight(FIELD_GAP);
+        table.add(createFieldTitle(name, key, required, description)).width(labelWidth).left().padRight(FIELD_GAP);
         return table;
     }
 
-    private VisTable createFieldTitle(String name, boolean required, String description) {
+    private VisTable createFieldTitle(String name, String key, boolean required, String description) {
         String fieldTitle = createFieldTitleText(name, required);
-        return createLabel(fieldTitle, description);
+        return createLabel(fieldTitle, buildFieldTooltip(description, key));
     }
 
-    private VisTable createObjectHeader(String name, boolean required, String description) {
+    private VisTable createObjectHeader(String name, String key, boolean required, String description) {
         VisTable table = createLeftAlignedTable(FIELD_PADDING);
         VisLabel headerLabel = new VisLabel(createFieldTitleText(name, required));
         headerLabel.setFontScale(OBJECT_HEADER_SCALE);
-        attachTooltip(headerLabel, description);
+        attachTooltip(headerLabel, buildFieldTooltip(description, key));
 
         VisLabel objectMarker = new VisLabel("(Object)");
         objectMarker.setFontScale(OBJECT_HEADER_SCALE);
-        attachTooltip(objectMarker, description);
+        attachTooltip(objectMarker, buildFieldTooltip(description, key));
 
         table.add(headerLabel).left().padRight(FIELD_GAP);
         table.add(objectMarker).left();
+        return table;
+    }
+
+    private VisTable createSchemaRefHeader(String name, String key, boolean required, String description, String schemaRef) {
+        VisTable table = createLeftAlignedTable(FIELD_PADDING);
+
+        VisLabel headerLabel = new VisLabel(createFieldTitleText(name, required));
+        headerLabel.setFontScale(OBJECT_HEADER_SCALE);
+        attachTooltip(headerLabel, buildFieldTooltip(description, key));
+
+        VisLabel refMarker = new VisLabel("(Schema Ref)");
+        refMarker.setFontScale(OBJECT_HEADER_SCALE);
+        attachTooltip(refMarker, buildFieldTooltip(description, key));
+
+        table.add(headerLabel).left().padRight(FIELD_GAP);
+        table.add(refMarker).left().padRight(FIELD_GAP);
+
+        if (schemaRef != null && !schemaRef.isBlank()) {
+            VisLabel refValue = new VisLabel(schemaRef);
+            attachTooltip(refValue, schemaRef);
+            table.add(refValue).left();
+        }
+
         return table;
     }
 
@@ -218,6 +278,11 @@ public class UISchemaBuilder {
 
     private void addInput(VisTable table, Actor input, String description) {
         attachTooltip(input, description);
+        if (input instanceof VisTextField) {
+            attachCursor(input, Cursor.SystemCursor.Ibeam);
+        } else {
+            attachCursor(input, Cursor.SystemCursor.Hand);
+        }
         if (input instanceof VisCheckBox) {
             table.add(input).left();
             return;
@@ -233,7 +298,7 @@ public class UISchemaBuilder {
                 continue;
             }
 
-            String fieldTitle = createFieldTitleText(field.getString("name"), field.getBoolean("required", false));
+            String fieldTitle = createFieldTitleText(getFieldDisplayName(field), field.getBoolean("required", false));
             labelWidth = Math.max(labelWidth, new VisLabel(fieldTitle).getPrefWidth());
         }
 
@@ -254,12 +319,156 @@ public class UISchemaBuilder {
         return table;
     }
 
+    private VisTable createScopeGuideTable(float pad) {
+        ScopeGuideTable table = new ScopeGuideTable();
+        table.top().left();
+        table.defaults().growX().left().pad(pad);
+        return table;
+    }
+
     private String createFieldTitleText(String name, boolean required) {
         return required ? name + ":" : name;
+    }
+
+    private String getFieldDisplayName(JsonValue field) {
+        return field.getString("name", field.getString("key", "Unnamed Field"));
+    }
+
+    private String getFieldKey(JsonValue field) {
+        return field.getString("key", field.getString("name", "unnamedField"));
+    }
+
+    private String buildFieldTooltip(String description, String key) {
+        if (description == null || description.isBlank()) {
+            return "Key: " + key;
+        }
+        return description + "\nKey: " + key;
+    }
+
+    public String exportInputAsJson() {
+        if (rootInputNode == null) {
+            return "{}";
+        }
+
+        Json json = new Json(JsonWriter.OutputType.json);
+        return json.prettyPrint(rootInputNode.toValue());
+    }
+
+    private void attachCursor(Actor actor, Cursor.SystemCursor hoverCursor) {
+        actor.addListener(new InputListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                Gdx.graphics.setSystemCursor(hoverCursor);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+            }
+        });
     }
 
     private JsonValue loadSchema(String schemaName) {
         JsonReader reader = new JsonReader();
         return reader.parse(Gdx.files.internal(schemaName));
+    }
+
+    private static Texture getScopeGuideTexture() {
+        if (scopeGuideTexture == null) {
+            Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(Color.WHITE);
+            pixmap.fill();
+            scopeGuideTexture = new Texture(pixmap);
+            pixmap.dispose();
+        }
+        return scopeGuideTexture;
+    }
+
+    private static final class ScopeGuideTable extends VisTable {
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            float previousColor = batch.getPackedColor();
+            batch.setColor(SCOPE_GUIDE_COLOR.r, SCOPE_GUIDE_COLOR.g, SCOPE_GUIDE_COLOR.b, SCOPE_GUIDE_COLOR.a * parentAlpha);
+            batch.draw(
+                getScopeGuideTexture(),
+                getX() + (getPadLeft() * 0.5f) - (SCOPE_GUIDE_WIDTH * 0.5f),
+                getY() + SCOPE_GUIDE_INSET,
+                SCOPE_GUIDE_WIDTH,
+                Math.max(0f, getHeight() - (SCOPE_GUIDE_INSET * 2f))
+            );
+            batch.setPackedColor(previousColor);
+            super.draw(batch, parentAlpha);
+        }
+    }
+
+    private interface InputNode {
+        Object toValue();
+    }
+
+    private static final class ObjectInputNode implements InputNode {
+        private final Map<String, InputNode> children = new LinkedHashMap<>();
+
+        void put(String key, InputNode value) {
+            children.put(key, value);
+        }
+
+        @Override
+        public Object toValue() {
+            Map<String, Object> values = new LinkedHashMap<>();
+            for (Map.Entry<String, InputNode> entry : children.entrySet()) {
+                values.put(entry.getKey(), entry.getValue().toValue());
+            }
+            return values;
+        }
+    }
+
+    private static final class PrimitiveInputNode implements InputNode {
+        private final SchemaFieldType type;
+        private final VisTextField textField;
+
+        PrimitiveInputNode(SchemaFieldType type, VisTextField textField) {
+            this.type = type;
+            this.textField = textField;
+        }
+
+        @Override
+        public Object toValue() {
+            String text = textField.getText();
+            if (text == null || text.isBlank()) {
+                return "";
+            }
+
+            return switch (type) {
+                case INT -> Integer.parseInt(text.trim());
+                case FLOAT -> Float.parseFloat(text.trim());
+                default -> text;
+            };
+        }
+    }
+
+    private static final class BooleanInputNode implements InputNode {
+        private final VisCheckBox checkBox;
+
+        BooleanInputNode(VisCheckBox checkBox) {
+            this.checkBox = checkBox;
+        }
+
+        @Override
+        public Object toValue() {
+            return checkBox.isChecked();
+        }
+    }
+
+    private static final class EnumInputNode implements InputNode {
+        private final VisSelectBox<String> selectBox;
+
+        EnumInputNode(VisSelectBox<String> selectBox) {
+            this.selectBox = selectBox;
+        }
+
+        @Override
+        public Object toValue() {
+            return selectBox.getSelected();
+        }
     }
 }
