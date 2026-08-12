@@ -1,33 +1,49 @@
 package ore.forge;
 
 import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.profiling.GLProfiler;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisScrollPane;
 import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
-import com.kotcrab.vis.ui.widget.VisTextArea;
 import com.kotcrab.vis.ui.widget.VisWindow;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import ore.forge.engine.*;
 import ore.forge.engine.importing.AssetID;
 import ore.forge.engine.importing.AssetRegistry;
+import ore.forge.engine.components.PhysicsC;
+import ore.forge.engine.components.RenderC;
+import ore.forge.engine.components.WorldTransformC;
+import ore.forge.engine.components.definitions.RenderCDefinition;
+import ore.forge.engine.components.definitions.WorldTransformDefinition;
+import ore.forge.engine.definitions.BoxShapeIR;
+import ore.forge.engine.definitions.PhysicsDefinition;
+import ore.forge.engine.definitions.PlaneShapeIR;
+import ore.forge.engine.render.GpuResource;
+import ore.forge.engine.render.MaterialHandle;
+import ore.forge.engine.render.RenderPart;
 import ore.forge.engine.render.*;
 import ore.forge.engine.render.passes.BasicRenderPass;
-import ore.forge.engine.serialization.ComponentLoader;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
 import ore.forge.engine.profiling.Stopwatch;
+import ore.forge.engine.systems.PostPhysicsTransformSyncSystem;
+import ore.forge.engine.systems.PrePhysicsTransformSyncSystem;
+import ore.forge.engine.systems.RenderPrepSystem;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -40,29 +56,35 @@ public class TestScene implements Screen {
     private CameraController cameraController;
     private Camera camera;
     private BasicRenderPass basicRenderPass;
-    private GLProfiler profiler;
     private Stopwatch stopwatch;
     private Stage harnessStage;
     private VisWindow harnessWindow;
     private VisTable builderPreviewContainer;
 
     private Engine engine;
+    private PhysicsWorld physicsWorld;
+    private ImmutableArray<Entity> renderEntities;
 
-    private float rotationDeg = 0f;
-    private float rotationSpeedDegPerSec = 45f; // tweak
     private float frameLogAccumulatorSec = 0f;
     private long frameTimeTotalMs = 0L;
     private long maxFrameTimeMs = 0L;
     private int frameSamples = 0;
-    private final Vector3 rotationAxis = new Vector3(1, 1, 1);
     private static final String TEST_SCHEMA_PATH = "TestSchema.json";
 
-    // Keep all parts around (don’t recreate every frame)
-    private final ArrayList<RenderPart> renderParts = new ArrayList<>(1_000);
+    private static final int GRID_COLS = 25;
+    private static final int GRID_ROWS = 25;
+    private static final int GRID_LAYERS = 4;
+    private static final float CUBE_SPACING = 2.2f;
+    private static final float LAYER_HEIGHT = 2.1f;
+    private static final float DROP_HEIGHT = 3f;
+    private static final float GROUND_RENDER_Y = -0.5f;
+
+    private final ArrayList<RenderPart> renderParts = new ArrayList<>(GRID_COLS * GRID_ROWS * GRID_LAYERS + 1);
 
     public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
         engine = new Engine();
+        physicsWorld = PhysicsWorld.instance();
 
         basicRenderPass = new BasicRenderPass();
 
@@ -73,59 +95,15 @@ public class TestScene implements Screen {
         camera.position.set(0f, 0f, 60f); // pull back so you can see the grid
         camera.lookAt(0f, 0f, 0f);
         camera.near = 0.1f;
-        camera.far = 1000f;
+        camera.far = 2000f;
         camera.up.set(0f, 1f, 0f);
         camera.update(true);
 
         cameraController = new FreeCamController((PerspectiveCamera) camera);
         initializeHarness();
-
-        // Shared material (same shader)
-        MaterialHandle materialHandle = new MaterialHandle();
-
-        // ---- Build 1000 parts in a grid ----
-        final int cols = 50;             // 40 * 25 = 1000
-        final int rows = 50;
-        final float spacing = 3.0f;      // distance between instances
-        final float scale = 1.0f;
-
-        // Center the grid around (0,0)
-        final float gridWidth = (cols - 1) * spacing;
-        final float gridHeight = (rows - 1) * spacing;
-        final float startX = -gridWidth * 0.5f;
-        final float startY = -gridHeight * 0.5f;
-
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
-                Handle<GpuResource> meshHandle = null;
-                Handle<GpuResource> textureHandle = null;
-                for (AssetID id : assetRegistry.getIDs()) {
-                    switch (resourceManager.retrieveData(id)) {
-                        case MeshData m -> meshHandle = resourceManager.getHandle(id);
-                        case TextureData t -> textureHandle = resourceManager.getHandle(id);
-                        default ->
-                            throw new IllegalStateException("Unexpected value: " + resourceManager.retrieveData(id));
-                    }
-                }
-                materialHandle.baseColorTexture =  textureHandle;
-                RenderPart part = RenderPart.defaultRenderPart(meshHandle);
-                part.material = materialHandle;
-
-                // IMPORTANT: don’t mutate an existing transform with translate() chaining if it accumulates
-                // Create a fresh transform per part (setToTranslation + scale)
-                float px = startX + x * spacing;
-                float py = startY + y * spacing;
-                float pz = 0f;
-
-                part.transform.idt();
-                part.transform.translate(px, py, pz);
-                part.transform.scale(scale, scale, scale);
-
-                part.material = materialHandle;
-
-                renderParts.add(part);
-            }
-        }
+        initializeEngine();
+        populateScene(resourceManager, assetRegistry);
+        renderEntities = engine.getEntitiesFor(Family.all(RenderC.class, WorldTransformC.class).get());
     }
 
     @Override
@@ -188,13 +166,11 @@ public class TestScene implements Screen {
         stopwatch.restart();
         cameraController.update(delta);
         camera.update(true);
-
-        rotationDeg = (rotationDeg + rotationSpeedDegPerSec * delta) % 360f;
-
-        // rotate renderParts
-        for (RenderPart part : renderParts) {
-            part.transform.rotate(rotationAxis, rotationSpeedDegPerSec * delta);
-        }
+        engine.getSystem(PrePhysicsTransformSyncSystem.class).update(delta);
+        physicsWorld.dynamicsWorld().stepSimulation(delta, 3, 1f / 60f);
+        engine.getSystem(PostPhysicsTransformSyncSystem.class).update(delta);
+        engine.getSystem(RenderPrepSystem.class).update(delta);
+        rebuildRenderParts();
 
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
@@ -266,12 +242,128 @@ public class TestScene implements Screen {
 
     @Override
     public void dispose() {
-        profiler.disable();
+        for (Entity entity : engine.getEntitiesFor(Family.all(PhysicsC.class).get())) {
+            PhysicsC physics = entity.getComponent(PhysicsC.class);
+            if (physics.collisionObject == null) {
+                continue;
+            }
+
+            switch (physics.bodyType) {
+                case RIGID -> physicsWorld.dynamicsWorld().removeRigidBody(physics.asRigidBody());
+                case GHOST -> physicsWorld.dynamicsWorld().removeCollisionObject(physics.collisionObject);
+            }
+        }
         harnessStage.dispose();
     }
 
-    public void loadEntities() {
+    private void initializeEngine() {
+        engine.addSystem(new PrePhysicsTransformSyncSystem());
+        engine.addSystem(new PostPhysicsTransformSyncSystem());
+        engine.addSystem(new RenderPrepSystem());
+    }
 
+    private void populateScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
+        Handle<GpuResource> meshHandle = null;
+        Handle<GpuResource> textureHandle = null;
+
+        for (AssetID id : assetRegistry.getIDs()) {
+            AssetData data = resourceManager.retrieveData(id);
+            switch (data) {
+                case MeshData ignored -> meshHandle = resourceManager.getHandle(id);
+                case TextureData ignored -> textureHandle = resourceManager.getHandle(id);
+                default -> {
+                }
+            }
+        }
+
+        if (meshHandle == null || textureHandle == null) {
+            throw new IllegalStateException("TestScene requires one mesh and one texture in the asset registry.");
+        }
+
+        MaterialHandle material = new MaterialHandle();
+        material.baseColorTexture = textureHandle;
+
+        createGround(meshHandle, material);
+        createCubeField(meshHandle, material);
+    }
+
+    private void createGround(Handle<GpuResource> meshHandle, MaterialHandle material) {
+        Entity ground = createEntity(
+            new WorldTransformDefinition(new Matrix4().setToTranslation(0f, GROUND_RENDER_Y, 0f)),
+            new RenderCDefinition(meshHandle, material, new Vector3(80f, 1f, 80f), new Matrix4().idt()),
+            new PhysicsDefinition(
+                "ground",
+                PhysicsBodyType.RIGID,
+                PhysicsMotionType.STATIC,
+                0f,
+                1f,
+                0.15f,
+                new PlaneShapeIR(new Vector3(0f, 1f, 0f), 0f)
+            )
+        );
+        engine.addEntity(ground);
+    }
+
+    private void createCubeField(Handle<GpuResource> meshHandle, MaterialHandle material) {
+        final float gridWidth = (GRID_COLS - 1) * CUBE_SPACING;
+        final float gridDepth = (GRID_ROWS - 1) * CUBE_SPACING;
+        final float startX = -gridWidth * 0.5f;
+        final float startZ = -gridDepth * 0.5f;
+        final BoundingBox unitCubeBounds = new BoundingBox(
+            new Vector3(-0.5f, -0.5f, -0.5f),
+            new Vector3(0.5f, 0.5f, 0.5f)
+        );
+
+        int cubeIndex = 0;
+        for (int layer = 0; layer < GRID_LAYERS; layer++) {
+            float y = DROP_HEIGHT + layer * LAYER_HEIGHT;
+            for (int row = 0; row < GRID_ROWS; row++) {
+                for (int col = 0; col < GRID_COLS; col++) {
+                    float x = startX + col * CUBE_SPACING;
+                    float z = startZ + row * CUBE_SPACING;
+                    Entity cube = createEntity(
+                        new WorldTransformDefinition(new Matrix4().setToTranslation(x, y, z)),
+                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), new Matrix4().idt()),
+                        new PhysicsDefinition(
+                            "cube-" + cubeIndex++,
+                            PhysicsBodyType.RIGID,
+                            PhysicsMotionType.DYNAMIC,
+                            1f,
+                            0.8f,
+                            0.05f,
+                            new BoxShapeIR(new BoundingBox(unitCubeBounds))
+                        )
+                    );
+                    engine.addEntity(cube);
+                }
+            }
+        }
+    }
+
+    private Entity createEntity(ComponentDefinition<?>... definitions) {
+        Entity entity = new Entity();
+        for (ComponentDefinition<?> definition : definitions) {
+            entity.add(definition.create());
+        }
+
+        PhysicsC physics = entity.getComponent(PhysicsC.class);
+        WorldTransformC worldTransform = entity.getComponent(WorldTransformC.class);
+        if (physics != null && worldTransform != null) {
+            physics.collisionObject.setWorldTransform(worldTransform.currentTransform);
+            switch (physics.bodyType) {
+                case RIGID -> physicsWorld.dynamicsWorld().addRigidBody(physics.asRigidBody());
+                case GHOST -> physicsWorld.dynamicsWorld().addCollisionObject(physics.collisionObject);
+            }
+        }
+
+        return entity;
+    }
+
+    private void rebuildRenderParts() {
+        renderParts.clear();
+        for (Entity entity : renderEntities) {
+            renderParts.add(entity.getComponent(RenderC.class).renderPart);
+        }
     }
 
 }

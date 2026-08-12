@@ -1,6 +1,7 @@
 package ore.forge.engine.definitions;
 
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.*;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
@@ -46,7 +47,11 @@ public record PhysicsDefinition(String id,
 
     public static btCollisionShape createCollisionShape(PhysicsCollisionShapeIR collisionShape) {
         return switch (collisionShape) {
-            case BoxShapeIR box -> new btBoxShape(box.halfExtents().min);
+            case BoxShapeIR box -> {
+                Vector3 halfExtents = new Vector3();
+                box.halfExtents().getDimensions(halfExtents).scl(0.5f);
+                yield new btBoxShape(halfExtents);
+            }
             case PlaneShapeIR plane -> new btStaticPlaneShape(plane.planeNormal(), plane.planeConstant());
             case SphereShapeIR sphere -> new btSphereShape(sphere.radius());
             case CapsuleShapeIR capsule -> new btCapsuleShape(capsule.radius(), capsule.height());

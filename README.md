@@ -7,7 +7,7 @@
 - `documentation/` design docs and outlines
 
 ## Requirements
-- Java 21 (Gradle toolchain resolver is configured)
+- Java 25 (Gradle toolchain resolver is configured)
 
 ## Build and Run (Desktop)
  ```bash

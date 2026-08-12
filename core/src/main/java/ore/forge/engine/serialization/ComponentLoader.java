@@ -4,10 +4,8 @@ import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.SerializationException;
-import com.badlogic.gdx.utils.JsonWriter;
+import com.badlogic.gdx.utils.*;
+import ore.forge.engine.Pair;
 import ore.forge.engine.PhysicsBodyType;
 import ore.forge.engine.PhysicsMotionType;
 import ore.forge.engine.components.*;
@@ -138,15 +136,16 @@ public class ComponentLoader {
                     throw new SerializationException("CompoundShape missing children.");
                 }
 
-                List<Matrix4> transforms = new ArrayList<>(children.size);
-                List<PhysicsCollisionShapeIR> collisionShapes = new ArrayList<>(children.size);
+                Array<Pair<Matrix4, PhysicsCollisionShapeIR>> pairs = new Array<>(children.size);
 
                 for (JsonValue value : children) {
-                    transforms.add(readComponentData(value, "transform", Matrix4.class));
-                    collisionShapes.add(shapeIR(value.get("collisionShape")));
+                    Pair<Matrix4, PhysicsCollisionShapeIR> collisionShape = new Pair<>(null, null);
+                    collisionShape.first = readComponentData(value, "transform", Matrix4.class);
+                    collisionShape.second = shapeIR(value.get("collisionShape"));
+                    pairs.add(collisionShape);
                 }
 
-                yield new CompoundShapeIR(transforms, collisionShapes);
+                yield new CompoundShapeIR(pairs);
             }
             default -> throw new SerializationException("Unsupported Shape Type: " + jsonValue.getString("shapeType"));
         };
