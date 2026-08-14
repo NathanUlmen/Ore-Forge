@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cron: "0 9 1,15 * *"
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      cron: "0 9 1,15 * *"
+ 
