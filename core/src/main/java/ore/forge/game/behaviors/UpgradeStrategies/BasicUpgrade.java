@@ -60,6 +60,8 @@ public class BasicUpgrade implements UpgradeStrategy {
                 (Ore ore) -> ore.setTemperature((float) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
             case MULTIORE ->
                 (Ore ore) -> ore.setYield((int) Math.round(numericOperator.apply(ore.getOreTemp(), modifier)));
+            case SPEED_SCALAR ->
+                (Ore ore) -> ore.setSpeedScalar((float) numericOperator.apply(ore.getSpeedScalar(), modifier));
             case UPGRADE_COUNT, RESET_COUNT ->
                 throw new IllegalArgumentException(valueToModify + " is not a valid value to Modify.");
         };

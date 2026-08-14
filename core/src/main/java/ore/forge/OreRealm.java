@@ -13,6 +13,7 @@ import java.util.Deque;
 
 //@author Nathan Ulmen
 public class OreRealm {
+    private static final int DEFAULT_ORE_LIMIT = 500;
     private static OreRealm oreRealmInstance = new OreRealm();
     private final Deque<Ore> stackOfOre, removalStack, additionStack;
     private final ArrayList<Ore> activeOre;
@@ -47,13 +48,16 @@ public class OreRealm {
     }
 
     public void populate() {
-//        for (int i = 0; i < Constants.ORE_LIMIT; i++) {
-//            stackOfOre.push(new Ore());
-//        }
+        for (int i = stackOfOre.size(); i < DEFAULT_ORE_LIMIT; i++) {
+            stackOfOre.push(new Ore());
+        }
     }
 
     public void depopulate() {
         stackOfOre.clear();
+        activeOre.clear();
+        removalStack.clear();
+        additionStack.clear();
     }
 
     public void takeOre(Ore ore) {
@@ -125,5 +129,4 @@ public class OreRealm {
     }
 
 }
-
 

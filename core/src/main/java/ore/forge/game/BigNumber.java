@@ -1,5 +1,7 @@
 package ore.forge.game;
 
+import java.math.BigDecimal;
+
 /**
  * @author Nathan Ulmen
  */
@@ -65,7 +67,7 @@ public class BigNumber implements Comparable<BigNumber> {
     public static BigNumber parseBigDouble(String value) {
         String[] parts = value.split("[Ee]");
         double mantissa = Double.parseDouble(parts[0]);
-        long exponent = Long.parseLong(parts[1]);
+        long exponent = parts.length > 1 ? Long.parseLong(parts[1]) : 0;
         return normalize(mantissa, exponent);
     }
 
@@ -143,7 +145,7 @@ public class BigNumber implements Comparable<BigNumber> {
             return normalize(numThis % numOther, 0);
         }
 
-        return null;
+        return fromBigDecimal(toBigDecimal().remainder(absOther.toBigDecimal()));
     }
 
     private long digitDifference(BigNumber other) {
@@ -240,7 +242,7 @@ public class BigNumber implements Comparable<BigNumber> {
     }
 
     public String toString() {
-        return mantissa + " E " + String.format("%s", Long.valueOf(exponent));
+        return mantissa + "E" + exponent;
     }
 
     public boolean canBeDouble() {
@@ -256,6 +258,20 @@ public class BigNumber implements Comparable<BigNumber> {
             return this.mantissa * Math.pow(10, this.exponent);
         }
         throw new IllegalArgumentException("Can't convert " + this + " to a Double.");
+    }
+
+    private BigDecimal toBigDecimal() {
+        if (exponent > Integer.MAX_VALUE || exponent < Integer.MIN_VALUE) {
+            throw new IllegalArgumentException("Exponent out of BigDecimal range: " + exponent);
+        }
+        return BigDecimal.valueOf(mantissa).scaleByPowerOfTen((int) exponent);
+    }
+
+    private static BigNumber fromBigDecimal(BigDecimal value) {
+        if (value.signum() == 0) {
+            return new BigNumber(0, 0);
+        }
+        return new BigNumber(value.stripTrailingZeros().toEngineeringString().replace("E+", "E"));
     }
 
     @Override

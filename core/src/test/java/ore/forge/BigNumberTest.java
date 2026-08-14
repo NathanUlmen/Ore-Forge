@@ -130,7 +130,7 @@ public class BigNumberTest {
 
     @Test
     void testModuloBig() {
-        BigNumber left = new BigNumber(BigNumber.MAX_VALUE);
+        BigNumber left = new BigNumber(Double.MAX_VALUE);
         BigNumber right = new BigNumber(3);
         assertEquals(Double.MAX_VALUE % 3, left.modulo(right).convertToDouble());
     }
@@ -175,15 +175,5 @@ public class BigNumberTest {
         assertEquals(bigDecimalResult.setScale(16, RoundingMode.HALF_UP), bigNumberMantissaTrimmed,
             "BigDecimal result and BigNumber result do not match!");
     }
-
-    @Test
-    void foo() {
-        System.out.println(Double.MAX_VALUE % 3);
-        System.out.println(Double.MAX_VALUE - (30000 * Math.floor(Double.MAX_VALUE / 30000)));
-        System.out.println(Math.floor(Double.MAX_VALUE / 3));
-        System.out.println(3 * Math.floor(Double.MAX_VALUE / 3));
-        System.out.println();
-    }
-
 
 }

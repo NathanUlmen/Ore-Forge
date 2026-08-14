@@ -25,6 +25,7 @@ public class Ore implements Component {
     private double oreValue; //value of the ore
     private int upgradeCount;
     private int yield;
+    private float speedScalar;
     private float oreTemperature;
     private boolean isDoomed; //Flag denoting ore will be destroyed next update cycle. Invincibility effects can use this.
     private int resetCount; //Times ore has had its UpgradeTags reset by a resetter type item
@@ -37,6 +38,7 @@ public class Ore implements Component {
         this.id = "";
         this.upgradeCount = 0;
         this.yield = 1;
+        this.speedScalar = 0;
         this.isDoomed = false;
         tagMap = new HashMap<>();
         effects = new ArrayList<>();
@@ -96,6 +98,7 @@ public class Ore implements Component {
         this.oreName = "";
         this.upgradeCount = 0;
         this.yield = 1;
+        this.speedScalar = 0;
         effects.clear();
         removalStack.clear();
         isDoomed = false;
@@ -203,6 +206,14 @@ public class Ore implements Component {
         this.yield = newMultiOre;
     }
 
+    public float getSpeedScalar() {
+        return speedScalar;
+    }
+
+    public void setSpeedScalar(float speedScalar) {
+        this.speedScalar = speedScalar;
+    }
+
     public void setUpgradeCount(int upgradeCount) {
         this.upgradeCount = upgradeCount;
     }
@@ -254,5 +265,4 @@ public class Ore implements Component {
     }
 
 }
-
 

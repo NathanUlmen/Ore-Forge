@@ -154,16 +154,16 @@ public class ComponentLoaderTest {
         assertInstanceOf(CompoundShapeIR.class, c.collisionShape());
         //Second Level
         CompoundShapeIR compoundShape = (CompoundShapeIR) c.collisionShape();
-        assertInstanceOf(SphereShapeIR.class, compoundShape.collisionShapes().getFirst());
-        assertInstanceOf(CompoundShapeIR.class, compoundShape.collisionShapes().get(1));
-        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1}), compoundShape.transforms().getFirst());
-        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3, 0, 1}), compoundShape.transforms().get(1));
+        assertInstanceOf(SphereShapeIR.class, compoundShape.collisionShapes().first().second);
+        assertInstanceOf(CompoundShapeIR.class, compoundShape.collisionShapes().get(1).second);
+        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1}), compoundShape.collisionShapes().first().first);
+        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 3, 0, 1}), compoundShape.collisionShapes().get(1).first);
         //Third level
-        compoundShape = (CompoundShapeIR) compoundShape.collisionShapes().get(1);
-        assertInstanceOf(CapsuleShapeIR.class, compoundShape.collisionShapes().getFirst());
-        assertInstanceOf(BoxShapeIR.class, compoundShape.collisionShapes().get(1));
-        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 4, 1}), compoundShape.transforms().getFirst());
-        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 1}), compoundShape.transforms().get(1));
+        compoundShape = (CompoundShapeIR) compoundShape.collisionShapes().get(1).second;
+        assertInstanceOf(CapsuleShapeIR.class, compoundShape.collisionShapes().first().second);
+        assertInstanceOf(BoxShapeIR.class, compoundShape.collisionShapes().get(1).second);
+        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 4, 1}), compoundShape.collisionShapes().first().first);
+        assertMatrixEquals(new Matrix4(new float[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 1}),compoundShape.collisionShapes().get(1).first);
 
     }
 
