@@ -267,7 +267,7 @@ public class TestScene implements Screen {
         Handle<GpuResource> textureHandle = null;
 
         for (AssetID id : assetRegistry.getIDs()) {
-            AssetData data = resourceManager.retrieveData(id);
+            CpuAssetData data = resourceManager.retrieveData(id);
             switch (data) {
                 case MeshData ignored -> meshHandle = resourceManager.getHandle(id);
                 case TextureData ignored -> textureHandle = resourceManager.getHandle(id);

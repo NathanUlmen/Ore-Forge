@@ -6,7 +6,6 @@ import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
 import ore.forge.engine.importing.*;
-import ore.forge.engine.render.AssetHandle;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -108,7 +107,7 @@ class ImporterTest {
         importer.importGlbFile(modelFixture("texture_test.glb"));
 
         byte[] pngBytes = Files.readAllBytes(modelFixture("test_tex01.png"));
-        AssetData data = null;
+        CpuAssetData data = null;
 
         for (AssetID id : registry.getIDs()) {
             if (registry.lookUp(id).sourceKey().assetType() == AssetType.TEXTURE) {

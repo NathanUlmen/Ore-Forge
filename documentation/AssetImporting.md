@@ -39,7 +39,7 @@ Enables things like: forest_winter.tree_big01
 
 * At beginning of engine execution load all references/IDS shipped with build/program. (This is inefficient but only really becomes a problem when engine has 100,000s of unique assets, can fix it later during a second pass)
 
-* Registry handles loading of assets from disk to memory. Is the "broker" of AssetHandles. Reference counts assets.
+* Registry handles loading of assets from disk to memory. Is the broker of runtime resource handles. Reference counts assets.
 
 * Gives in memory data to other system that manages GPU resources. (should this registry do that too?)
 
@@ -67,6 +67,5 @@ Identity of an asset is its value, not its name.
 
 
 (filePath, assetType, assetName) -> UUID -> assetData
-
 
 

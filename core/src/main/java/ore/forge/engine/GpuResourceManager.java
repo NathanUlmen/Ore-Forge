@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class GpuResourceManager {
     private final AssetRegistry registry;
     private final AssetDataSerializer serializer;
-    private final HashMap<AssetID, AssetData> lookup;
+    private final HashMap<AssetID, CpuAssetData> lookup;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
 
@@ -48,7 +48,7 @@ public class GpuResourceManager {
         if (existingHandle != null) {
             return existingHandle;
         }
-        AssetData data = retrieveData(id);
+        CpuAssetData data = retrieveData(id);
         return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
@@ -97,8 +97,8 @@ public class GpuResourceManager {
      * {@link Pixmap} has not been constructed from the encoded bytes yet, that operation will
      * be performed.
      *
-     * @param id to be mapped to the {@link TextureHandle}.
-     * @return TextureHandle that points to the {@link GpuTextureResource}
+     * @param id to be mapped to the GPU resource handle.
+     * @return handle that points to the {@link GpuTextureResource}
      */
     private Handle<GpuResource> uploadTexture(AssetID id, TextureData textureData) {
         Pixmap map = textureData.pixmap();
@@ -120,15 +120,15 @@ public class GpuResourceManager {
     }
 
     /**
-     * Used to retrieve AssetData that is stored on CPU. If the data is not present
+     * Used to retrieve CpuAssetData that is stored on CPU. If the data is not present
      * it will be loaded from disk into memory.
      *
-     * @param reference to the AssetData
-     * @return AssetData that the {@link AssetID} points to.
+     * @param reference to the CpuAssetData
+     * @return CpuAssetData that the {@link AssetID} points to.
      *
      */
-    public AssetData retrieveData(AssetID reference) {
-        AssetData assetData = lookup.get(reference);
+    public CpuAssetData retrieveData(AssetID reference) {
+        CpuAssetData assetData = lookup.get(reference);
         if (assetData != null) {
             return assetData;
         }

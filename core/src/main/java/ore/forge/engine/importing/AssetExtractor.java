@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author Nathan Ulmen
  * {@link AssetExtractor} provides a set of static methods that extract
- * {@link ore.forge.engine.AssetData} from a {@link GltfModel} and gives it to the {@link AssetRegistry}
+ * {@link ore.forge.engine.CpuAssetData} from a {@link GltfModel} and gives it to the {@link AssetRegistry}
  *
  */
 public class AssetExtractor {
@@ -92,7 +92,7 @@ public class AssetExtractor {
         };
     }
 
-    private static AssetCandidate createCandidate(NamedModelElement modelElement, Path assetOutput, AssetSourceKey sourceKey, AssetData data) {
+    private static AssetCandidate createCandidate(NamedModelElement modelElement, Path assetOutput, AssetSourceKey sourceKey, CpuAssetData data) {
         Path finalizedOutTarget = assetOutput.resolve(modelElement.getName() + outputExtension(sourceKey.assetType()));
         ensureDirectory(finalizedOutTarget.getParent());
 

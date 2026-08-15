@@ -1,9 +1,9 @@
 package ore.forge.engine.importing;
 
-import ore.forge.engine.AssetData;
+import ore.forge.engine.CpuAssetData;
 
-public record AssetCandidate(AssetSourceKey sourceKey, AssetData assetData, AssetArtifact artifact) {
-    public AssetCandidate(AssetSourceKey sourceKey, AssetData assetData) {
+public record AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData, AssetArtifact artifact) {
+    public AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData) {
         this(sourceKey, assetData, null);
     }
 

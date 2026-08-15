@@ -34,7 +34,7 @@ public class AssetRegistry {
     }
 
     public AssetRegistry() {
-        this("assets");
+        this("baked_assets");
     }
 
     /**

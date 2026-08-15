@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @author Nathan Ulmen
  * Raw Mesh data before being uploaded to GPU.
  */
-public final class MeshData implements AssetData {
+public final class MeshData implements CpuAssetData {
     private final VertexAttributes attributes;
     private final float[] vbo;
     private final short[] ibo;

@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** @author Nathan Ulmen
- * AssetImporter is responsible for
+ * AssetImporter is a "user facing/outwardfacing" interface 
+ * used to import .glb/gltf files into the Resource Systems?
+ * 
  * */
 public class AssetImporter {
     protected static final int IMPORT_VERSION = 1;

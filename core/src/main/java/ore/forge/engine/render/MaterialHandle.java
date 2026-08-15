@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import ore.forge.engine.Handle;
 
-public final class MaterialHandle implements AssetHandle {
+public final class MaterialHandle {
 
     // Shader used to render this material
     public ShaderProgram shader;
