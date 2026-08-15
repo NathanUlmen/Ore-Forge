@@ -14,12 +14,5 @@
  ./gradlew lwjgl3:run
  ```
 
-## Documentation
-- `documentation/DesignDoc.md` game design and systems
-- `documentation/Outline.md` rendering/asset pipeline notes
-
-## Tools
-- `tools/schema_designer.html` is a standalone browser-based schema-authoring prototype that exports schema JSON for future editor/runtime integration.
-
 ## Status
 Active development.
