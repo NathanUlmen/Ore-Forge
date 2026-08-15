@@ -31,5 +31,4 @@ public class Handle<E> implements Cloneable {
         return (int) (handle >>> 32);
     }
 
-
 }

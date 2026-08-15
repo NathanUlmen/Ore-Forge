@@ -1,4 +1,4 @@
-# Ore Forge / Forge Engine
+# Ore Forge 
 
 ## Project Structure
 - `core/` game + engine code

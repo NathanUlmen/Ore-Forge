@@ -93,7 +93,7 @@ public class AssetRegistry {
         Json json = getJson();
         for (JsonValue value : jsonValue) {
             AssetRegistryData data = json.readValue(AssetRegistryData.class, value);
-            AssetID identifier = new AssetID(data.uuid);
+            AssetID identifier = new AssetID(data.assetId);
             artifactLookup.put(identifier, data.artifact);
             idLookup.put(data.artifact.sourceKey(), identifier);
         }
@@ -109,7 +109,7 @@ public class AssetRegistry {
         ArrayList<AssetRegistryData> data = new ArrayList<>();
         for (Map.Entry<AssetID, AssetArtifact> entry : artifactLookup.entrySet()) {
             AssetRegistryData dataItem = new AssetRegistryData();
-            dataItem.uuid = entry.getKey().toString();
+            dataItem.assetId = entry.getKey().toString();
             dataItem.artifact = entry.getValue();
             data.add(dataItem);
         }
@@ -145,7 +145,7 @@ public class AssetRegistry {
     }
 
     private static class AssetRegistryData {
-        private String uuid;
+        private String assetId;
         private AssetArtifact artifact;
     }
 
@@ -157,7 +157,7 @@ public class AssetRegistry {
             json.writeValue("filePath", object.filepath().toString());
             json.writeValue("sourceKey", object.sourceKey());
             json.writeValue("dependencies", object.dependencies());
-            json.writeValue("uuid", object.assetID().toString());
+            json.writeValue("assetId", object.assetID().toString());
 
 
             json.writeObjectEnd();
@@ -168,7 +168,7 @@ public class AssetRegistry {
             String filePath = jsonData.getString("filePath");
             ArrayList<AssetArtifact> dependencies = json.readValue(ArrayList.class, AssetArtifact.class, jsonData.get("dependencies"));
             AssetSourceKey sourceKey = json.readValue(AssetSourceKey.class, jsonData.get("sourceKey"));
-            String uuid = jsonData.getString("uuid");
+            String uuid = jsonData.getString("assetId");
             return new AssetArtifact(filePath, dependencies, sourceKey, new AssetID(uuid));
         }
     }
