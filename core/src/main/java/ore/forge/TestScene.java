@@ -80,7 +80,7 @@ public class TestScene implements Screen {
     private static final float CUBE_SPACING = 2.2f;
     private static final float LAYER_HEIGHT = 2.1f;
     private static final float DROP_HEIGHT = 3f;
-    private static final float GROUND_RENDER_Y = -0.5f;
+    private static final Vector3 GROUND_SCALE = new Vector3(80f, 1f, 80f);
 
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(GRID_COLS * GRID_ROWS * GRID_LAYERS + 1);
 
@@ -268,32 +268,40 @@ public class TestScene implements Screen {
     private void populateScene(ResourceManager resourceManager) {
         Handle<GpuResource> meshHandle = null;
         Handle<GpuResource> textureHandle = null;
+        MeshData meshData = null;
 
         for (AssetID id : resourceManager.getAssetIDs()) {
             CpuAssetData data = resourceManager.getCpuAsset(id);
             switch (data) {
-                case MeshData ignored -> meshHandle = resourceManager.getGpuHandle(id);
+                case MeshData foundMeshData -> {
+                    meshData = foundMeshData;
+                    meshHandle = resourceManager.getGpuHandle(id);
+                }
                 case TextureData ignored -> textureHandle = resourceManager.getGpuHandle(id);
                 default -> {
                 }
             }
         }
 
-        if (meshHandle == null || textureHandle == null) {
+        if (meshHandle == null || meshData == null || textureHandle == null) {
             throw new IllegalStateException("TestScene requires one mesh and one texture in the asset registry.");
         }
 
         MaterialHandle material = new MaterialHandle();
         material.baseColorTexture = textureHandle;
 
-        createGround(meshHandle, material);
-        createCubeField(meshHandle, material);
+        BoundingBox meshBounds = calculateMeshBounds(meshData);
+
+        createGround(meshHandle, material, meshBounds);
+        createCubeField(meshHandle, material, meshBounds);
     }
 
-    private void createGround(Handle<GpuResource> meshHandle, MaterialHandle material) {
+    private void createGround(Handle<GpuResource> meshHandle, MaterialHandle material, BoundingBox meshBounds) {
+        BoundingBox groundBounds = scaleBounds(meshBounds, GROUND_SCALE);
+        float groundCenterY = -groundBounds.getHeight() * 0.5f;
         Entity ground = createEntity(
-            new WorldTransformDefinition(new Matrix4().setToTranslation(0f, GROUND_RENDER_Y, 0f)),
-            new RenderCDefinition(meshHandle, material, new Vector3(80f, 1f, 80f), new Matrix4().idt()),
+            new WorldTransformDefinition(new Matrix4().setToTranslation(0f, groundCenterY, 0f)),
+            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), new Matrix4().idt()),
             new PhysicsDefinition(
                 "ground",
                 PhysicsBodyType.RIGID,
@@ -301,21 +309,17 @@ public class TestScene implements Screen {
                 0f,
                 1f,
                 0.15f,
-                new PlaneShapeIR(new Vector3(0f, 1f, 0f), 0f)
+                new BoxShapeIR(groundBounds)
             )
         );
         engine.addEntity(ground);
     }
 
-    private void createCubeField(Handle<GpuResource> meshHandle, MaterialHandle material) {
+    private void createCubeField(Handle<GpuResource> meshHandle, MaterialHandle material, BoundingBox meshBounds) {
         final float gridWidth = (GRID_COLS - 1) * CUBE_SPACING;
         final float gridDepth = (GRID_ROWS - 1) * CUBE_SPACING;
         final float startX = -gridWidth * 0.5f;
         final float startZ = -gridDepth * 0.5f;
-        final BoundingBox unitCubeBounds = new BoundingBox(
-            new Vector3(-0.5f, -0.5f, -0.5f),
-            new Vector3(0.5f, 0.5f, 0.5f)
-        );
 
         int cubeIndex = 0;
         for (int layer = 0; layer < GRID_LAYERS; layer++) {
@@ -334,13 +338,43 @@ public class TestScene implements Screen {
                             1f,
                             0.8f,
                             0.05f,
-                            new BoxShapeIR(new BoundingBox(unitCubeBounds))
+                            new BoxShapeIR(new BoundingBox(meshBounds))
                         )
                     );
                     engine.addEntity(cube);
                 }
             }
         }
+    }
+
+    private BoundingBox calculateMeshBounds(MeshData meshData) {
+        int positionOffsetFloats = meshData.attributes().findByUsage(com.badlogic.gdx.graphics.VertexAttributes.Usage.Position).offset / Float.BYTES;
+        int floatsPerVertex = meshData.attributes().vertexSize / Float.BYTES;
+        float[] vertices = meshData.vbo();
+
+        Vector3 min = new Vector3(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+        Vector3 max = new Vector3(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+
+        for (int vertex = 0; vertex < vertices.length; vertex += floatsPerVertex) {
+            float x = vertices[vertex + positionOffsetFloats];
+            float y = vertices[vertex + positionOffsetFloats + 1];
+            float z = vertices[vertex + positionOffsetFloats + 2];
+
+            min.x = Math.min(min.x, x);
+            min.y = Math.min(min.y, y);
+            min.z = Math.min(min.z, z);
+            max.x = Math.max(max.x, x);
+            max.y = Math.max(max.y, y);
+            max.z = Math.max(max.z, z);
+        }
+
+        return new BoundingBox(min, max);
+    }
+
+    private BoundingBox scaleBounds(BoundingBox bounds, Vector3 scale) {
+        Vector3 min = new Vector3(bounds.min).scl(scale);
+        Vector3 max = new Vector3(bounds.max).scl(scale);
+        return new BoundingBox(min, max);
     }
 
     private Entity createEntity(ComponentDefinition<?>... definitions) {
