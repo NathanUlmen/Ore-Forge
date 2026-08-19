@@ -6,5 +6,5 @@ import com.badlogic.gdx.utils.Disposable;
  *
  *
  * */
-public sealed interface CpuAssetData permits AnimationData, MaterialData, MeshData, TextureData {
+public sealed interface CpuAssetData extends Disposable permits AnimationData, MaterialData, MeshData, TextureData {
 }

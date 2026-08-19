@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  *
  *
  */
-public final class TextureData implements CpuAssetData, Disposable {
+public final class TextureData implements CpuAssetData {
     private final byte[] encodedData;
     private Pixmap pixmap;
 

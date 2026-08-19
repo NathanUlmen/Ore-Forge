@@ -32,6 +32,12 @@ public final class MeshData implements CpuAssetData {
     }
 
     @Override
+    public void dispose() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MeshData other) {
             return attributes.equals(other.attributes) && Arrays.equals(vbo, other.vbo) && Arrays.equals(ibo, other.ibo);
