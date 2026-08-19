@@ -23,8 +23,6 @@ import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
 import ore.forge.engine.*;
-import ore.forge.engine.importing.AssetID;
-import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
@@ -33,10 +31,15 @@ import ore.forge.engine.components.definitions.WorldTransformDefinition;
 import ore.forge.engine.definitions.BoxShapeIR;
 import ore.forge.engine.definitions.PhysicsDefinition;
 import ore.forge.engine.definitions.PlaneShapeIR;
-import ore.forge.engine.render.GpuResource;
 import ore.forge.engine.render.MaterialHandle;
 import ore.forge.engine.render.RenderPart;
 import ore.forge.engine.render.*;
+import ore.forge.engine.resources.CpuAssetData;
+import ore.forge.engine.resources.GpuResource;
+import ore.forge.engine.resources.MeshData;
+import ore.forge.engine.resources.ResourceManager;
+import ore.forge.engine.resources.TextureData;
+import ore.forge.engine.resources.AssetID;
 import ore.forge.engine.render.passes.BasicRenderPass;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
@@ -81,7 +84,7 @@ public class TestScene implements Screen {
 
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(GRID_COLS * GRID_ROWS * GRID_LAYERS + 1);
 
-    public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
+    public TestScene(ResourceManager resourceManager) {
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
         engine = new Engine();
         physicsWorld = PhysicsWorld.instance();
@@ -102,7 +105,7 @@ public class TestScene implements Screen {
         cameraController = new FreeCamController((PerspectiveCamera) camera);
         initializeHarness();
         initializeEngine();
-        populateScene(resourceManager, assetRegistry);
+        populateScene(resourceManager);
         renderEntities = engine.getEntitiesFor(Family.all(RenderC.class, WorldTransformC.class).get());
     }
 
@@ -262,15 +265,15 @@ public class TestScene implements Screen {
         engine.addSystem(new RenderPrepSystem());
     }
 
-    private void populateScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
+    private void populateScene(ResourceManager resourceManager) {
         Handle<GpuResource> meshHandle = null;
         Handle<GpuResource> textureHandle = null;
 
-        for (AssetID id : assetRegistry.getIDs()) {
-            CpuAssetData data = resourceManager.retrieveData(id);
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            CpuAssetData data = resourceManager.getCpuAsset(id);
             switch (data) {
-                case MeshData ignored -> meshHandle = resourceManager.getHandle(id);
-                case TextureData ignored -> textureHandle = resourceManager.getHandle(id);
+                case MeshData ignored -> meshHandle = resourceManager.getGpuHandle(id);
+                case TextureData ignored -> textureHandle = resourceManager.getGpuHandle(id);
                 default -> {
                 }
             }

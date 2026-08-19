@@ -1,10 +1,10 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.esotericsoftware.kryo.io.Output;
 import de.javagl.jgltf.model.*;
-import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
+import ore.forge.engine.VertexAttribute;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,10 +22,10 @@ import java.util.Map;
 /**
  * @author Nathan Ulmen
  * {@link AssetExtractor} provides a set of static methods that extract
- * {@link ore.forge.engine.CpuAssetData} from a {@link GltfModel} and gives it to the {@link AssetRegistry}
+ * {@link CpuAssetData} from a {@link GltfModel} and gives it to the {@link AssetRegistry}
  *
  */
-public class AssetExtractor {
+final class AssetExtractor {
 
     enum BakedType {
         MESH_BIN,

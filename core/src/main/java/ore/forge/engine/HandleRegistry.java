@@ -7,12 +7,18 @@ import com.badlogic.gdx.utils.IntArray;
 
 /**
  * @author Nathan Ulmen
+ * Handle Registry is responsible for handing out Handles to resources and performing reference counting of 
+ * resources stored inside it.
  *
  */
 public class HandleRegistry<E extends Disposable> {
     private final Array<Entry<E>> handleLookup = new Array<>(128);
     private final IntArray freeList = new IntArray(false, 32);
     private int versionCounter = 1;
+
+    public HandleRegistry() {
+
+    }
 
     public E getResource(Handle<E> handle) {
         int index = handle.index();

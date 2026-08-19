@@ -10,10 +10,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.TestScene;
-import ore.forge.engine.GpuResourceManager;
-import ore.forge.engine.importing.AssetImporter;
-import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.profiling.Profiler;
+import ore.forge.engine.resources.ResourceManager;
 import ore.forge.game.items.ItemDefinition;
 
 import java.util.ArrayList;
@@ -44,12 +42,10 @@ public class OreForge extends Game {
 
         //TODO: finally set screen to main gameplay
 
-        AssetRegistry registry = new AssetRegistry();
-        AssetImporter importer = new AssetImporter(registry);
-        importer.importGlbFile(Gdx.files.internal("models/texture_test.glb").file().toPath());
-        registry.save(Gdx.files.internal("registry.json").file());
-        GpuResourceManager resourceManager = new GpuResourceManager(registry);
-        setScreen(new TestScene(resourceManager, registry));
+        ResourceManager resourceManager = new ResourceManager();
+        resourceManager.importGltf(Gdx.files.internal("models/texture_test.glb").file().toPath());
+        resourceManager.saveRegistry(Gdx.files.internal("registry.json").file().toPath());
+        setScreen(new TestScene(resourceManager));
 
 
 //        GameContext context = GameContext.INSTANCE;

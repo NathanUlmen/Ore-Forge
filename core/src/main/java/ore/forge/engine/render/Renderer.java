@@ -8,7 +8,9 @@ import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.Pool;
-import ore.forge.engine.GpuResourceManager;
+import ore.forge.engine.resources.GpuMeshResource;
+import ore.forge.engine.resources.GpuTextureResource;
+import ore.forge.engine.resources.ResourceManager;
 import ore.forge.engine.render.passes.RenderPass;
 
 import java.nio.FloatBuffer;
@@ -23,13 +25,13 @@ public class Renderer {
     private FloatBuffer instanceBuffer;
     private int instanceCapacity;
 
-    private final GpuResourceManager gpuResourceManager;
+    private final ResourceManager resourceManager;
     private final ArrayList<RenderPass> renderPasses = new ArrayList<>();
     private final ArrayList<RenderCommand> commandBuffer = new ArrayList<>();
     private final Pool<RenderCommand> commandPool;
 
 
-    public Renderer(GpuResourceManager gpuResourceManager) {
+    public Renderer(ResourceManager resourceManager) {
         commandPool = new  Pool<RenderCommand>(1024) {
             @Override
             public RenderCommand newObject() {
@@ -37,7 +39,7 @@ public class Renderer {
             }
         };
 
-        this.gpuResourceManager = gpuResourceManager;
+        this.resourceManager = resourceManager;
         this.instanceCapacity = 1024;
         this.instanceBuffer = BufferUtils.newFloatBuffer(instanceCapacity * FLOATS_PER_INSTANCE);
         this.instanceVbo = Gdx.gl30.glGenBuffer();
@@ -92,8 +94,8 @@ public class Renderer {
                 endIndex++;
             }
 
-            GpuMeshResource meshResource = (GpuMeshResource) gpuResourceManager.getGpuResource(first.meshHandle);
-            GpuTextureResource textureResource = (GpuTextureResource) gpuResourceManager.getGpuResource(first.materialHandle.baseColorTexture);
+            GpuMeshResource meshResource = (GpuMeshResource) resourceManager.getGpuResource(first.meshHandle);
+            GpuTextureResource textureResource = (GpuTextureResource) resourceManager.getGpuResource(first.materialHandle.baseColorTexture);
             textureResource.texture().bind();
             renderPass.bindShader(renderPass.currentShader, camera);
             VertexBufferObjectWithVAO vbo = meshResource.vbo();

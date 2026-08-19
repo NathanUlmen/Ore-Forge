@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import ore.forge.ComponentDefinition;
 import ore.forge.engine.Handle;
 import ore.forge.engine.components.RenderC;
-import ore.forge.engine.render.GpuResource;
+import ore.forge.engine.resources.GpuResource;
 import ore.forge.engine.render.MaterialHandle;
 import ore.forge.engine.render.RenderPart;
 

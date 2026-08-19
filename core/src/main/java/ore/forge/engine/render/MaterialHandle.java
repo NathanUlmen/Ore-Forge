@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import ore.forge.engine.Handle;
+import ore.forge.engine.resources.GpuResource;
 
 public final class MaterialHandle {
 

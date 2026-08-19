@@ -1,4 +1,4 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 public final class AnimationData implements CpuAssetData {
 

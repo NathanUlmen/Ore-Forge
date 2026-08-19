@@ -1,4 +1,4 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 import java.util.UUID;
 
@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  *
  */
-public class AssetID {
+public final class AssetID {
     private final UUID uuid;
 
     public AssetID(UUID uuid) {

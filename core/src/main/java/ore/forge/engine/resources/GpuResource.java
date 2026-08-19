@@ -1,4 +1,4 @@
-package ore.forge.engine.render;
+package ore.forge.engine.resources;
 
 
 import com.badlogic.gdx.utils.Disposable;

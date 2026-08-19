@@ -1,10 +1,6 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
-import com.badlogic.gdx.utils.Disposable;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author Nathan Ulmen
@@ -35,7 +31,9 @@ public final class TextureData implements CpuAssetData {
 
     @Override
     public void dispose() {
-        pixmap.dispose();
+        if (pixmap != null) {
+            pixmap.dispose();
+        }
     }
 
 }

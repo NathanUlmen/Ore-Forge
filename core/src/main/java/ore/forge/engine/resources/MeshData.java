@@ -1,4 +1,4 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
 
@@ -46,4 +46,3 @@ public final class MeshData implements CpuAssetData {
     }
 
 }
-

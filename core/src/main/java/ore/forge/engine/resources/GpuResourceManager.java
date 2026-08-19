@@ -1,14 +1,13 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
-import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetID;
-import ore.forge.engine.importing.AssetRegistry;
-import ore.forge.engine.render.*;
+import ore.forge.engine.Handle;
+import ore.forge.engine.HandleRegistry;
+import ore.forge.engine.render.Renderer;
 
 import java.util.HashMap;
 
@@ -20,19 +19,15 @@ import java.util.HashMap;
  *
  *
  */
-public class GpuResourceManager {
-    private final AssetRegistry registry;
-    private final AssetDataSerializer serializer;
-    private final HashMap<AssetID, CpuAssetData> lookup;
+final class GpuResourceManager {
+    private final AssetManager assetManager;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
 
-    public GpuResourceManager(AssetRegistry registry) {
-        this.registry = registry;
-        lookup = new HashMap<>();
-        handles = new HashMap<>();
-        serializer = new AssetDataSerializer();
-        gpuResources = new HandleRegistry<>();
+    public GpuResourceManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
+        this.handles = new HashMap<>();
+        this.gpuResources = new HandleRegistry<>();
     }
 
     /**
@@ -48,7 +43,7 @@ public class GpuResourceManager {
         if (existingHandle != null) {
             return existingHandle;
         }
-        CpuAssetData data = retrieveData(id);
+        CpuAssetData data = assetManager.getCpuAsset(id);
         return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
@@ -97,8 +92,8 @@ public class GpuResourceManager {
      * {@link Pixmap} has not been constructed from the encoded bytes yet, that operation will
      * be performed.
      *
-     * @param id to be mapped to the GPU resource handle.
-     * @return handle that points to the {@link GpuTextureResource}
+     * @param id to be mapped to the {@link TextureHandle}.
+     * @return TextureHandle that points to the {@link GpuTextureResource}
      */
     private Handle<GpuResource> uploadTexture(AssetID id, TextureData textureData) {
         Pixmap map = textureData.pixmap();
@@ -117,36 +112,6 @@ public class GpuResourceManager {
      */
     public GpuResource getGpuResource(Handle<GpuResource> assetHandle) {
         return gpuResources.getResource(assetHandle);
-    }
-
-    /**
-     * Used to retrieve CpuAssetData that is stored on CPU. If the data is not present
-     * it will be loaded from disk into memory.
-     *
-     * @param reference to the CpuAssetData
-     * @return CpuAssetData that the {@link AssetID} points to.
-     *
-     */
-    public CpuAssetData retrieveData(AssetID reference) {
-        CpuAssetData assetData = lookup.get(reference);
-        if (assetData != null) {
-            return assetData;
-        }
-
-        AssetArtifact target = registry.lookUp(reference);
-        assert target != null : "AssetID: " + reference + ", failed to map to an AssetArtifact.";
-
-        assetData = serializer.load(target);
-        lookup.put(reference, assetData);
-
-        //load dependencies
-        if (target.dependencies() != null) {
-            for (AssetArtifact dependency : target.dependencies()) {
-                retrieveData(dependency.assetID());
-            }
-        }
-
-        return assetData;
     }
 
     public String toString() {

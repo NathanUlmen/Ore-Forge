@@ -1,4 +1,4 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
@@ -7,9 +7,6 @@ import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.Pool;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
-import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetSourceKey;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.nio.file.Files;
