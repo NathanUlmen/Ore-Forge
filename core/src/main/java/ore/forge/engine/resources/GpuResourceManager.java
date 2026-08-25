@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import ore.forge.engine.Handle;
 import ore.forge.engine.HandleRegistry;
+import ore.forge.engine.Pair;
 import ore.forge.engine.render.Renderer;
 
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import java.util.HashMap;
  *
  */
 final class GpuResourceManager {
+    private static final String LOG_TAG = "GpuResourceManager";
     private final AssetManager assetManager;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
@@ -38,10 +40,12 @@ final class GpuResourceManager {
      * @param id to an asset that want a handle to.
      * @return A handle to the asset that the id references.
      */
-    public Handle<GpuResource> getHandle(AssetID id) {
-        Handle<GpuResource> existingHandle = handles.get(id);
-        if (existingHandle != null) {
-            return existingHandle;
+    public Handle<GpuResource> accquireHandle(AssetID id) {
+        Handle<GpuResource> target = handles.get(id);
+        if (target != null) {
+            Gdx.app.log(LOG_TAG, "Obtained existing Handle");
+            gpuResources.accquireHandle(target);
+            return target;
         }
         CpuAssetData data = assetManager.getCpuAsset(id);
         return switch (data) {
@@ -52,6 +56,15 @@ final class GpuResourceManager {
             case AnimationData animationData ->
                 throw new UnsupportedOperationException("Animation upload not implemented yet.");
         };
+    }
+
+    public void releaseHandle(AssetID id) {
+       Handle<GpuResource> target = handles.get(id);
+       gpuResources.releaseHandle(target);
+    }
+
+    public void releaseHandle(Handle<GpuResource> handle) {
+        gpuResources.releaseHandle(handle);
     }
 
     /**
@@ -112,6 +125,18 @@ final class GpuResourceManager {
      */
     public GpuResource getGpuResource(Handle<GpuResource> assetHandle) {
         return gpuResources.getResource(assetHandle);
+    }
+
+    public int resouceCount() {
+        return gpuResources.size();
+    }
+
+    public void accquire() {
+        
+    }
+
+    public void release(GpuResource toRelease) {
+        
     }
 
     public String toString() {

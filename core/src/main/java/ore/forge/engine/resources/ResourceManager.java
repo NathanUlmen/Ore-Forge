@@ -41,7 +41,7 @@ public class ResourceManager {
     }
 
     public Handle<GpuResource> getGpuHandle(AssetID id) {
-        return gpuResourceManager.getHandle(id);
+        return gpuResourceManager.accquireHandle(id);
     }
 
     public GpuResource getGpuResource(Handle<GpuResource> assetHandle) {
@@ -67,4 +67,21 @@ public class ResourceManager {
     public void loadRegistry(FileHandle fileHandle) {
         loadRegistry(new JsonReader().parse(fileHandle));
     }
+
+    public void accquireGpuResource(AssetID id) {
+        gpuResourceManager.accquireHandle(id);
+    }
+
+    public void releaseGpuResource(AssetID id) {
+        gpuResourceManager.releaseHandle(id);
+    }
+
+    public void releaseGpuResource(Handle<GpuResource> handle) {
+        gpuResourceManager.releaseHandle(handle);
+    }
+
+    public int activeGpuResources() {
+        return gpuResourceManager.resouceCount();
+    }
+
 }
