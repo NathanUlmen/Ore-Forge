@@ -1,5 +1,7 @@
 package ore.forge.engine;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -13,7 +15,7 @@ import com.badlogic.gdx.utils.IntArray;
  *
  */
 public class HandleRegistry<E extends Disposable> {
-    private static final String LOG_TAG = "HandleRegistry";
+    private static final String LOG_TAG = HandleRegistry.class.getName();
     private final Array<Entry<E>> handleLookup = new Array<>(128);
     private final IntArray freeList = new IntArray(false, 32);
     private int versionCounter = 1;
@@ -62,9 +64,9 @@ public class HandleRegistry<E extends Disposable> {
         int version = versionCounter++;
         if (!freeList.isEmpty()) {
             index = freeList.pop();
-            handleLookup.set(index, new Entry<>(version, resourceData, 0));
+            handleLookup.set(index, new Entry<>(version, resourceData, 1));
         } else {
-            handleLookup.add(new Entry<>(version, resourceData, 0));
+            handleLookup.add(new Entry<>(version, resourceData, 1));
         }
 
         return new Handle<E>(index, version);
@@ -126,11 +128,11 @@ public class HandleRegistry<E extends Disposable> {
         }
         
         public int give() {
-            return checkoutCount++;
+            return ++checkoutCount;
         }
-        
+
         public int take() {
-            return checkoutCount--;
+            return --checkoutCount;
         }
     }
 
