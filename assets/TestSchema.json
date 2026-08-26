@@ -1,0 +1,116 @@
+{
+  "schemaName": "EntitySchema",
+  "schemaId": "entity.schema",
+  "version": "1",
+  "fields": [
+    {
+      "name": "Name",
+      "type": "string",
+      "required": true,
+      "editor_hint": "auto",
+      "description": "Name of the Item."
+    },
+    {
+      "name": "Description",
+      "type": "string",
+      "required": true,
+      "editor_hint": "auto",
+      "description": "Description of the Item."
+    },
+    {
+      "name": "Acquisition Info",
+      "type": "object",
+      "required": true,
+      "editor_hint": "auto",
+      "description": "How the item can be obtained.",
+      "fields": [
+        {
+          "name": "Tier",
+          "type": "enum",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "Tier of the Item.",
+          "enum_options": [
+            "PINNACLE",
+            "EXOTIC",
+            "PRESTIGE",
+            "SPECIAL",
+            "EPIC",
+            "SUPER_RARE",
+            "RARE",
+            "UNCOMMON",
+            "COMMON"
+          ]
+        },
+        {
+          "name": "Unlock Method",
+          "type": "enum",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "How the item is unlocked.",
+          "enum_options": [
+            "NONE",
+            "PRESTIGE_LEVEL",
+            "SPECIAL_POINTS",
+            "QUEST"
+          ]
+        },
+        {
+          "name": "Unlock Requirement",
+          "type": "float",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "The value needed to unlock this item."
+        },
+        {
+          "name": "Can be Sold",
+          "type": "bool",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "Whether or not the item can be sold for currency."
+        },
+        {
+          "name": "Prestige Proof",
+          "type": "bool",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "Whether or not the item will be removed from players inventory when they prestige."
+        },
+        {
+          "name": "Currency Type",
+          "type": "enum",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "The currency this item is bought with and sold with.",
+          "enum_options": [
+            "CASH",
+            "NONE",
+            "SPECIAL_POINTS",
+            "PRESTIGE_POINTS"
+          ]
+        },
+        {
+          "name": "Item Value",
+          "type": "float",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "The amount of currency required to purchase this item."
+        },
+        {
+          "name": "Sell Price",
+          "type": "float",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "The amount of currency gained when this item is sold."
+        },
+        {
+          "name": "Rarity",
+          "type": "float",
+          "required": true,
+          "editor_hint": "auto",
+          "description": "The rarity of the Item. The value is between 0 and 1. The smaller the value, the more rare the item is."
+        }
+      ]
+    }
+  ]
+}
