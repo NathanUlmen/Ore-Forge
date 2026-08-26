@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector4;
 import com.badlogic.gdx.utils.Pool;
 import ore.forge.engine.Handle;
+import ore.forge.engine.resources.GpuResource;
 
 public class RenderCommand implements Pool.Poolable {
     public Handle<GpuResource> meshHandle;

@@ -3,9 +3,11 @@ package ore.forge.engine.render;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector4;
 import ore.forge.engine.Handle;
+import ore.forge.engine.resources.GpuResource;
 
 public class RenderPart {
     public Handle<GpuResource> meshHandle;
+    public Handle<GpuResource> materialHandle;
     public MaterialHandle material;
     public Matrix4 transform; //final transform, used for instancing
     public Vector4 tint, uvParams;

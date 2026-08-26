@@ -2,11 +2,15 @@ package ore.forge.serialization;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
-import ore.forge.engine.importing.*;
-import ore.forge.engine.render.AssetHandle;
+import ore.forge.engine.resources.AssetID;
+import ore.forge.engine.resources.CpuAssetData;
+import ore.forge.engine.resources.MeshData;
+import ore.forge.engine.resources.ResourceManager;
+import ore.forge.engine.resources.TextureData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,7 +19,11 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,56 +35,45 @@ class ImporterTest {
 
     @Test
     void testImport() {
-        AssetRegistry registry = new AssetRegistry(tmpDir.toString());
-        AssetImporter importer = new AssetImporter(registry);
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
         Path sourceModel = modelFixture("Cube.gltf");
-        AssetSourceKey sourceKey = new AssetSourceKey();
-        sourceKey.setAssetType(AssetType.MESH);
-        sourceKey.setLogicalName("cube");
-        sourceKey.setAssetName("Cube");
-        sourceKey.setSourcePath(sourceModel.toString());
-        sourceKey.setImportVersion(1);
-
-        importer.importGlbFile(sourceModel);
+        resourceManager.importGltf(sourceModel);
 
         Path output = tmpDir.resolve("temp.json");
-        registry.save(output.toFile());
+        resourceManager.saveRegistry(output);
 
-        AssetArtifact importedArtifact = registry.lookUp(sourceKey);
-        assertNotNull(importedArtifact);
-        assertEquals(sourceKey, importedArtifact.sourceKey());
-        assertTrue(importedArtifact.filepath().startsWith(tmpDir));
-        assertTrue(importedArtifact.filepath().getFileName().toString().endsWith(".meshbin"));
+        JsonValue registryJson = new JsonReader().parse(new FileHandle(output.toFile()));
+        assertTrue(registryJson.size > 0);
 
-        MeshData importedMesh = new MeshDataSerializer().readObject(importedArtifact.filepath());
-        assertNotNull(importedMesh);
-        assertInstanceOf(MeshData.class, importedMesh);
+        JsonValue meshEntry = findEntryByAssetType(registryJson, "MESH");
+        assertNotNull(meshEntry);
+
+        Path bakedMeshPath = Path.of(meshEntry.get("artifact").getString("filePath"));
+        assertTrue(bakedMeshPath.startsWith(tmpDir));
+        assertTrue(bakedMeshPath.getFileName().toString().endsWith(".meshbin"));
+
+        MeshData importedMesh = new MeshDataSerializer().readObject(bakedMeshPath);
         assertTrue(importedMesh.vbo().length > 0);
         assertTrue(importedMesh.ibo().length > 0);
     }
 
     @Test
     void testRegistryLoadSaveLoad() throws URISyntaxException {
-        // Load registry from test resource
-        AssetRegistry registry = new AssetRegistry();
-        initRegistry(registry);
-
-        // Save it to a temp file
+        ResourceManager resourceManager = new ResourceManager();
+        initRegistry(resourceManager);
         Path output = tmpDir.resolve("savedRegistry.json");
-        registry.save(output.toFile());
+        resourceManager.saveRegistry(output);
 
         assertTrue(Files.exists(output));
 
-        // Load saved registry again
-        AssetRegistry loadedRegistry = new AssetRegistry();
-        JsonReader reader = new JsonReader();
-        loadedRegistry.load(reader.parse(new FileHandle(output.toFile())));
+        ResourceManager loadedResourceManager = new ResourceManager();
+        loadedResourceManager.loadRegistry(new FileHandle(output.toFile()));
 
-        // Verify round-trip result
-        assertEquals(registry, loadedRegistry);
+        assertEquals(assetIds(resourceManager), assetIds(loadedResourceManager));
+        assertEquals(assetTypes(resourceManager), assetTypes(loadedResourceManager));
     }
 
-    private void initRegistry(AssetRegistry registry) throws URISyntaxException {
+    private void initRegistry(ResourceManager resourceManager) throws URISyntaxException {
         Path resourcePath = Paths.get(
             Objects.requireNonNull(
                 getClass().getClassLoader().getResource("registry/basicRegistry.json")
@@ -84,36 +81,30 @@ class ImporterTest {
         );
 
         JsonReader reader = new JsonReader();
-        registry.load(reader.parse(new FileHandle(resourcePath.toFile())));
+        resourceManager.loadRegistry(reader.parse(new FileHandle(resourcePath.toFile())));
     }
 
     @Test
-    void testSerialization() throws URISyntaxException {
-        TestRegistry registry = new TestRegistry();
-        AssetImporter importer = new AssetImporter(registry);
-        importer.importGlbFile(modelFixture("Cube.gltf"));
-        GpuResourceManager resourceManager = new GpuResourceManager(registry);
+    void testSerialization() {
+        ResourceManager resourceManager = new ResourceManager();
+        resourceManager.importGltf(modelFixture("Cube.gltf"));
 
-
-        for (AssetID id : registry.getIds()) {
-            assertNotNull(resourceManager.retrieveData(id));
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            assertNotNull(resourceManager.getCpuAsset(id));
         }
     }
 
     @Test
     void testTextureImport() throws IOException {
-        AssetRegistry registry = new AssetRegistry(tmpDir.toString());
-        AssetImporter importer = new AssetImporter(registry);
-        GpuResourceManager resourceManager = new GpuResourceManager(registry);
-        importer.importGlbFile(modelFixture("texture_test.glb"));
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
+        resourceManager.importGltf(modelFixture("texture_test.glb"));
 
         byte[] pngBytes = Files.readAllBytes(modelFixture("test_tex01.png"));
-        AssetData data = null;
+        CpuAssetData data = null;
 
-        for (AssetID id : registry.getIDs()) {
-            if (registry.lookUp(id).sourceKey().assetType() == AssetType.TEXTURE) {
-                System.out.println(registry.lookUp(id));
-                data = resourceManager.retrieveData(id);
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            if (resourceManager.getAssetType(id) == AssetType.TEXTURE) {
+                data = resourceManager.getCpuAsset(id);
             }
         }
 
@@ -131,12 +122,29 @@ class ImporterTest {
         }
     }
 
-    private static class TestRegistry extends AssetRegistry {
-
-        public Iterable<AssetID> getIds() {
-            return idLookup.values();
+    private static JsonValue findEntryByAssetType(JsonValue registryJson, String assetType) {
+        for (JsonValue entry : registryJson) {
+            if (assetType.equals(entry.get("artifact").get("sourceKey").getString("assetType"))) {
+                return entry;
+            }
         }
+        return null;
+    }
 
+    private static Set<String> assetIds(ResourceManager resourceManager) {
+        Set<String> ids = new HashSet<>();
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            ids.add(id.toString());
+        }
+        return ids;
+    }
+
+    private static List<AssetType> assetTypes(ResourceManager resourceManager) {
+        List<AssetType> types = new ArrayList<>();
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            types.add(resourceManager.getAssetType(id));
+        }
+        return types;
     }
 
 }

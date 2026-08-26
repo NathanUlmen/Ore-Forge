@@ -1,10 +1,9 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 
 import ore.forge.engine.definitions.AssetType;
 
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * @author Nathan Ulmen
@@ -12,7 +11,7 @@ import java.util.UUID;
  * An {@link AssetSourceKey} is used to map to an {@link AssetID}. It should not be used in any gameplay systems and is
  * only used at the beginning of the import pipeline
  */
-public class AssetSourceKey {
+final class AssetSourceKey {
     private AssetType assetType; //Type of the asset (mesh, material, texture, animation)
     private String logicalName; // [CONTAINER_NAME]
     private String assetName; // [AssetName]

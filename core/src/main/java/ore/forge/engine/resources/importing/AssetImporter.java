@@ -1,4 +1,4 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.io.GltfModelReader;
@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** @author Nathan Ulmen
- * AssetImporter is responsible for
+ * AssetImporter is a "user facing/outwardfacing" interface 
+ * used to import .glb/gltf files into the Resource Systems?
+ * 
  * */
-public class AssetImporter {
+final class AssetImporter {
     protected static final int IMPORT_VERSION = 1;
     protected final AssetRegistry registry;
 

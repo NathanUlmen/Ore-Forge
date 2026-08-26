@@ -1,4 +1,4 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
@@ -18,7 +18,7 @@ import java.util.*;
  * The registry is populated using via JSON.
  *
  */
-public class AssetRegistry {
+final class AssetRegistry {
     protected HashMap<AssetSourceKey, AssetID> idLookup;
     protected HashMap<AssetID, AssetArtifact> artifactLookup;
     protected final Path bakedDir;
@@ -34,7 +34,7 @@ public class AssetRegistry {
     }
 
     public AssetRegistry() {
-        this("assets");
+        this("baked_assets");
     }
 
     /**
@@ -75,6 +75,14 @@ public class AssetRegistry {
         return artifactLookup.get(id);
     }
 
+    AssetArtifact requireArtifact(AssetID id) {
+        AssetArtifact artifact = lookUp(id);
+        if (artifact == null) {
+            throw new IllegalArgumentException("AssetID [" + id + "] was not present in the asset registry.");
+        }
+        return artifact;
+    }
+
     /**
      * @return {@link Iterable}of all {@link AssetID}'s stored in the registry.
      */
@@ -92,10 +100,10 @@ public class AssetRegistry {
     public void load(JsonValue jsonValue) {
         Json json = getJson();
         for (JsonValue value : jsonValue) {
-            AssetRegistryData data = json.readValue(AssetRegistryData.class, value);
-            AssetID identifier = new AssetID(data.uuid);
-            artifactLookup.put(identifier, data.artifact);
-            idLookup.put(data.artifact.sourceKey(), identifier);
+            AssetID identifier = new AssetID(readIdField(value));
+            AssetArtifact artifact = json.readValue(AssetArtifact.class, value.get("artifact"));
+            artifactLookup.put(identifier, artifact);
+            idLookup.put(artifact.sourceKey(), identifier);
         }
     }
 
@@ -109,7 +117,7 @@ public class AssetRegistry {
         ArrayList<AssetRegistryData> data = new ArrayList<>();
         for (Map.Entry<AssetID, AssetArtifact> entry : artifactLookup.entrySet()) {
             AssetRegistryData dataItem = new AssetRegistryData();
-            dataItem.uuid = entry.getKey().toString();
+            dataItem.assetId = entry.getKey().toString();
             dataItem.artifact = entry.getValue();
             data.add(dataItem);
         }
@@ -121,7 +129,18 @@ public class AssetRegistry {
         Json json = new Json();
         json.setSerializer(AssetArtifact.class, new AssetArtifactSerializer());
         json.setOutputType(JsonWriter.OutputType.json);
+        json.setTypeName(null);
         return json;
+    }
+
+    private static String readIdField(JsonValue jsonValue) {
+        if (jsonValue.has("assetId")) {
+            return jsonValue.getString("assetId");
+        }
+        if (jsonValue.has("uuid")) {
+            return jsonValue.getString("uuid");
+        }
+        throw new IllegalArgumentException("Registry entry did not contain assetId or uuid.");
     }
 
     public Path getBakedDir() {
@@ -145,7 +164,7 @@ public class AssetRegistry {
     }
 
     private static class AssetRegistryData {
-        private String uuid;
+        private String assetId;
         private AssetArtifact artifact;
     }
 
@@ -157,7 +176,7 @@ public class AssetRegistry {
             json.writeValue("filePath", object.filepath().toString());
             json.writeValue("sourceKey", object.sourceKey());
             json.writeValue("dependencies", object.dependencies());
-            json.writeValue("uuid", object.assetID().toString());
+            json.writeValue("assetId", object.assetID().toString());
 
 
             json.writeObjectEnd();
@@ -168,7 +187,7 @@ public class AssetRegistry {
             String filePath = jsonData.getString("filePath");
             ArrayList<AssetArtifact> dependencies = json.readValue(ArrayList.class, AssetArtifact.class, jsonData.get("dependencies"));
             AssetSourceKey sourceKey = json.readValue(AssetSourceKey.class, jsonData.get("sourceKey"));
-            String uuid = jsonData.getString("uuid");
+            String uuid = readIdField(jsonData);
             return new AssetArtifact(filePath, dependencies, sourceKey, new AssetID(uuid));
         }
     }

@@ -1,14 +1,14 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
-import ore.forge.engine.importing.AssetArtifact;
-import ore.forge.engine.importing.AssetID;
-import ore.forge.engine.importing.AssetRegistry;
-import ore.forge.engine.render.*;
+import ore.forge.engine.Handle;
+import ore.forge.engine.HandleRegistry;
+import ore.forge.engine.Pair;
+import ore.forge.engine.render.Renderer;
 
 import java.util.HashMap;
 
@@ -20,19 +20,16 @@ import java.util.HashMap;
  *
  *
  */
-public class GpuResourceManager {
-    private final AssetRegistry registry;
-    private final AssetDataSerializer serializer;
-    private final HashMap<AssetID, AssetData> lookup;
+final class GpuResourceManager {
+    private static final String LOG_TAG = "GpuResourceManager";
+    private final AssetManager assetManager;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
 
-    public GpuResourceManager(AssetRegistry registry) {
-        this.registry = registry;
-        lookup = new HashMap<>();
-        handles = new HashMap<>();
-        serializer = new AssetDataSerializer();
-        gpuResources = new HandleRegistry<>();
+    public GpuResourceManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
+        this.handles = new HashMap<>();
+        this.gpuResources = new HandleRegistry<>();
     }
 
     /**
@@ -43,12 +40,14 @@ public class GpuResourceManager {
      * @param id to an asset that want a handle to.
      * @return A handle to the asset that the id references.
      */
-    public Handle<GpuResource> getHandle(AssetID id) {
-        Handle<GpuResource> existingHandle = handles.get(id);
-        if (existingHandle != null) {
-            return existingHandle;
+    public Handle<GpuResource> accquireHandle(AssetID id) {
+        Handle<GpuResource> target = handles.get(id);
+        if (target != null) {
+            Gdx.app.log(LOG_TAG, "Obtained existing Handle");
+            gpuResources.accquireHandle(target);
+            return target;
         }
-        AssetData data = retrieveData(id);
+        CpuAssetData data = assetManager.getCpuAsset(id);
         return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
@@ -57,6 +56,15 @@ public class GpuResourceManager {
             case AnimationData animationData ->
                 throw new UnsupportedOperationException("Animation upload not implemented yet.");
         };
+    }
+
+    public void releaseHandle(AssetID id) {
+       Handle<GpuResource> target = handles.get(id);
+       gpuResources.releaseHandle(target);
+    }
+
+    public void releaseHandle(Handle<GpuResource> handle) {
+        gpuResources.releaseHandle(handle);
     }
 
     /**
@@ -119,34 +127,16 @@ public class GpuResourceManager {
         return gpuResources.getResource(assetHandle);
     }
 
-    /**
-     * Used to retrieve AssetData that is stored on CPU. If the data is not present
-     * it will be loaded from disk into memory.
-     *
-     * @param reference to the AssetData
-     * @return AssetData that the {@link AssetID} points to.
-     *
-     */
-    public AssetData retrieveData(AssetID reference) {
-        AssetData assetData = lookup.get(reference);
-        if (assetData != null) {
-            return assetData;
-        }
+    public int resouceCount() {
+        return gpuResources.size();
+    }
 
-        AssetArtifact target = registry.lookUp(reference);
-        assert target != null : "AssetID: " + reference + ", failed to map to an AssetArtifact.";
+    public void accquire() {
+        
+    }
 
-        assetData = serializer.load(target);
-        lookup.put(reference, assetData);
-
-        //load dependencies
-        if (target.dependencies() != null) {
-            for (AssetArtifact dependency : target.dependencies()) {
-                retrieveData(dependency.assetID());
-            }
-        }
-
-        return assetData;
+    public void release(GpuResource toRelease) {
+        
     }
 
     public String toString() {

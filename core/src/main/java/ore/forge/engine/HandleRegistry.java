@@ -1,5 +1,8 @@
 package ore.forge.engine;
 
+import java.util.concurrent.CompletableFuture;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
@@ -7,14 +10,40 @@ import com.badlogic.gdx.utils.IntArray;
 
 /**
  * @author Nathan Ulmen
+ * Handle Registry is responsible for handing out Handles to resources and performing reference counting of 
+ * resources stored inside it.
  *
  */
 public class HandleRegistry<E extends Disposable> {
+    private static final String LOG_TAG = HandleRegistry.class.getName();
     private final Array<Entry<E>> handleLookup = new Array<>(128);
     private final IntArray freeList = new IntArray(false, 32);
     private int versionCounter = 1;
 
+    public HandleRegistry() {
+
+    }
+
+    public Handle<E> accquireHandle(Handle<E> target) {
+        int count = handleLookup.get(target.index()).give();
+        Gdx.app.log(LOG_TAG,"Accquiring Handle with count=" + count);
+        return target;
+    }
+
+    public void releaseHandle(Handle<E> handle) {
+        if (handle == null) {return;}
+        int count = handleLookup.get(handle.index()).take();
+        Gdx.app.log(LOG_TAG,"released handle. count=" + count);
+        if (count <= 0) {
+            Gdx.app.log(LOG_TAG,"Freeing Resource");
+            removeResource(handle);
+        }
+    }
+
     public E getResource(Handle<E> handle) {
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle must not be null.");
+        }
         int index = handle.index();
         if (!handle.isValid() || index >= handleLookup.size) {
             assert false : "Handle is invalid or index is greater than table size.";
@@ -35,9 +64,9 @@ public class HandleRegistry<E extends Disposable> {
         int version = versionCounter++;
         if (!freeList.isEmpty()) {
             index = freeList.pop();
-            handleLookup.set(index, new Entry<>(version, resourceData));
+            handleLookup.set(index, new Entry<>(version, resourceData, 1));
         } else {
-            handleLookup.add(new Entry<>(version, resourceData));
+            handleLookup.add(new Entry<>(version, resourceData, 1));
         }
 
         return new Handle<E>(index, version);
@@ -62,7 +91,7 @@ public class HandleRegistry<E extends Disposable> {
     public int size() {
         int nonNull = 0;
         for (Entry<E> entry : handleLookup) {
-            if (entry.data != null) {
+            if (entry != null && entry.data != null) {
                 nonNull++;
             }
         }
@@ -75,6 +104,36 @@ public class HandleRegistry<E extends Disposable> {
         return s;
     }
 
-    private record Entry<E>(int version, E data) {
+    private class Entry<E> { 
+        private int checkoutCount;
+        private final E data;
+        private final int version;
+
+        public Entry(int version, E data, int checkoutCount) {
+            this.version = version;
+            this.data = data;
+            this.checkoutCount = checkoutCount;
+        }
+
+        public int getCheckoutCount() {
+            return checkoutCount;
+        } 
+        
+        public int version() {
+            return version;
+        }
+        
+        public E data() {
+            return data;
+        }
+        
+        public int give() {
+            return ++checkoutCount;
+        }
+
+        public int take() {
+            return --checkoutCount;
+        }
     }
+
 }

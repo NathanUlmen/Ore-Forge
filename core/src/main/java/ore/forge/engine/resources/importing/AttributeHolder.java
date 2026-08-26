@@ -1,4 +1,4 @@
-package ore.forge.engine.importing;
+package ore.forge.engine.resources;
 
 import ore.forge.engine.VertexAttribute;
 

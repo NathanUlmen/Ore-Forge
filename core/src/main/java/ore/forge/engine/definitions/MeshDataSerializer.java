@@ -6,8 +6,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import ore.forge.engine.MeshData;
-import ore.forge.engine.importing.AssetSourceKey;
+import ore.forge.engine.resources.MeshData;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,7 +37,6 @@ public class MeshDataSerializer {
             }
         });
 
-        kryo.register(AssetSourceKey.class);
         kryo.register(AssetType.class);
         kryo.register(int[].class);
         kryo.register(MeshData.class, new MeshDataKryoSerializer());

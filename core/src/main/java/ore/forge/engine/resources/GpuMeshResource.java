@@ -1,7 +1,6 @@
-package ore.forge.engine.render;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.graphics.glutils.IndexBufferObject;
-import com.badlogic.gdx.graphics.glutils.VertexBufferObject;
 import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 
 public final class GpuMeshResource implements GpuResource {

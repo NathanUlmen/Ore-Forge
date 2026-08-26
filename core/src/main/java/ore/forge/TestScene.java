@@ -7,11 +7,18 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.math.collision.Ray;
+import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
+import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -23,8 +30,6 @@ import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
 import ore.forge.engine.*;
-import ore.forge.engine.importing.AssetID;
-import ore.forge.engine.importing.AssetRegistry;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
@@ -33,10 +38,15 @@ import ore.forge.engine.components.definitions.WorldTransformDefinition;
 import ore.forge.engine.definitions.BoxShapeIR;
 import ore.forge.engine.definitions.PhysicsDefinition;
 import ore.forge.engine.definitions.PlaneShapeIR;
-import ore.forge.engine.render.GpuResource;
 import ore.forge.engine.render.MaterialHandle;
 import ore.forge.engine.render.RenderPart;
 import ore.forge.engine.render.*;
+import ore.forge.engine.resources.CpuAssetData;
+import ore.forge.engine.resources.GpuResource;
+import ore.forge.engine.resources.MeshData;
+import ore.forge.engine.resources.ResourceManager;
+import ore.forge.engine.resources.TextureData;
+import ore.forge.engine.resources.AssetID;
 import ore.forge.engine.render.passes.BasicRenderPass;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
@@ -51,11 +61,13 @@ import java.util.concurrent.TimeUnit;
 public class TestScene implements Screen {
     private static final String LOG_TAG = TestScene.class.getSimpleName();
     private static final float FRAME_LOG_INTERVAL_SEC = 1.0f;
+    private static final float RAY_DEBUG_DURATION_SEC = 1.0f;
 
     private Renderer renderer;
     private CameraController cameraController;
     private Camera camera;
     private BasicRenderPass basicRenderPass;
+    private ShapeRenderer debugShapeRenderer;
     private Stopwatch stopwatch;
     private Stage harnessStage;
     private VisWindow harnessWindow;
@@ -71,22 +83,41 @@ public class TestScene implements Screen {
     private int frameSamples = 0;
     private static final String TEST_SCHEMA_PATH = "TestSchema.json";
 
-    private static final int GRID_COLS = 25;
-    private static final int GRID_ROWS = 25;
-    private static final int GRID_LAYERS = 4;
+    private static final int GRID_COLS = 10;
+    private static final int GRID_ROWS = 10;
+    private static final int GRID_LAYERS = 1;
     private static final float CUBE_SPACING = 2.2f;
     private static final float LAYER_HEIGHT = 2.1f;
     private static final float DROP_HEIGHT = 3f;
-    private static final float GROUND_RENDER_Y = -0.5f;
+    private static final Vector3 GROUND_SCALE = new Vector3(80f, 1f, 80f);
 
     private final ArrayList<RenderPart> renderParts = new ArrayList<>(GRID_COLS * GRID_ROWS * GRID_LAYERS + 1);
+    private final Vector3 debugRayFrom = new Vector3();
+    private final Vector3 debugRayTo = new Vector3();
+    private final Vector3 debugRayHit = new Vector3();
+    private boolean debugRayHitActive = false;
+    private float debugRayTimerSec = 0f;
+    private final ResourceManager resourceManager;
 
-    public TestScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
+    public TestScene(ResourceManager resourceManager) {
+        this.resourceManager = resourceManager;
         stopwatch = new Stopwatch(TimeUnit.MILLISECONDS);
         engine = new Engine();
         physicsWorld = PhysicsWorld.instance();
+        engine.addEntityListener(Family.all(RenderC.class).get(), new ComponentListener(
+            (entity) -> {
+                Gdx.app.log(LOG_TAG, "Entity With RenderComponent Added!");
+            } ,
+            (entity) -> {
+                Gdx.app.log(LOG_TAG, "Entity With RenderComponent Removed!");
+                RenderC renderC = entity.getComponent(RenderC.class);
+                resourceManager.releaseGpuResource(renderC.renderPart.meshHandle);
+                resourceManager.releaseGpuResource(renderC.renderPart.material.baseColorTexture);
+            }
+        ));
 
         basicRenderPass = new BasicRenderPass();
+        debugShapeRenderer = new ShapeRenderer();
 
         renderer = new Renderer(resourceManager);
         renderer.addRenderPass(basicRenderPass);
@@ -102,8 +133,11 @@ public class TestScene implements Screen {
         cameraController = new FreeCamController((PerspectiveCamera) camera);
         initializeHarness();
         initializeEngine();
-        populateScene(resourceManager, assetRegistry);
+        populateScene(resourceManager);
         renderEntities = engine.getEntitiesFor(Family.all(RenderC.class, WorldTransformC.class).get());
+
+
+
     }
 
     @Override
@@ -166,6 +200,18 @@ public class TestScene implements Screen {
         stopwatch.restart();
         cameraController.update(delta);
         camera.update(true);
+
+        if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
+            Ray mouse = camera.getPickRay(Gdx.input.getX(), Gdx.input.getY());
+            Vector3 tmp = new Vector3();
+            mouse.getEndPoint(tmp, 100);
+            deletionBeam(camera.position, tmp);
+        }
+
+        if (debugRayTimerSec > 0f) {
+            debugRayTimerSec = Math.max(0f, debugRayTimerSec - delta);
+        }
+
         engine.getSystem(PrePhysicsTransformSyncSystem.class).update(delta);
         physicsWorld.dynamicsWorld().stepSimulation(delta, 3, 1f / 60f);
         engine.getSystem(PostPhysicsTransformSyncSystem.class).update(delta);
@@ -177,6 +223,7 @@ public class TestScene implements Screen {
         Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
 
         renderer.render(renderParts, camera);
+        drawDebugRay();
         Gdx.gl.glDisable(GL20.GL_DEPTH_TEST);
 //        harnessStage.act(delta);
 //        harnessStage.draw();
@@ -196,6 +243,7 @@ public class TestScene implements Screen {
         }
 
         float averageFrameTimeMs = frameSamples == 0 ? 0f : (float) frameTimeTotalMs / frameSamples;
+        Gdx.app.log(LOG_TAG, "Active GPU RESOURCES=" + resourceManager.activeGpuResources());
         Gdx.app.log(
             LOG_TAG,
             String.format(
@@ -254,6 +302,7 @@ public class TestScene implements Screen {
             }
         }
         harnessStage.dispose();
+        debugShapeRenderer.dispose();
     }
 
     private void initializeEngine() {
@@ -262,35 +311,40 @@ public class TestScene implements Screen {
         engine.addSystem(new RenderPrepSystem());
     }
 
-    private void populateScene(GpuResourceManager resourceManager, AssetRegistry assetRegistry) {
-        Handle<GpuResource> meshHandle = null;
-        Handle<GpuResource> textureHandle = null;
+    private void populateScene(ResourceManager resourceManager) {
+        AssetID meshHandle = null;
+        AssetID textureHandle = null;
+        MeshData meshData = null;
 
-        for (AssetID id : assetRegistry.getIDs()) {
-            AssetData data = resourceManager.retrieveData(id);
+        for (AssetID id : resourceManager.getAssetIDs()) {
+            CpuAssetData data = resourceManager.getCpuAsset(id);
             switch (data) {
-                case MeshData ignored -> meshHandle = resourceManager.getHandle(id);
-                case TextureData ignored -> textureHandle = resourceManager.getHandle(id);
+                case MeshData foundMeshData -> {
+                    meshData = foundMeshData;
+                    meshHandle = id;
+                }
+                case TextureData ignored -> textureHandle = id;
                 default -> {
                 }
             }
         }
 
-        if (meshHandle == null || textureHandle == null) {
+        if (meshHandle == null || meshData == null || textureHandle == null) {
             throw new IllegalStateException("TestScene requires one mesh and one texture in the asset registry.");
         }
 
-        MaterialHandle material = new MaterialHandle();
-        material.baseColorTexture = textureHandle;
+        BoundingBox meshBounds = calculateMeshBounds(meshData);
 
-        createGround(meshHandle, material);
-        createCubeField(meshHandle, material);
+        createGround(meshHandle, textureHandle, meshBounds);
+        createCubeField(meshHandle, textureHandle, meshBounds);
     }
 
-    private void createGround(Handle<GpuResource> meshHandle, MaterialHandle material) {
+    private void createGround(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
+        BoundingBox groundBounds = scaleBounds(meshBounds, GROUND_SCALE);
+        float groundCenterY = -groundBounds.getHeight() * 0.5f;
         Entity ground = createEntity(
-            new WorldTransformDefinition(new Matrix4().setToTranslation(0f, GROUND_RENDER_Y, 0f)),
-            new RenderCDefinition(meshHandle, material, new Vector3(80f, 1f, 80f), new Matrix4().idt()),
+            new WorldTransformDefinition(new Matrix4().setToTranslation(0f, groundCenterY, 0f)),
+            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), new Matrix4().idt(), resourceManager),
             new PhysicsDefinition(
                 "ground",
                 PhysicsBodyType.RIGID,
@@ -298,21 +352,17 @@ public class TestScene implements Screen {
                 0f,
                 1f,
                 0.15f,
-                new PlaneShapeIR(new Vector3(0f, 1f, 0f), 0f)
+                new BoxShapeIR(groundBounds)
             )
         );
         engine.addEntity(ground);
     }
 
-    private void createCubeField(Handle<GpuResource> meshHandle, MaterialHandle material) {
+    private void createCubeField(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
         final float gridWidth = (GRID_COLS - 1) * CUBE_SPACING;
         final float gridDepth = (GRID_ROWS - 1) * CUBE_SPACING;
         final float startX = -gridWidth * 0.5f;
         final float startZ = -gridDepth * 0.5f;
-        final BoundingBox unitCubeBounds = new BoundingBox(
-            new Vector3(-0.5f, -0.5f, -0.5f),
-            new Vector3(0.5f, 0.5f, 0.5f)
-        );
 
         int cubeIndex = 0;
         for (int layer = 0; layer < GRID_LAYERS; layer++) {
@@ -323,7 +373,7 @@ public class TestScene implements Screen {
                     float z = startZ + row * CUBE_SPACING;
                     Entity cube = createEntity(
                         new WorldTransformDefinition(new Matrix4().setToTranslation(x, y, z)),
-                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), new Matrix4().idt()),
+                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), new Matrix4().idt(), resourceManager),
                         new PhysicsDefinition(
                             "cube-" + cubeIndex++,
                             PhysicsBodyType.RIGID,
@@ -331,13 +381,43 @@ public class TestScene implements Screen {
                             1f,
                             0.8f,
                             0.05f,
-                            new BoxShapeIR(new BoundingBox(unitCubeBounds))
+                            new BoxShapeIR(new BoundingBox(meshBounds))
                         )
                     );
                     engine.addEntity(cube);
                 }
             }
         }
+    }
+
+    private BoundingBox calculateMeshBounds(MeshData meshData) {
+        int positionOffsetFloats = meshData.attributes().findByUsage(com.badlogic.gdx.graphics.VertexAttributes.Usage.Position).offset / Float.BYTES;
+        int floatsPerVertex = meshData.attributes().vertexSize / Float.BYTES;
+        float[] vertices = meshData.vbo();
+
+        Vector3 min = new Vector3(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+        Vector3 max = new Vector3(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+
+        for (int vertex = 0; vertex < vertices.length; vertex += floatsPerVertex) {
+            float x = vertices[vertex + positionOffsetFloats];
+            float y = vertices[vertex + positionOffsetFloats + 1];
+            float z = vertices[vertex + positionOffsetFloats + 2];
+
+            min.x = Math.min(min.x, x);
+            min.y = Math.min(min.y, y);
+            min.z = Math.min(min.z, z);
+            max.x = Math.max(max.x, x);
+            max.y = Math.max(max.y, y);
+            max.z = Math.max(max.z, z);
+        }
+
+        return new BoundingBox(min, max);
+    }
+
+    private BoundingBox scaleBounds(BoundingBox bounds, Vector3 scale) {
+        Vector3 min = new Vector3(bounds.min).scl(scale);
+        Vector3 max = new Vector3(bounds.max).scl(scale);
+        return new BoundingBox(min, max);
     }
 
     private Entity createEntity(ComponentDefinition<?>... definitions) {
@@ -356,6 +436,8 @@ public class TestScene implements Screen {
             }
         }
 
+        physics.collisionObject.userData = entity;
+
         return entity;
     }
 
@@ -364,6 +446,73 @@ public class TestScene implements Screen {
         for (Entity entity : renderEntities) {
             renderParts.add(entity.getComponent(RenderC.class).renderPart);
         }
+    }
+
+    private void deletionBeam(Vector3 cameraPosition, Vector3 mouseWorld) {
+        debugRayFrom.set(cameraPosition);
+        debugRayTo.set(mouseWorld);
+        debugRayHitActive = false;
+        debugRayTimerSec = RAY_DEBUG_DURATION_SEC;
+
+        //Shoot a beam where the mouse is at on the screen.
+        //If hits a physics object remove it from the scene.
+        ClosestRayResultCallback callback = new ClosestRayResultCallback(cameraPosition, mouseWorld);
+        physicsWorld.dynamicsWorld().rayTest(cameraPosition, mouseWorld, callback);
+
+        btCollisionObject hit = callback.getCollisionObject();
+        Vector3 hitPoint = new Vector3();
+        callback.getHitPointWorld(hitPoint);
+        if (hit == null) {
+            callback.dispose();
+            return;
+        }
+
+        // if (hit instanceof btRigidBody rb ) {
+        //     rb.activate(true);
+        //     Vector3 out = rb.getLinearVelocity();
+        //     Vector3 com = rb.getCenterOfMassPosition();
+        //     Vector3 result = hitPoint.sub(com);
+        //     rb.applyForce(new Vector3(mouseWorld.nor().scl(1000)), result);
+        // }
+
+        Entity entity = (Entity) hit.userData;
+        engine.removeEntity(entity);
+        physicsWorld.dynamicsWorld().removeCollisionObject(hit);
+        hit.dispose();
+
+        callback.getHitPointWorld(debugRayHit);
+        debugRayHitActive = true;
+        callback.dispose();
+    }
+
+    private void drawDebugRay() {
+        if (debugRayTimerSec <= 0f) {
+            return;
+        }
+
+        debugShapeRenderer.setProjectionMatrix(camera.combined);
+        debugShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        debugShapeRenderer.setColor(1f, 0f, 0f, 1f);
+        debugShapeRenderer.line(debugRayFrom, debugRayTo);
+
+        if (debugRayHitActive) {
+            debugShapeRenderer.setColor(0f, 1f, 0f, 1f);
+            float markerSize = 1.25f;
+            debugShapeRenderer.line(
+                debugRayHit.x - markerSize, debugRayHit.y, debugRayHit.z,
+                debugRayHit.x + markerSize, debugRayHit.y, debugRayHit.z
+            );
+            debugShapeRenderer.line(
+                debugRayHit.x, debugRayHit.y - markerSize, debugRayHit.z,
+                debugRayHit.x, debugRayHit.y + markerSize, debugRayHit.z
+            );
+            debugShapeRenderer.line(
+                debugRayHit.x, debugRayHit.y, debugRayHit.z - markerSize,
+                debugRayHit.x, debugRayHit.y, debugRayHit.z + markerSize
+            );
+        }
+
+        debugShapeRenderer.end();
     }
 
 }

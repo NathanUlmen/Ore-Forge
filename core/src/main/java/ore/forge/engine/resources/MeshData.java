@@ -1,4 +1,4 @@
-package ore.forge.engine;
+package ore.forge.engine.resources;
 
 import com.badlogic.gdx.graphics.VertexAttributes;
 
@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @author Nathan Ulmen
  * Raw Mesh data before being uploaded to GPU.
  */
-public final class MeshData implements AssetData {
+public final class MeshData implements CpuAssetData {
     private final VertexAttributes attributes;
     private final float[] vbo;
     private final short[] ibo;
@@ -32,6 +32,12 @@ public final class MeshData implements AssetData {
     }
 
     @Override
+    public void dispose() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MeshData other) {
             return attributes.equals(other.attributes) && Arrays.equals(vbo, other.vbo) && Arrays.equals(ibo, other.ibo);
@@ -40,4 +46,3 @@ public final class MeshData implements AssetData {
     }
 
 }
-

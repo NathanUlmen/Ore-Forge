@@ -1,6 +1,4 @@
-package ore.forge.engine.importing;
-
-import com.badlogic.gdx.files.FileHandle;
+package ore.forge.engine.resources;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,7 +8,7 @@ import java.util.ArrayList;
  *
  *
  */
-public class AssetArtifact {
+final class AssetArtifact {
     private Path filePath; //path to baked asset
     private ArrayList<AssetArtifact> dependencies; //other assets this asset depends on
     private AssetSourceKey sourceKey; //Key that maps to UUID.
