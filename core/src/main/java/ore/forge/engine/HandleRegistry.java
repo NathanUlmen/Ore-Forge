@@ -91,8 +91,8 @@ public class HandleRegistry<E extends Disposable> {
     }
     
     public ResourceSlot<E> getResourceSlot(Handle<E> handle) {
-        //TODO: check argument and all that.
-        return handleLookup.get(handle.index()).slot();
+        var entry = handleLookup.get(handle.index());
+        return entry == null ? null : entry.slot();
     }
 
     public ResourceSlot<E> createSlot(E resourceData) {

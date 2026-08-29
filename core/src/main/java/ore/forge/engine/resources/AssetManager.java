@@ -44,7 +44,6 @@ final class AssetManager {
         if (target == null) {
             Gdx.app.error(LOG_TAG, "Target artifact of id:[" + id + "] was not present in asset registry.", new IllegalArgumentException());
         }
-
         
         long start = Stopwatch.timeNow(TimeUnit.MILLISECONDS);
         Handle<CpuAssetData> handle = handleRegistry.addResource(resolvePlaceHolder(target));
@@ -54,9 +53,13 @@ final class AssetManager {
         var future = serializer.load(target);
         futures.put(id, future);
         future.thenAccept(result -> Gdx.app.postRunnable(() -> {
-            slot.resolve(result);
             futures.remove(id);
-            Gdx.app.log(LOG_TAG, "Resolved resource " + target + " in " + Stopwatch.elapsedString(start, TimeUnit.MILLISECONDS));
+            if (slot != null) { //carry on as normal
+                slot.resolve(result);
+                Gdx.app.log(LOG_TAG, "Resolved resource " + target + " in " + Stopwatch.elapsedString(start, TimeUnit.MILLISECONDS));
+            } else {//nothing references resource anymore so we get rid of it. 
+                result.dispose();
+            }
         }));
 
         if (target.dependencies() != null) {

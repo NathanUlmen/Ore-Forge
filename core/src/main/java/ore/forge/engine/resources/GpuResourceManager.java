@@ -62,7 +62,10 @@ final class GpuResourceManager {
                 Gdx.app.postRunnable(() -> {
                     Gdx.app.log(LOG_TAG, "Resource loaded into GPU memory.");
                     ResourceSlot<GpuResource> gpuSlot = gpuResources.getResourceSlot(gpuHandle);
-                    gpuSlot.resolve(createGpuResouce(id, handle));
+                    if (gpuSlot != null) {
+                        gpuSlot.resolve(createGpuResouce(id, handle));
+                    } 
+                        
                 });
                 return gpuHandle;
             });
