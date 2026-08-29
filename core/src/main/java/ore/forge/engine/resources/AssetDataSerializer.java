@@ -1,5 +1,6 @@
 package ore.forge.engine.resources;
 
+import com.badlogic.gdx.Gdx;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
@@ -11,13 +12,19 @@ import ore.forge.engine.definitions.MeshDataSerializer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AssetDataSerializer {
-    private static final int POOL_MAX = 3;
+    private static final String LOG_TAG = AssetDataSerializer.class.getName();
+    private static final int POOL_MAX = 1;
     private final Pool<Kryo> kryoPool;
+    private final ExecutorService threadPool;
 
     public AssetDataSerializer(int poolMax) {
-        kryoPool = new Pool<>(false, true, poolMax) {
+        threadPool = Executors.newFixedThreadPool(poolMax);
+        kryoPool = new Pool<>(true, true, poolMax) {
             protected Kryo create() {
                 Kryo kryo = new Kryo();
 
@@ -72,22 +79,23 @@ public class AssetDataSerializer {
         output.flush();
     }
 
-
-    public CpuAssetData load(AssetArtifact assetArtifact) {
-        Kryo kryo = kryoPool.obtain();
-        try (Input input = new Input(Files.newInputStream(assetArtifact.filepath()))) {
-            return switch (assetArtifact.sourceKey().assetType()) {
-                case MESH -> kryo.readObject(input, MeshData.class);
-                case MATERIAL -> kryo.readObject(input, MaterialData.class);
-                case TEXTURE -> kryo.readObject(input, TextureData.class);
-                case ANIMATION -> kryo.readObject(input, AnimationData.class);
-            };
-        } catch (IOException e) {
-            System.out.println(e);
-            throw new RuntimeException("Failed to read data from: " + assetArtifact.filepath(), e);
-        } finally {
-            kryoPool.free(kryo);
-        }
+    public CompletableFuture<CpuAssetData> load(AssetArtifact assetArtifact) {
+        return CompletableFuture.supplyAsync(() -> {
+            Kryo kryo = kryoPool.obtain();
+            try (Input input = new Input(Files.newInputStream(assetArtifact.filepath()))) {
+                return switch (assetArtifact.type()) {
+                    case MESH -> kryo.readObject(input, MeshData.class);
+                    case MATERIAL -> kryo.readObject(input, MaterialData.class);
+                    case TEXTURE -> kryo.readObject(input, TextureData.class);
+                    case ANIMATION -> kryo.readObject(input, AnimationData.class);
+                };
+            } catch (IOException e) {
+                Gdx.app.error(LOG_TAG, "Failed to read data from: " + assetArtifact.filepath(), e);
+                throw new RuntimeException("Failed to read data from: " + assetArtifact.filepath(), e);
+            } finally {
+                kryoPool.free(kryo);
+            }
+        }, threadPool);
     }
 
 }

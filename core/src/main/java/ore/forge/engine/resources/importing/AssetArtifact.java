@@ -3,6 +3,8 @@ package ore.forge.engine.resources;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+import ore.forge.engine.definitions.AssetType;
+
 /**
  * @author Nathan Ulmen
  *
@@ -42,6 +44,10 @@ final class AssetArtifact {
 
     public void setAssetID(AssetID assetID) {
         this.assetID = assetID;
+    }
+
+    public AssetType type() {
+        return sourceKey.assetType();
     }
 
     @Override

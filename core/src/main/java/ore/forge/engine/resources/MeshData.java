@@ -3,6 +3,7 @@ package ore.forge.engine.resources;
 import com.badlogic.gdx.graphics.VertexAttributes;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Nathan Ulmen

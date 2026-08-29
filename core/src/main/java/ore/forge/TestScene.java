@@ -1,25 +1,26 @@
 package ore.forge;
 
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
-import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -29,7 +30,12 @@ import com.kotcrab.vis.ui.widget.VisScrollPane;
 import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
-import ore.forge.engine.*;
+
+import ore.forge.engine.ComponentListener;
+import ore.forge.engine.PhysicsBodyType;
+import ore.forge.engine.PhysicsMotionType;
+import ore.forge.engine.PhysicsWorld;
+import ore.forge.engine.UISchemaBuilder;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
@@ -37,26 +43,20 @@ import ore.forge.engine.components.definitions.RenderCDefinition;
 import ore.forge.engine.components.definitions.WorldTransformDefinition;
 import ore.forge.engine.definitions.BoxShapeIR;
 import ore.forge.engine.definitions.PhysicsDefinition;
-import ore.forge.engine.definitions.PlaneShapeIR;
-import ore.forge.engine.render.MaterialHandle;
+import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.render.RenderPart;
-import ore.forge.engine.render.*;
+import ore.forge.engine.render.Renderer;
+import ore.forge.engine.render.passes.BasicRenderPass;
+import ore.forge.engine.resources.AssetID;
 import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.GpuResource;
 import ore.forge.engine.resources.MeshData;
 import ore.forge.engine.resources.ResourceManager;
 import ore.forge.engine.resources.TextureData;
-import ore.forge.engine.resources.AssetID;
-import ore.forge.engine.render.passes.BasicRenderPass;
-import ore.forge.game.input.CameraController;
-import ore.forge.game.input.FreeCamController;
-import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.systems.PostPhysicsTransformSyncSystem;
 import ore.forge.engine.systems.PrePhysicsTransformSyncSystem;
 import ore.forge.engine.systems.RenderPrepSystem;
-
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import ore.forge.game.input.CameraController;
+import ore.forge.game.input.FreeCamController;
 
 public class TestScene implements Screen {
     private static final String LOG_TAG = TestScene.class.getSimpleName();
@@ -244,6 +244,8 @@ public class TestScene implements Screen {
 
         float averageFrameTimeMs = frameSamples == 0 ? 0f : (float) frameTimeTotalMs / frameSamples;
         Gdx.app.log(LOG_TAG, "Active GPU RESOURCES=" + resourceManager.activeGpuResources());
+        Gdx.app.log(LOG_TAG, "Java Heap Usage (MB)=" + Gdx.app.getJavaHeap() / 1000000);
+        Gdx.app.log(LOG_TAG, "Native Usage (MB)=" + Gdx.app.getNativeHeap() / 1000000);
         Gdx.app.log(
             LOG_TAG,
             String.format(
@@ -272,8 +274,6 @@ public class TestScene implements Screen {
         harnessWindow.setHeight(Math.min(760f, height - 40f));
         harnessWindow.setPosition(20f, height - harnessWindow.getHeight() - 20f);
     }
-
-
 
 
     @Override

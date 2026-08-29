@@ -33,6 +33,19 @@ public final class Stopwatch {
         if (startOnCreate) this.start();
     }
 
+    public static long timeNow(TimeUnit unit) {
+        return unit.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
+    }
+
+    public static long elapsed(long duration, TimeUnit unit) {
+        return timeNow(unit) - duration;
+    }
+
+    public static String elapsedString(long duration, TimeUnit unit) {
+        long dur = elapsed(duration, unit);
+        return dur + unit.toString(); 
+    }
+
     /**
      * Starts if NEW or STOPPED; no-op if already RUNNING.
      */

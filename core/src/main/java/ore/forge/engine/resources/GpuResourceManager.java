@@ -11,6 +11,8 @@ import ore.forge.engine.Pair;
 import ore.forge.engine.render.Renderer;
 
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Nathan Ulmen
@@ -21,7 +23,7 @@ import java.util.HashMap;
  *
  */
 final class GpuResourceManager {
-    private static final String LOG_TAG = "GpuResourceManager";
+    private static final String LOG_TAG = GpuResourceManager.class.getName();
     private final AssetManager assetManager;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
@@ -44,11 +46,32 @@ final class GpuResourceManager {
         Handle<GpuResource> target = handles.get(id);
         if (target != null) {
             Gdx.app.log(LOG_TAG, "Obtained existing Handle");
-            gpuResources.accquireHandle(target);
-            return target;
+            return gpuResources.accquireHandle(target);
         }
-        CpuAssetData data = assetManager.getCpuAsset(id);
-        return switch (data) {
+
+        Handle<CpuAssetData> handle = assetManager.getCpuAsset(id);
+        Handle<GpuResource> gpuHandle = createHandleToResource(createGpuResouce(id, handle));
+        handles.put(id, gpuHandle);
+
+        var cpuFuture = assetManager.getFuture(id);
+        var cpuSlot = assetManager.getSlot(handle);
+        
+        //queue event to load into gpu mem.
+        if (!cpuSlot.isResolved()) {
+            cpuFuture.thenApply((loadedHandle) -> {
+                Gdx.app.postRunnable(() -> {
+                    Gdx.app.log(LOG_TAG, "Resource loaded into GPU memory.");
+                    ResourceSlot<GpuResource> gpuSlot = gpuResources.getResourceSlot(gpuHandle);
+                    gpuSlot.resolve(createGpuResouce(id, handle));
+                });
+                return gpuHandle;
+            });
+        }
+        return gpuHandle;
+    }
+
+    private GpuResource createGpuResouce(AssetID id, Handle<CpuAssetData> handle) {
+        return switch (assetManager.resolveHandle(handle)) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
             case MaterialData materialData ->
@@ -67,10 +90,14 @@ final class GpuResourceManager {
         gpuResources.releaseHandle(handle);
     }
 
+    private Handle<GpuResource> createHandleToResource(GpuResource resource) {
+        return gpuResources.addResource(resource);
+    }
+
     /**
      *
      */
-    private Handle<GpuResource> uploadMesh(AssetID id, MeshData meshData) {
+    private GpuResource uploadMesh(AssetID id, MeshData meshData) {
         float[] vertices = meshData.vbo();
         short[] indices = meshData.ibo();
 
@@ -93,11 +120,7 @@ final class GpuResourceManager {
             0
         );
 
-        Handle<GpuResource> handle = gpuResources.addResource(meshResource);
-        handles.put(id, handle);
-
-
-        return handle;
+        return meshResource;
     }
 
     /**
@@ -108,13 +131,11 @@ final class GpuResourceManager {
      * @param id to be mapped to the {@link TextureHandle}.
      * @return TextureHandle that points to the {@link GpuTextureResource}
      */
-    private Handle<GpuResource> uploadTexture(AssetID id, TextureData textureData) {
+    private GpuResource uploadTexture(AssetID id, TextureData textureData) {
         Pixmap map = textureData.pixmap();
         GpuTextureResource textureResource = new GpuTextureResource(map);
-        Handle<GpuResource> handle = gpuResources.addResource(textureResource);
-        handles.put(id, handle);
 
-        return handle;
+        return textureResource;
     }
 
     /**
@@ -129,14 +150,6 @@ final class GpuResourceManager {
 
     public int resouceCount() {
         return gpuResources.size();
-    }
-
-    public void accquire() {
-        
-    }
-
-    public void release(GpuResource toRelease) {
-        
     }
 
     public String toString() {

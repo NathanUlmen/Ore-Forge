@@ -7,6 +7,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
 
+import ore.forge.engine.resources.ResourceSlot;
+
 
 /**
  * @author Nathan Ulmen
@@ -56,7 +58,7 @@ public class HandleRegistry<E extends Disposable> {
             return null;
         }
 
-        return entry.data;
+        return entry.data();
     }
 
     public Handle<E> addResource(E resourceData) {
@@ -64,9 +66,9 @@ public class HandleRegistry<E extends Disposable> {
         int version = versionCounter++;
         if (!freeList.isEmpty()) {
             index = freeList.pop();
-            handleLookup.set(index, new Entry<>(version, resourceData, 1));
+            handleLookup.set(index, new Entry<>(version, createSlot(resourceData), 1));
         } else {
-            handleLookup.add(new Entry<>(version, resourceData, 1));
+            handleLookup.add(new Entry<>(version, createSlot(resourceData), 1));
         }
 
         return new Handle<E>(index, version);
@@ -75,23 +77,32 @@ public class HandleRegistry<E extends Disposable> {
     public void removeResource(Handle<E> targetHandle) {
         int index = targetHandle.index();
         if (!targetHandle.isValid()) {
-            throw new IllegalStateException("");
+            Gdx.app.error(LOG_TAG, "Target handle " + targetHandle.toString() + " has invalid index of 0.", new IllegalArgumentException());
         }
 
         Entry<E> entry = handleLookup.get(index);
         if (entry == null || entry.version != targetHandle.version()) {
-            throw new IllegalStateException();
+            Gdx.app.error(LOG_TAG, "Target handle " + targetHandle.toString() + " has invalid version. Expected version=" + entry.version, new IllegalArgumentException());
         }
 
         handleLookup.set(index, null);
-        entry.data.dispose();
+        entry.slot().dispose();
         freeList.add(index);
+    }
+    
+    public ResourceSlot<E> getResourceSlot(Handle<E> handle) {
+        //TODO: check argument and all that.
+        return handleLookup.get(handle.index()).slot();
+    }
+
+    public ResourceSlot<E> createSlot(E resourceData) {
+        return new ResourceSlot<>(resourceData);
     }
 
     public int size() {
         int nonNull = 0;
         for (Entry<E> entry : handleLookup) {
-            if (entry != null && entry.data != null) {
+            if (entry != null && entry.slot != null) {
                 nonNull++;
             }
         }
@@ -104,14 +115,14 @@ public class HandleRegistry<E extends Disposable> {
         return s;
     }
 
-    private class Entry<E> { 
+    private class Entry<E extends Disposable> { 
         private int checkoutCount;
-        private final E data;
+        private final ResourceSlot<E> slot;
         private final int version;
 
-        public Entry(int version, E data, int checkoutCount) {
+        public Entry(int version, ResourceSlot<E> slot, int checkoutCount) {
             this.version = version;
-            this.data = data;
+            this.slot = slot;
             this.checkoutCount = checkoutCount;
         }
 
@@ -123,8 +134,12 @@ public class HandleRegistry<E extends Disposable> {
             return version;
         }
         
+        ResourceSlot<E> slot() {
+            return slot;
+        }
+        
         public E data() {
-            return data;
+            return slot.getData();
         }
         
         public int give() {

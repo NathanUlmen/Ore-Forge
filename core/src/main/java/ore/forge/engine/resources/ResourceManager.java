@@ -37,7 +37,7 @@ public class ResourceManager {
     }
 
     public CpuAssetData getCpuAsset(AssetID id) {
-        return assetManager.getCpuAsset(id);
+        return assetManager.resolveHandle(assetManager.getCpuAsset(id));
     }
 
     public Handle<GpuResource> getGpuHandle(AssetID id) {

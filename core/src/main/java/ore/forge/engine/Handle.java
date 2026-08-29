@@ -30,5 +30,9 @@ public class Handle<E> implements Cloneable {
     public int index() {
         return (int) (handle >>> 32);
     }
+    
+    public String toString() {
+        return String.format("{version=%d, index=%d}", index(), version());
+    }
 
 }
