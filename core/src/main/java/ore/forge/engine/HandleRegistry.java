@@ -1,6 +1,5 @@
 package ore.forge.engine;
 
-import java.util.concurrent.CompletableFuture;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;

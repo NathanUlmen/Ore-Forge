@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.VertexAttributes;
+
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
@@ -20,13 +21,13 @@ final class AssetManager {
     private static final MeshData DEFAULT_MESH = createDefaultMesh();
     private static final TextureData DEFAULT_TEXTURE = createDefaultTexture();
     private final HashMap<AssetID, Handle<CpuAssetData>> handleLookup;
-    private final HashMap<AssetID, CompletableFuture<CpuAssetData>> futures;
+    private final HashMap<AssetID, CompletableFuture<Handle<CpuAssetData>>> cpuReadyFutures;
     private final HandleRegistry<CpuAssetData> handleRegistry;
     private final AssetRegistry assetRegistry;
     private final AssetDataSerializer serializer;
 
     public AssetManager(AssetRegistry registry) {
-        this.futures = new HashMap<>();
+        this.cpuReadyFutures = new HashMap<>();
         this.assetRegistry = registry;
         this.handleLookup = new HashMap<>();
         this.handleRegistry = new HandleRegistry<>();
@@ -50,17 +51,24 @@ final class AssetManager {
         ResourceSlot slot = handleRegistry.getResourceSlot(handle);
         handleLookup.put(id, handle);
 
-        var future = serializer.load(target);
-        futures.put(id, future);
-        future.thenAccept(result -> Gdx.app.postRunnable(() -> {
-            futures.remove(id);
-            if (slot != null) { //carry on as normal
-                slot.resolve(result);
-                Gdx.app.log(LOG_TAG, "Resolved resource " + target + " in " + Stopwatch.elapsedString(start, TimeUnit.MILLISECONDS));
-            } else {//nothing references resource anymore so we get rid of it. 
-                result.dispose();
-            }
-        }));
+
+        //flag that will complete when this data has resolved to a slot
+        CompletableFuture<Handle<CpuAssetData>> cpuReady = new CompletableFuture<>();
+        cpuReadyFutures.put(id, cpuReady);
+
+        CompletableFuture<CpuAssetData> future = serializer.load(target);
+        future.thenAccept(result -> 
+            Gdx.app.postRunnable(() -> {
+                if (slot != null) { //carry on as normal
+                    slot.resolve(result);
+                    cpuReady.complete(handle);
+                    Gdx.app.log(LOG_TAG, "Resolved resource " + target + " in " + Stopwatch.elapsedString(start, TimeUnit.MILLISECONDS));
+                } else {//nothing references resource anymore so we get rid of it. 
+                    result.dispose();
+                    cpuReady.cancel(false);
+                }
+                cpuReadyFutures.remove(id);
+            }));
 
         if (target.dependencies() != null) {
             for (AssetArtifact dependency : target.dependencies()) {
@@ -71,12 +79,22 @@ final class AssetManager {
         return handle;
     }
 
-    public ResourceSlot<CpuAssetData> getSlot(Handle<CpuAssetData> handle) {
-        return handleRegistry.getResourceSlot(handle);
+
+    /**
+     * Will return a completable future. the future is completed if it has already resolved. if the future is still in progress will return that one instead
+     * @param id target
+     * @return a complete future if the value has already been resolved or an in progress one if still in the process. returns null if  
+     */
+    public CompletableFuture<Handle<CpuAssetData>> getCpuReadyFuture(AssetID id) {
+        var handle = handleLookup.get(id);
+        if (handle != null && getSlot(handle).isResolved()) { //future has already been completed and we are no longer tracking it
+            return CompletableFuture.completedFuture(handle);
+        }
+        return cpuReadyFutures.get(id);
     }
 
-    public CompletableFuture<CpuAssetData> getFuture(AssetID id) {
-        return futures.get(id);
+    public ResourceSlot<CpuAssetData> getSlot(Handle<CpuAssetData> handle) {
+        return handleRegistry.getResourceSlot(handle);
     }
 
     public CpuAssetData resolvePlaceHolder(AssetArtifact target) {

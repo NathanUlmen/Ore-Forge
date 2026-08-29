@@ -53,19 +53,17 @@ final class GpuResourceManager {
         Handle<GpuResource> gpuHandle = createHandleToResource(createGpuResouce(id, handle));
         handles.put(id, gpuHandle);
 
-        var cpuFuture = assetManager.getFuture(id);
-        var cpuSlot = assetManager.getSlot(handle);
+        //retrieve flag
+        CompletableFuture<Handle<CpuAssetData>> cpuReadyFuture = assetManager.getCpuReadyFuture(id);
         
-        //queue event to load into gpu mem.
-        if (!cpuSlot.isResolved()) {
-            cpuFuture.thenApply((loadedHandle) -> {
+        if (cpuReadyFuture != null) {
+            cpuReadyFuture.thenApply((loadedHandle) -> {
                 Gdx.app.postRunnable(() -> {
                     Gdx.app.log(LOG_TAG, "Resource loaded into GPU memory.");
                     ResourceSlot<GpuResource> gpuSlot = gpuResources.getResourceSlot(gpuHandle);
                     if (gpuSlot != null) {
                         gpuSlot.resolve(createGpuResouce(id, handle));
                     } 
-                        
                 });
                 return gpuHandle;
             });

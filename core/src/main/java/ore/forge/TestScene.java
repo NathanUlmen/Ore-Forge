@@ -334,17 +334,24 @@ public class TestScene implements Screen {
         }
 
         BoundingBox meshBounds = calculateMeshBounds(meshData);
+        Vector3 meshCenter = meshBounds.getCenter(new Vector3());
+        BoundingBox centeredMeshBounds = recenterBounds(meshBounds, meshCenter);
+        Matrix4 renderLocalFromEntity = new Matrix4().setToTranslation(
+            -meshCenter.x,
+            -meshCenter.y,
+            -meshCenter.z
+        );
 
-        createGround(meshHandle, textureHandle, meshBounds);
-        createCubeField(meshHandle, textureHandle, meshBounds);
+        createGround(meshHandle, textureHandle, centeredMeshBounds, renderLocalFromEntity);
+        createCubeField(meshHandle, textureHandle, centeredMeshBounds, renderLocalFromEntity);
     }
 
-    private void createGround(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
+    private void createGround(AssetID meshHandle, AssetID material, BoundingBox meshBounds, Matrix4 renderLocalFromEntity) {
         BoundingBox groundBounds = scaleBounds(meshBounds, GROUND_SCALE);
-        float groundCenterY = -groundBounds.getHeight() * 0.5f;
+        float groundCenterY = -groundBounds.max.y;
         Entity ground = createEntity(
             new WorldTransformDefinition(new Matrix4().setToTranslation(0f, groundCenterY, 0f)),
-            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), new Matrix4().idt(), resourceManager),
+            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), renderLocalFromEntity, resourceManager),
             new PhysicsDefinition(
                 "ground",
                 PhysicsBodyType.RIGID,
@@ -358,7 +365,7 @@ public class TestScene implements Screen {
         engine.addEntity(ground);
     }
 
-    private void createCubeField(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
+    private void createCubeField(AssetID meshHandle, AssetID material, BoundingBox meshBounds, Matrix4 renderLocalFromEntity) {
         final float gridWidth = (GRID_COLS - 1) * CUBE_SPACING;
         final float gridDepth = (GRID_ROWS - 1) * CUBE_SPACING;
         final float startX = -gridWidth * 0.5f;
@@ -373,7 +380,7 @@ public class TestScene implements Screen {
                     float z = startZ + row * CUBE_SPACING;
                     Entity cube = createEntity(
                         new WorldTransformDefinition(new Matrix4().setToTranslation(x, y, z)),
-                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), new Matrix4().idt(), resourceManager),
+                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), renderLocalFromEntity, resourceManager),
                         new PhysicsDefinition(
                             "cube-" + cubeIndex++,
                             PhysicsBodyType.RIGID,
@@ -411,6 +418,12 @@ public class TestScene implements Screen {
             max.z = Math.max(max.z, z);
         }
 
+        return new BoundingBox(min, max);
+    }
+
+    private BoundingBox recenterBounds(BoundingBox bounds, Vector3 center) {
+        Vector3 min = new Vector3(bounds.min).sub(center);
+        Vector3 max = new Vector3(bounds.max).sub(center);
         return new BoundingBox(min, max);
     }
 
