@@ -48,7 +48,7 @@ final class AssetManager {
         
         long start = Stopwatch.timeNow(TimeUnit.MILLISECONDS);
         Handle<CpuAssetData> handle = handleRegistry.addResource(resolvePlaceHolder(target));
-        ResourceSlot slot = handleRegistry.getResourceSlot(handle);
+        ResourceSlot<CpuAssetData> slot = handleRegistry.getResourceSlot(handle);
         handleLookup.put(id, handle);
 
 
