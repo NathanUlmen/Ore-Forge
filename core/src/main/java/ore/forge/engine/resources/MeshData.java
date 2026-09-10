@@ -32,6 +32,11 @@ public final class MeshData implements CpuAssetData {
         return attributes;
     }
 
+    @Override 
+    public long sizeBytes() {
+        return vbo.length * Float.BYTES + ibo.length * Short.BYTES;
+    }
+
     @Override
     public void dispose() {
         // TODO Auto-generated method stub

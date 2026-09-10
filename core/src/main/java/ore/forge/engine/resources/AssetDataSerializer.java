@@ -16,15 +16,19 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AssetDataSerializer {
     private static final String LOG_TAG = AssetDataSerializer.class.getName();
+    private static final int KEEP_ALIVE_TIME_SEC = 10;
     private static final int POOL_MAX = 1;
     private final Pool<Kryo> kryoPool;
     private final ExecutorService threadPool;
 
-    public AssetDataSerializer(int poolMax) {
-        threadPool = Executors.newFixedThreadPool(poolMax);
+    public AssetDataSerializer(int poolMax, int threadLifetimeSec) {
+        threadPool = new ThreadPoolExecutor(0, poolMax, threadLifetimeSec, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
         kryoPool = new Pool<>(true, true, poolMax) {
             protected Kryo create() {
                 Kryo kryo = new Kryo();
@@ -53,15 +57,17 @@ public class AssetDataSerializer {
                 kryo.register(TextureData.class, new Serializer<TextureData>() {
                     @Override
                     public void write(Kryo kryo, Output output, TextureData object) {
+                        output.writeBoolean(object.useMipMaps());
                         output.writeInt(object.encodedBytes().length);
                         output.writeBytes(object.encodedBytes());
                     }
 
                     @Override
                     public TextureData read(Kryo kryo, Input input, Class type) {
+                        boolean useMipMaps = input.readBoolean();
                         int length = input.readInt();
                         byte[] bytes = input.readBytes(length);
-                        return new TextureData(bytes);
+                        return new TextureData(bytes, useMipMaps);
                     }
                 });
 
@@ -71,7 +77,7 @@ public class AssetDataSerializer {
     }
 
     public AssetDataSerializer() {
-        this(POOL_MAX);
+        this(POOL_MAX, KEEP_ALIVE_TIME_SEC);
     }
 
     public void writeObject(CpuAssetData assetData, Output output) {
@@ -82,7 +88,7 @@ public class AssetDataSerializer {
 
     public CompletableFuture<CpuAssetData> load(AssetArtifact assetArtifact, ResourceSlot slot) {
         return CompletableFuture.supplyAsync(() -> {
-            //set flag stating that this resource is now being loaded.
+            //set flag to refelct this resource is now being loaded.
             slot.setLoadState(LoadState.IN_PROGRESS);
 
             Kryo kryo = kryoPool.obtain();

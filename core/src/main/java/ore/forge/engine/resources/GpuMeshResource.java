@@ -46,4 +46,10 @@ public final class GpuMeshResource implements GpuResource {
         vertexBufferObject.dispose();
         indexBufferObject.dispose();
     }
+
+    @Override
+    public long sizeBytes() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sizeBytes'");
+    }
 }

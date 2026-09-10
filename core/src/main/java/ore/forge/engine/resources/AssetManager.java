@@ -178,7 +178,7 @@ final class AssetManager {
     }
 
     private static TextureData createDefaultTexture() {
-        return new TextureData(DEFAULT_TEXTURE_BYTES);
+        return new TextureData(DEFAULT_TEXTURE_BYTES, false);
     }
 
 }

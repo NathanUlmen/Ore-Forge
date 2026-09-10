@@ -2,6 +2,11 @@ package ore.forge.engine.resources;
 
 public final class AnimationData implements CpuAssetData {
 
+    @Override 
+    public long sizeBytes() {
+        throw new UnsupportedOperationException("Unimplemented method 'sizeBytes'");
+    }
+
     @Override
     public void dispose() {
         // TODO Auto-generated method stub

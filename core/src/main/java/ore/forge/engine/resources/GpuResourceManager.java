@@ -169,7 +169,7 @@ final class GpuResourceManager {
      */
     private GpuResource uploadTexture(AssetID id, TextureData textureData) {
         Pixmap map = textureData.pixmap();
-        GpuTextureResource textureResource = new GpuTextureResource(map);
+        GpuTextureResource textureResource = new GpuTextureResource(map, textureData.useMipMaps());
 
         return textureResource;
     }
