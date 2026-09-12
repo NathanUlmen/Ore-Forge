@@ -93,7 +93,11 @@ class ImporterTest {
         resourceManager.importGltf(modelFixture("Cube.gltf"));
 
         for (AssetID id : resourceManager.getAssetIDs()) {
-            assertNotNull(resourceManager.acquireCpuData(id));
+            resourceManager.acquireCpuDataAsync(id, (resource) -> {
+                assertNotNull(resource);
+            }, (foobar) -> {
+
+            });
         }
     }
 
@@ -108,7 +112,7 @@ class ImporterTest {
         for (AssetID id : resourceManager.getAssetIDs()) {
             if (resourceManager.getAssetType(id) == AssetType.TEXTURE) {
                 textureCount++;
-                ResourceHandle<CpuAssetData> resource = resourceManager.acquireCpuDataAsync(id);
+                ResourceHandle<CpuAssetData> resource = resourceManager.acquireCpuDataAsync(id, null, resourceManager);
                 long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
 
                 // Loading finishes on a worker; publication requires pumping the resource queue.
@@ -120,8 +124,7 @@ class ImporterTest {
                 }
 
                 assertTrue(resource.isReady(), "Timed out waiting for imported texture " + id);
-                TextureData textureData = assertInstanceOf(TextureData.class,
-                    resourceManager.getCpuAsset(resource.getFuture().join()));
+                TextureData textureData = assertInstanceOf(TextureData.class, resourceManager.getCpuAsset(resource.handle()));
                 assertArrayEquals(pngBytes, textureData.encodedBytes());
             }
         }
