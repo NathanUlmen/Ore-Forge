@@ -7,10 +7,10 @@ import ore.forge.engine.Handle;
 
 public class  ResourceHandle<E> {
     private ResourceManager resourceManager;
-    private CompletableFuture<Handle<E>> handleFuture;
+    private CompletableFuture<?> handleFuture;
     private Handle<E> handle;
 
-    ResourceHandle(Handle<E> handle, CompletableFuture<Handle<E>> future) {
+    ResourceHandle(Handle<E> handle, CompletableFuture<?> future) {
         assert handle != null : "Handle cannot be null";
         assert future != null : "Future should not be null";
         this.handleFuture = future;
@@ -35,8 +35,4 @@ public class  ResourceHandle<E> {
         return handleFuture.isDone();
     } 
 
-    public CompletableFuture<Handle<E>> getFuture() {
-        return handleFuture;
-    }
-    
 }

@@ -5,15 +5,12 @@ import com.badlogic.gdx.graphics.VertexAttributes;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import ore.forge.engine.GdxRenderThreadDispatcher;
 import ore.forge.engine.Handle;
 import ore.forge.engine.HandleRegistry;
-import ore.forge.engine.RenderThreadDispatcher;
+import ore.forge.engine.Dispatcher;
 import ore.forge.engine.VertexAttribute;
-import ore.forge.engine.profiling.Stopwatch;
-import ore.forge.engine.resources.ResourceManager.RequestType;
 import ore.forge.engine.resources.ResourceSlot.LoadState;
 
 final class AssetManager {
@@ -25,13 +22,13 @@ final class AssetManager {
     private static final MeshData DEFAULT_MESH = createDefaultMesh();
     private static final TextureData DEFAULT_TEXTURE = createDefaultTexture();
     private final HashMap<AssetID, Handle<CpuAssetData>> handleLookup;
-    private final HashMap<AssetID, CompletableFuture<Handle<CpuAssetData>>> cpuReadyFutures;
+    private final HashMap<AssetID, CompletableFuture<CpuAssetData>> cpuReadyFutures;
     private final HandleRegistry<CpuAssetData> handleRegistry;
     private final AssetRegistry assetRegistry;
     private final AssetDataSerializer serializer;
-    private final RenderThreadDispatcher dispatcher;
+    private final Dispatcher dispatcher;
 
-    public AssetManager(AssetRegistry registry, RenderThreadDispatcher dispatcher) {
+    public AssetManager(AssetRegistry registry, Dispatcher dispatcher) {
         this.cpuReadyFutures = new HashMap<>();
         this.assetRegistry = registry;
         this.handleLookup = new HashMap<>();
@@ -40,18 +37,18 @@ final class AssetManager {
         this.dispatcher = dispatcher;
     }
 
-    public ResourceHandle<CpuAssetData> acquireResourceHandle(AssetID id, RequestType type) {
+    public ResourceHandle<CpuAssetData> acquireResourceHandle(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher dispatcher) {
         Handle<CpuAssetData> lookupHandle = handleLookup.get(id);
         if (lookupHandle != null) { //case 1: target is already loaded or is in flight.
             return new ResourceHandle<>(handleRegistry.accquireHandle(lookupHandle), this.getCpuReadyFuture(id));
         }
 
         //case 2: load has not been requested
-        AssetArtifact target = assetRegistry.lookUp(id);
+        ore.forge.engine.resources.AssetArtifact target = assetRegistry.lookUp(id);
         if (target == null) {
             IllegalArgumentException e = new IllegalArgumentException();
             Gdx.app.error(LOG_TAG, "Target artifact of id:[" + id + "] was not present in asset registry.", e);
-            throw e; 
+            throw e;
         }
 
         //reserve a slot in the registry and populate it with a placeholder
@@ -60,11 +57,11 @@ final class AssetManager {
         //create link between id and handle
         handleLookup.put(id, handle);
 
-        
+
         ResourceSlot<CpuAssetData> slot = handleRegistry.getResourceSlot(handle);
         CompletableFuture<CpuAssetData> loadFuture = serializer.load(target, slot);
 
-        CompletableFuture cpuReady = new CompletableFuture<>();
+        CompletableFuture<CpuAssetData> cpuReady = new CompletableFuture<>();
         cpuReadyFutures.put(id, cpuReady);
 
         loadFuture.thenAcceptAsync(loadedData -> {
@@ -72,19 +69,19 @@ final class AssetManager {
         }, dispatcher::post);
 
         if (target.dependencies() != null){
-            for (AssetArtifact dependency : target.dependencies()) {
-                acquireResourceHandle(dependency.assetID(), type);
+            for (ore.forge.engine.resources.AssetArtifact dependency : target.dependencies()) {
+                acquireResourceHandle(dependency.assetID(), null, null);
             }
         }
 
         return new ResourceHandle<>(handle, cpuReady);
     }
 
-    private void resolveLoad(Handle<CpuAssetData> handle, AssetID id, CompletableFuture<Handle<CpuAssetData>> cpuReady, ResourceSlot<CpuAssetData> slot, CpuAssetData result) {
+    private void resolveLoad(Handle<CpuAssetData> handle, AssetID id, CompletableFuture<CpuAssetData> cpuReady, ResourceSlot<CpuAssetData> slot, CpuAssetData result) {
         if (slot != null) {
             slot.resolve(result);
             slot.setLoadState(LoadState.COMPLETED);
-            cpuReady.complete(handle);
+            cpuReady.complete(result);
         } else {
             result.dispose();
             cpuReady.cancel(false);
@@ -95,12 +92,12 @@ final class AssetManager {
     /**
      * Will return a completable future. the future is completed if it has already resolved. if the future is still in progress will return that one instead
      * @param id target
-     * @return a complete future if the value has already been resolved or an in progress one if still in the process. returns null if  
+     * @return a complete future if the value has already been resolved or an in progress one if still in the process. returns null if
      */
-    public CompletableFuture<Handle<CpuAssetData>> getCpuReadyFuture(AssetID id) {
+    public CompletableFuture<CpuAssetData> getCpuReadyFuture(AssetID id) {
         var handle = handleLookup.get(id);
         if (handle != null && getSlot(handle).isResolved()) { //future has already been completed and we are no longer tracking it
-            return CompletableFuture.completedFuture(handle);
+            return CompletableFuture.completedFuture(handleRegistry.getResource(handle));
         }
         return cpuReadyFutures.get(id);
     }

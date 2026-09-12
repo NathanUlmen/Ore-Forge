@@ -24,16 +24,6 @@ import de.javagl.jgltf.model.NamedModelElement;
 import de.javagl.jgltf.model.TextureModel;
 import ore.forge.engine.VertexAttribute;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.resources.AssetArtifact;
-import ore.forge.engine.resources.AssetCandidate;
-import ore.forge.engine.resources.AssetDataSerializer;
-import ore.forge.engine.resources.AssetImporter;
-import ore.forge.engine.resources.AssetRegistry;
-import ore.forge.engine.resources.AssetSourceKey;
-import ore.forge.engine.resources.AttributeHolder;
-import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.MeshData;
-import ore.forge.engine.resources.TextureData;
 
 
 /**

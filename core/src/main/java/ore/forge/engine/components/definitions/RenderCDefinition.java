@@ -3,6 +3,7 @@ package ore.forge.engine.components.definitions;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.ComponentDefinition;
+import ore.forge.engine.GdxRenderThreadDispatcher;
 import ore.forge.engine.Handle;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.resources.AssetID;
@@ -35,8 +36,8 @@ public class RenderCDefinition implements ComponentDefinition<RenderC> {
     @Override
     public RenderC create() {
         RenderC component = new RenderC();
-        RenderPart part = RenderPart.defaultRenderPart(resourceManager.acquireGpuResource(meshId));
-        part.material.baseColorTexture = resourceManager.acquireGpuResource(materialId);
+        RenderPart part = RenderPart.defaultRenderPart(resourceManager.acquireGpuResourceAsync(meshId, null, new GdxRenderThreadDispatcher()));
+        part.material.baseColorTexture = resourceManager.acquireGpuResourceAsync(materialId, null, new GdxRenderThreadDispatcher());
         component.renderPart = part;
         component.scale.set(scale);
         component.localFromEntity.set(localFromEntity);

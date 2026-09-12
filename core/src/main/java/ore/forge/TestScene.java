@@ -1,7 +1,6 @@
 package ore.forge;
 
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.badlogic.ashley.core.Engine;
@@ -32,12 +31,7 @@ import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
 
-import ore.forge.engine.ComponentListener;
-import ore.forge.engine.Handle;
-import ore.forge.engine.PhysicsBodyType;
-import ore.forge.engine.PhysicsMotionType;
-import ore.forge.engine.PhysicsWorld;
-import ore.forge.engine.UISchemaBuilder;
+import ore.forge.engine.*;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
@@ -101,6 +95,11 @@ public class TestScene implements Screen {
     private boolean debugRayHitActive = false;
     private float debugRayTimerSec = 0f;
     private final ResourceManager resourceManager;
+    private ResourceHandle<CpuAssetData> pendingMesh;
+    private ResourceHandle<CpuAssetData> pendingTexture;
+    private AssetID pendingMeshID;
+    private AssetID pendingTextureID;
+    private boolean sceneCreated;
 
     public TestScene(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -201,6 +200,7 @@ public class TestScene implements Screen {
         cameraController.update(delta);
         camera.update(true);
         resourceManager.synchronize();
+        tryCreateScene();
 
         if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
             Ray mouse = camera.getPickRay(Gdx.input.getX(), Gdx.input.getY());
@@ -332,23 +332,29 @@ public class TestScene implements Screen {
         AssetID loadedMeshID = meshHandle;
         AssetID loadedTextureID = textureHandle;
 
-        ResourceHandle<CpuAssetData> meshFuture = resourceManager.acquireCpuDataAsync(loadedMeshID);
-        ResourceHandle<CpuAssetData> textureFuture = resourceManager.acquireCpuDataAsync(loadedTextureID);
+        pendingMeshID = loadedMeshID;
+        pendingTextureID = loadedTextureID;
+        Dispatcher loadDispatcher = new GdxRenderThreadDispatcher();
+        pendingMesh = resourceManager.acquireCpuDataAsync(loadedMeshID, null, loadDispatcher);
+        pendingTexture = resourceManager.acquireCpuDataAsync(loadedTextureID, null, loadDispatcher);
+    }
 
-        CompletableFuture.allOf(meshFuture.getFuture(), textureFuture.getFuture())
-            .thenRun(() -> Gdx.app.postRunnable(() -> {
-                CpuAssetData meshAsset = resourceManager.getCpuAsset(meshFuture.handle());
-                CpuAssetData textureAsset = resourceManager.getCpuAsset(textureFuture.handle());
-                if (!(meshAsset instanceof MeshData meshData) || !(textureAsset instanceof TextureData)) {
-                    Gdx.app.error(LOG_TAG, "TestScene assets resolved to unexpected types.");
-                    return;
-                }
-                createScene(loadedMeshID, loadedTextureID, meshData);
-            }))
-            .exceptionally(error -> {
-                Gdx.app.error(LOG_TAG, "Failed to load TestScene assets.", error);
-                return null;
-            });
+    private void tryCreateScene() {
+        if (sceneCreated || pendingMesh == null || pendingTexture == null
+            || !pendingMesh.isReady() || !pendingTexture.isReady()) {
+            return;
+        }
+
+        CpuAssetData meshAsset = resourceManager.getCpuAsset(pendingMesh.handle());
+        CpuAssetData textureAsset = resourceManager.getCpuAsset(pendingTexture.handle());
+        if (!(meshAsset instanceof MeshData meshData) || !(textureAsset instanceof TextureData)) {
+            Gdx.app.error(LOG_TAG, "TestScene assets resolved to unexpected types.");
+            sceneCreated = true;
+            return;
+        }
+
+        sceneCreated = true;
+        createScene(pendingMeshID, pendingTextureID, meshData);
     }
 
     private void createScene(AssetID meshHandle, AssetID textureHandle, MeshData meshData) {
@@ -476,7 +482,14 @@ public class TestScene implements Screen {
     private void rebuildRenderParts() {
         renderParts.clear();
         for (Entity entity : renderEntities) {
-            renderParts.add(entity.getComponent(RenderC.class).renderPart);
+            RenderPart renderPart = entity.getComponent(RenderC.class).renderPart;
+            if (renderPart.meshHandle == null
+                || renderPart.material.baseColorTexture == null
+                || !renderPart.meshHandle.isReady()
+                || !renderPart.material.baseColorTexture.isReady()) {
+                continue;
+            }
+            renderParts.add(renderPart);
         }
     }
 

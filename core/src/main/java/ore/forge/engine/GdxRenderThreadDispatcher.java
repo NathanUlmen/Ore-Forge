@@ -2,16 +2,10 @@ package ore.forge.engine;
 
 import com.badlogic.gdx.Gdx;
 
-public class GdxRenderThreadDispatcher implements RenderThreadDispatcher {
+public class GdxRenderThreadDispatcher implements Dispatcher {
 
     @Override
     public void post(Runnable runnable) {
         Gdx.app.postRunnable(runnable);
     }
-
-    @Override
-    public boolean isRenderThread() {
-        return true;
-    }
-    
 }

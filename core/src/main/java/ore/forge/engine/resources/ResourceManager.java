@@ -5,28 +5,22 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.Handle;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.profiling.Stopwatch;
 
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import ore.forge.engine.RenderThreadDispatcher;
+import ore.forge.engine.Dispatcher;
 
 /**
  * Public resource-system entry point for importing, registry persistence, CPU residency, and GPU residency.
  */
-public class ResourceManager implements RenderThreadDispatcher {
+public class ResourceManager implements Dispatcher {
     private final ConcurrentLinkedQueue<Runnable> workQueue;
     private final AssetRegistry registry;
     private final AssetImporter importer;
     private final AssetManager assetManager;
     private final GpuResourceManager gpuResourceManager;
-    
-    enum RequestType {
-        SYNCHRONOUS,
-        ASYNC
-    }
 
     public ResourceManager() {
         this(new AssetRegistry());
@@ -88,21 +82,12 @@ public class ResourceManager implements RenderThreadDispatcher {
         return gpuResourceManager.resouceCount();
     }
 
-    //---synchronous loading---   
-    public ResourceHandle<CpuAssetData> acquireCpuData(AssetID id) {
-        return assetManager.acquireResourceHandle(id, RequestType.SYNCHRONOUS);
+    public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher callbackDispatcher) {
+        return assetManager.acquireResourceHandle(id, callback, callbackDispatcher);
     }
 
-    public ResourceHandle<GpuResource> acquireGpuResource(AssetID id) {
-        return gpuResourceManager.acquiResourceHandle(id, RequestType.SYNCHRONOUS);
-    }
-
-    public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id) {
-        return assetManager.acquireResourceHandle(id, RequestType.ASYNC);
-    }
-
-    public ResourceHandle<GpuResource> acquireGpuResourceAsync(AssetID id) {
-        return gpuResourceManager.acquiResourceHandle(id, RequestType.ASYNC);
+    public ResourceHandle<GpuResource> acquireGpuResourceAsync(AssetID id, Consumer<ResourceHandle<GpuResource>> callback, Dispatcher callbackDispatcher) {
+        return gpuResourceManager.acquiResourceHandle(id, callback, callbackDispatcher);
     }
 
     public void synchronize() {
@@ -116,11 +101,6 @@ public class ResourceManager implements RenderThreadDispatcher {
     @Override
     public void post(Runnable runnable) {
         workQueue.add(runnable);
-    }
-
-    @Override
-    public boolean isRenderThread() {
-        return true;
     }
 
 }

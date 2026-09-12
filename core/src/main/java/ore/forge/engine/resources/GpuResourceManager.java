@@ -8,13 +8,13 @@ import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import ore.forge.engine.Handle;
 import ore.forge.engine.HandleRegistry;
 import ore.forge.engine.Pair;
-import ore.forge.engine.RenderThreadDispatcher;
+import ore.forge.engine.Dispatcher;
 import ore.forge.engine.render.Renderer;
-import ore.forge.engine.resources.ResourceManager.RequestType;
 import ore.forge.engine.resources.ResourceSlot.LoadState;
 
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -30,10 +30,10 @@ final class GpuResourceManager {
     private final AssetManager assetManager;
     private final HashMap<AssetID, Handle<GpuResource>> handles;
     private final HandleRegistry<GpuResource> gpuResources;
-    private final HashMap<AssetID, CompletableFuture<Handle<GpuResource>>> gpuReadyFutures;
-    private final RenderThreadDispatcher dispatcher;
+    private final HashMap<AssetID, CompletableFuture<?>> gpuReadyFutures;
+    private final Dispatcher dispatcher;
 
-    public GpuResourceManager(AssetManager assetManager, RenderThreadDispatcher dispatcher) {
+    public GpuResourceManager(AssetManager assetManager, Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.assetManager = assetManager;
         this.handles = new HashMap<>();
@@ -49,65 +49,88 @@ final class GpuResourceManager {
      * @param id to an asset that want a handle to.
      * @return A handle to the asset that the id references.
      */
-    public ResourceHandle<GpuResource> acquiResourceHandle(AssetID id, RequestType type) {
+    public ResourceHandle<GpuResource> acquiResourceHandle(AssetID id, Consumer<ResourceHandle<GpuResource>> callback, Dispatcher callbackDispatcher) {
         //case 1: already in progress or loaded.
         Handle<GpuResource> lookupHandle = handles.get(id);
         if (lookupHandle != null) {
-            return new ResourceHandle<>(gpuResources.accquireHandle(lookupHandle), gpuReadyFutures.get(id));
+            ResourceHandle<GpuResource> resource = new ResourceHandle<>(gpuResources.accquireHandle(lookupHandle), gpuReadyFutures.get(id));
+            scheduleCallback(callback, resource, callbackDispatcher, null);
+            return resource;
         }
-        
-        CompletableFuture<Handle<CpuAssetData>> cpuReadyFuture = assetManager.getCpuReadyFuture(id);
+
+        CompletableFuture<CpuAssetData> cpuReadyFuture = assetManager.getCpuReadyFuture(id);
         if (cpuReadyFuture == null) {//case 2: cpu not loaded at all
-            //begin process of load
-            ResourceHandle<CpuAssetData> cpuResourceHandle = assetManager.acquireResourceHandle(id, type);
-            //create resource
-            GpuResource gpuResource = createGpuResouce(id, cpuResourceHandle.handle());
+            //begin process of load ;
 
-            Handle<GpuResource> handle = gpuResources.addResource(gpuResource, LoadState.REQUESTED);
+            Handle<GpuResource> handle = gpuResources.addResource(null, LoadState.REQUESTED);
             handles.put(id, handle);
-
             ResourceSlot<GpuResource> slot = gpuResources.getResourceSlot(handle);
-            CompletableFuture<Handle<GpuResource>> future = assetManager.getCpuReadyFuture(id).thenApplyAsync((loadedHandle) -> {
+
+            CompletableFuture<GpuResource> future = assetManager.getCpuReadyFuture(id).thenApplyAsync((loadedHandle) -> {
                 slot.resolve(createGpuResouce(id, loadedHandle));
                 slot.setLoadState(LoadState.COMPLETED);
-                return handle;
-            }, dispatcher::post);
+                ResourceHandle<CpuAssetData> cpuResourceHandle = assetManager.acquireResourceHandle(id, null, null);
+                //create resource
+                return createGpuResouce(id, assetManager.resolveHandle(cpuResourceHandle.handle()));
+            }, this.dispatcher::post);
+
+            ResourceHandle<GpuResource> resource = new ResourceHandle<>(handle, future);
+
+            scheduleCallback(callback, resource, callbackDispatcher, future);
 
             gpuReadyFutures.put(id, future);
-            return new ResourceHandle<>(handle, future);
+            return resource;
         } else if (!cpuReadyFuture.isDone()) {//case 3: cpu in progress
-            GpuResource gpuResource = createGpuResouce(id, assetManager.acquireResourceHandle(id, type).handle());
-            Handle<GpuResource> handle = gpuResources.addResource(gpuResource, LoadState.REQUESTED);
+            Handle<GpuResource> handle = gpuResources.addResource(null, LoadState.REQUESTED);
             handles.put(id, handle);
 
             ResourceSlot<GpuResource> slot = gpuResources.getResourceSlot(handle);
-            CompletableFuture<Handle<GpuResource>> future = cpuReadyFuture.thenApplyAsync((loadedHandle) -> {
-                slot.resolve(createGpuResouce(id, loadedHandle));
+            CompletableFuture<CpuAssetData> loadedFuture = cpuReadyFuture.thenApplyAsync((loadedData) -> {
+                slot.resolve(createGpuResouce(id, loadedData));
                 slot.setLoadState(LoadState.COMPLETED);
-                return handle;
-            }, dispatcher::post);
+                return loadedData;
+            }, this.dispatcher::post);
 
-            gpuReadyFutures.put(id, future);
-            return new ResourceHandle<>(handle, future);
+            ResourceHandle<GpuResource> resource = new ResourceHandle<GpuResource>(handle, loadedFuture);
+            scheduleCallback(callback, resource, callbackDispatcher, loadedFuture);
+
+            gpuReadyFutures.put(id, loadedFuture);
+            return resource;
         } else {//case 4: cpu side already loaded.
-            //upload resource
-            GpuResource gpuResource = createGpuResouce(id, cpuReadyFuture.join());
-            //pass in null for initial placeholder
-            Handle<GpuResource> handle = createHandleToResource(null, LoadState.COMPLETED);
-            ResourceSlot<GpuResource> slot = gpuResources.getResourceSlot(handle);
-            //resolve to actual resource
-            slot.resolve(gpuResource);
+            Handle<GpuResource> handle = createHandleToResource(null, LoadState.IN_PROGRESS);
+            CompletableFuture<Handle<GpuResource>> future = new CompletableFuture<>();
+            ResourceHandle<GpuResource> resource =  new ResourceHandle<>(handle, future);
+
+            this.dispatcher.post(() -> {
+                GpuResource gpuResource = createGpuResouce(id, cpuReadyFuture.join());
+                ResourceSlot<GpuResource> slot = gpuResources.getResourceSlot(handle);
+                slot.resolve(gpuResource);
+                future.complete(handle);
+                scheduleCallback(callback, resource, callbackDispatcher, null);
+            });
+
             //log that resource exists
             handles.put(id, handle);
-            CompletableFuture<Handle<GpuResource>> future = new CompletableFuture<>();
-            future.complete(handle);
             gpuReadyFutures.put(id, future);
-            return new ResourceHandle<>(handle, future);
+            return resource;
+        }
+    }
+    private void scheduleCallback(Consumer<ResourceHandle<GpuResource>> callback, ResourceHandle<GpuResource> data, Dispatcher dispatcher, CompletableFuture future) {
+        if (callback != null && dispatcher != null) {
+            if (future == null) {
+                dispatcher.post(() -> {
+                    callback.accept(data);
+                });
+            } else {
+                future.thenRunAsync(() -> {
+                        callback.accept(data);
+                }, dispatcher::post);
+            }
         }
     }
 
-    private GpuResource createGpuResouce(AssetID id, Handle<CpuAssetData> handle) {
-        return switch (assetManager.resolveHandle(handle)) {
+    private GpuResource createGpuResouce(AssetID id, CpuAssetData data) {
+        return switch (data) {
             case MeshData meshData -> uploadMesh(id, meshData);
             case TextureData textureData -> uploadTexture(id, textureData);
             case MaterialData materialData ->
@@ -164,7 +187,7 @@ final class GpuResourceManager {
      * {@link Pixmap} has not been constructed from the encoded bytes yet, that operation will
      * be performed.
      *
-     * @param id to be mapped to the {@link TextureHandle}.
+     * @param id to be mapped to the {@link }.
      * @return TextureHandle that points to the {@link GpuTextureResource}
      */
     private GpuResource uploadTexture(AssetID id, TextureData textureData) {
