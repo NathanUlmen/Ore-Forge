@@ -11,8 +11,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class MeshData implements CpuAssetData {
     private final VertexAttributes attributes;
-    private final float[] vbo;
-    private final short[] ibo;
+    private float[] vbo;
+    private short[] ibo;
 
     public MeshData(VertexAttributes attributes, float[] vbo, short[] ibo) {
         this.attributes = attributes;
@@ -32,15 +32,15 @@ public final class MeshData implements CpuAssetData {
         return attributes;
     }
 
-    @Override 
+    @Override
     public long sizeBytes() {
         return vbo.length * Float.BYTES + ibo.length * Short.BYTES;
     }
 
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+        vbo = null;
+        ibo = null;
     }
 
     @Override

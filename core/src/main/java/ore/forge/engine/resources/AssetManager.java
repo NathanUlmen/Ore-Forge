@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import com.badlogic.gdx.utils.LongMap;
 import ore.forge.engine.Handle;
 import ore.forge.engine.HandleRegistry;
 import ore.forge.engine.Dispatcher;
@@ -22,6 +23,7 @@ final class AssetManager {
     private static final MeshData DEFAULT_MESH = createDefaultMesh();
     private static final TextureData DEFAULT_TEXTURE = createDefaultTexture();
     private final HashMap<AssetID, Handle<CpuAssetData>> handleLookup;
+    private final LongMap<AssetID> removeLookup; //maps handles to their asset id.
     private final HashMap<AssetID, CompletableFuture<CpuAssetData>> cpuReadyFutures;
     private final HandleRegistry<CpuAssetData> handleRegistry;
     private final AssetRegistry assetRegistry;
@@ -34,13 +36,16 @@ final class AssetManager {
         this.handleLookup = new HashMap<>();
         this.handleRegistry = new HandleRegistry<>();
         this.serializer = new AssetDataSerializer();
-        this.dispatcher = dispatcher;
+        this.dispatcher  = dispatcher;
+        this.removeLookup = new LongMap<>();
     }
 
-    public ResourceHandle<CpuAssetData> acquireResourceHandle(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher dispatcher) {
+    public ResourceHandle<CpuAssetData> acquireResourceHandle(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher callbackDispatcher) {
         Handle<CpuAssetData> lookupHandle = handleLookup.get(id);
         if (lookupHandle != null) { //case 1: target is already loaded or is in flight.
-            return new ResourceHandle<>(handleRegistry.accquireHandle(lookupHandle), this.getCpuReadyFuture(id));
+            ResourceHandle<CpuAssetData> assetData = new ResourceHandle<>(handleRegistry.accquireHandle(lookupHandle), this.getCpuReadyFuture(id));
+            cpuReadyFutures.replace(id, scheduleCallback(callback, assetData, callbackDispatcher, this.getCpuReadyFuture(id)));
+            return assetData;
         }
 
         //case 2: load has not been requested
@@ -56,17 +61,20 @@ final class AssetManager {
 
         //create link between id and handle
         handleLookup.put(id, handle);
-
+        removeLookup.put(handle.identity(), id);
 
         ResourceSlot<CpuAssetData> slot = handleRegistry.getResourceSlot(handle);
         CompletableFuture<CpuAssetData> loadFuture = serializer.load(target, slot);
 
         CompletableFuture<CpuAssetData> cpuReady = new CompletableFuture<>();
         cpuReadyFutures.put(id, cpuReady);
+        var resourceHandle = new ResourceHandle<>(handle, cpuReady);
 
         loadFuture.thenAcceptAsync(loadedData -> {
-            resolveLoad(handle, id, cpuReady, slot, loadedData);
-        }, dispatcher::post);
+            resolveLoad(id, cpuReady, slot, loadedData);
+        }, this.dispatcher::post);
+
+        scheduleCallback(callback, resourceHandle, callbackDispatcher, loadFuture);
 
         if (target.dependencies() != null){
             for (ore.forge.engine.resources.AssetArtifact dependency : target.dependencies()) {
@@ -74,10 +82,10 @@ final class AssetManager {
             }
         }
 
-        return new ResourceHandle<>(handle, cpuReady);
+        return resourceHandle;
     }
 
-    private void resolveLoad(Handle<CpuAssetData> handle, AssetID id, CompletableFuture<CpuAssetData> cpuReady, ResourceSlot<CpuAssetData> slot, CpuAssetData result) {
+    private void resolveLoad(AssetID id, CompletableFuture<CpuAssetData> cpuReady, ResourceSlot<CpuAssetData> slot, CpuAssetData result) {
         if (slot != null) {
             slot.resolve(result);
             slot.setLoadState(LoadState.COMPLETED);
@@ -102,8 +110,29 @@ final class AssetManager {
         return cpuReadyFutures.get(id);
     }
 
+    private CompletableFuture<CpuAssetData> scheduleCallback(Consumer<ResourceHandle<CpuAssetData>> callback, ResourceHandle<CpuAssetData> data, Dispatcher dispatcher, CompletableFuture<CpuAssetData> future) {
+        if (callback != null && dispatcher == null) {throw new IllegalArgumentException("Dispatcher cannot be null.");}
+        if (callback != null) {
+            return future.thenApplyAsync((ignored) -> {
+                callback.accept(data);
+                return ignored;
+            }, dispatcher::post);
+        }
+        return future;
+    }
+
     public ResourceSlot<CpuAssetData> getSlot(Handle<CpuAssetData> handle) {
         return handleRegistry.getResourceSlot(handle);
+    }
+
+    public void releaseHandle(Handle<CpuAssetData> handle) {
+        long handleIdentity = handle.identity();
+        if (handleRegistry.releaseHandle(handle)) {
+            AssetID id = removeLookup.remove(handleIdentity);
+            if (id != null) {
+                handleLookup.remove(id);
+            }
+        }
     }
 
     public CpuAssetData resolvePlaceHolder(AssetArtifact target) {

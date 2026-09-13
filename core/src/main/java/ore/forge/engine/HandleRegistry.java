@@ -12,7 +12,7 @@ import ore.forge.engine.resources.ResourceSlot.LoadState;
 
 /**
  * @author Nathan Ulmen
- * Handle Registry is responsible for handing out Handles to resources and performing reference counting of 
+ * Handle Registry is responsible for handing out Handles to resources and performing reference counting of
  * resources stored inside it.
  *
  */
@@ -27,19 +27,26 @@ public class HandleRegistry<E extends Disposable> {
     }
 
     public Handle<E> accquireHandle(Handle<E> target) {
+        if (!target.isValid()) {
+            assert false : "Handle is invalid";
+            return null;
+        }
         int count = handleLookup.get(target.index()).give();
-        Gdx.app.log(LOG_TAG,"Accquiring Handle with count=" + count);
-        return target;
+        Gdx.app.log(LOG_TAG,"Acquiring Handle with count=" + count);
+        return new Handle<>(target);
     }
 
-    public void releaseHandle(Handle<E> handle) {
-        if (handle == null) {return;}
+    public boolean releaseHandle(Handle<E> handle) {
+        if (handle == null || !handle.isValid()) {return false;}
         int count = handleLookup.get(handle.index()).take();
         Gdx.app.log(LOG_TAG,"released handle. count=" + count);
         if (count <= 0) {
             Gdx.app.log(LOG_TAG,"Freeing Resource");
             removeResource(handle);
+            handle.invalidate();
+            return true;
         }
+        return false;
     }
 
     public E getResource(Handle<E> handle) {
@@ -76,9 +83,8 @@ public class HandleRegistry<E extends Disposable> {
 
     public void removeResource(Handle<E> targetHandle) {
         int index = targetHandle.index();
-        if (!targetHandle.isValid()) {
-            Gdx.app.error(LOG_TAG, "Target handle " + targetHandle.toString() + " has invalid index of 0.", new IllegalArgumentException());
-        }
+
+        isValid(targetHandle);
 
         Entry<E> entry = handleLookup.get(index);
         if (entry == null || entry.version != targetHandle.version()) {
@@ -89,7 +95,7 @@ public class HandleRegistry<E extends Disposable> {
         entry.slot().dispose();
         freeList.add(index);
     }
-    
+
     public ResourceSlot<E> getResourceSlot(Handle<E> handle) {
         var entry = handleLookup.get(handle.index());
         return entry == null ? null : entry.slot();
@@ -115,7 +121,13 @@ public class HandleRegistry<E extends Disposable> {
         return s;
     }
 
-    private class Entry<E extends Disposable> { 
+    public void isValid(Handle<E> handle) {
+        if (!handle.isValid()) {
+            Gdx.app.error(LOG_TAG, "Target handle " + handle.toString() + " has invalid index of 0.", new IllegalArgumentException());
+        }
+    }
+
+    private class Entry<E extends Disposable> {
         private int checkoutCount;
         private final ResourceSlot<E> slot;
         private final int version;
@@ -128,20 +140,20 @@ public class HandleRegistry<E extends Disposable> {
 
         public int getCheckoutCount() {
             return checkoutCount;
-        } 
-        
+        }
+
         public int version() {
             return version;
         }
-        
+
         ResourceSlot<E> slot() {
             return slot;
         }
-        
+
         public E data() {
             return slot.getData();
         }
-        
+
         public int give() {
             return ++checkoutCount;
         }

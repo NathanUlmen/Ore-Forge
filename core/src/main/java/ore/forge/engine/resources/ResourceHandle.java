@@ -5,12 +5,11 @@ import java.util.concurrent.CompletableFuture;
 
 import ore.forge.engine.Handle;
 
-public class  ResourceHandle<E> {
-    private ResourceManager resourceManager;
-    private CompletableFuture<?> handleFuture;
+public class ResourceHandle<E> {
+    private CompletableFuture<E> handleFuture;
     private Handle<E> handle;
 
-    ResourceHandle(Handle<E> handle, CompletableFuture<?> future) {
+    ResourceHandle(Handle<E> handle, CompletableFuture<E> future) {
         assert handle != null : "Handle cannot be null";
         assert future != null : "Future should not be null";
         this.handleFuture = future;
@@ -33,6 +32,10 @@ public class  ResourceHandle<E> {
 
     public boolean isReady() {
         return handleFuture.isDone();
-    } 
+    }
+
+    CompletableFuture<E> getFuture() {
+        return  handleFuture;
+    }
 
 }

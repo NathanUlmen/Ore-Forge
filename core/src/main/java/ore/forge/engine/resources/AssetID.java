@@ -14,9 +14,11 @@ import java.util.UUID;
  */
 public final class AssetID {
     private final UUID uuid;
+    private short type;
 
     public AssetID(UUID uuid) {
         this.uuid = uuid;
+        this.type = 1;
     }
 
     public AssetID(String uuid) {
@@ -25,6 +27,14 @@ public final class AssetID {
 
     public UUID getUUID() {
         return uuid;
+    }
+
+    public short getType() {
+        return type;
+    }
+
+    public void setType(short type) {
+        this.type = type;
     }
 
     @Override

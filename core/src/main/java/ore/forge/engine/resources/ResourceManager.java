@@ -7,13 +7,17 @@ import ore.forge.engine.Handle;
 import ore.forge.engine.definitions.AssetType;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 
 import ore.forge.engine.Dispatcher;
 
 /**
- * Public resource-system entry point for importing, registry persistence, CPU residency, and GPU residency.
+ * By default, dispatches to self.
  */
 public class ResourceManager implements Dispatcher {
     private final ConcurrentLinkedQueue<Runnable> workQueue;
@@ -21,20 +25,26 @@ public class ResourceManager implements Dispatcher {
     private final AssetImporter importer;
     private final AssetManager assetManager;
     private final GpuResourceManager gpuResourceManager;
+    private final Dispatcher resourceManagerDispatcher;
 
     public ResourceManager() {
-        this(new AssetRegistry());
+        this(new AssetRegistry(), null);
     }
 
-    public ResourceManager(String bakedOutputDir) {
-        this(new AssetRegistry(bakedOutputDir));
+    public ResourceManager(Dispatcher dispatcher) {
+        this(new AssetRegistry(), dispatcher);
     }
 
-    private ResourceManager(AssetRegistry registry) {
+    public ResourceManager(String bakedOutputDir, Dispatcher dispatcher) {
+        this(new AssetRegistry(bakedOutputDir), dispatcher);
+    }
+
+    private ResourceManager(AssetRegistry registry, Dispatcher dispatcher) {
+        resourceManagerDispatcher = dispatcher == null ? this : dispatcher;
         this.registry = registry;
         this.importer = new AssetImporter(registry);
-        this.assetManager = new AssetManager(registry, this);
-        this.gpuResourceManager = new GpuResourceManager(assetManager, this);
+        this.assetManager = new AssetManager(registry, resourceManagerDispatcher);
+        this.gpuResourceManager = new GpuResourceManager(assetManager, resourceManagerDispatcher);
         this.workQueue = new ConcurrentLinkedQueue<>();
     }
 
@@ -74,12 +84,16 @@ public class ResourceManager implements Dispatcher {
         gpuResourceManager.releaseHandle(handle.handle());
     }
 
+    public void releaseCpuAsset(ResourceHandle<CpuAssetData> handle) {
+       assetManager.releaseHandle(handle.handle());
+    }
+
     public int activeCpuResources() {
         return assetManager.size();
     }
 
     public int activeGpuResources() {
-        return gpuResourceManager.resouceCount();
+        return gpuResourceManager.resourceCount();
     }
 
     public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher callbackDispatcher) {
@@ -87,7 +101,30 @@ public class ResourceManager implements Dispatcher {
     }
 
     public ResourceHandle<GpuResource> acquireGpuResourceAsync(AssetID id, Consumer<ResourceHandle<GpuResource>> callback, Dispatcher callbackDispatcher) {
-        return gpuResourceManager.acquiResourceHandle(id, callback, callbackDispatcher);
+        return gpuResourceManager.acquireResourceHandle(id, callback, callbackDispatcher);
+    }
+
+    //TODO: user needs a way to specify what they want each id to resolve to. Do they want it to become a gpu resource or cpu resource?
+    public void batchLoad(List<AssetID> assetIds, Consumer<Collection<ResourceHandle<?>>> callback, Dispatcher callbackDispatcher) {
+        List<ResourceHandle<?>> resources = new ArrayList<>();
+        CompletableFuture<?>[] handles = new CompletableFuture[assetIds.size()];
+        for (int i = 0; i < assetIds.size(); i++) {
+            var id = assetIds.get(i);
+            ResourceHandle<?> handle = null;
+            switch (id.getType()) {
+                case 0 -> {
+                    handle = assetManager.acquireResourceHandle(id, null, null);
+                }
+                default  -> {
+                    handle = gpuResourceManager.acquireResourceHandle(id, null, null);
+                }
+            }
+            handles[i] = handle.getFuture();
+            resources.add(handle);
+        }
+        CompletableFuture.allOf(handles).thenRunAsync(() -> {
+           callback.accept(resources);
+        }, callbackDispatcher::post);
     }
 
     public void synchronize() {

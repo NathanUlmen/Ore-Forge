@@ -2,6 +2,8 @@
 
 The goal of the Resource Management System is to provide an interface/abstraction/API where the loading, tracking, and disposal of expensive resources such as Meshes, Materials, Textures, Animations, and Sound Files is done automatically. All other systems need do is provide an **AssetID** and the Resource management system will handle the loading and automatically dispose of the resource using a configurable caching policy.
 
+Key ideas: only 1 thread can issue loading "calls/requests" at a time. When and where callbacks are ran is determined 
+by the dispatcher passed in.
 ## Engine Asset Categories 
 
 Animation
@@ -54,4 +56,20 @@ After being assigned an **AssetID** the engine will then extract the asset and t
 
 ## Threaded Resource Loading
 
-## Resource Caching 
+## Resource Caching
+
+## Testing
+
+* Simple load, 1 call and wait to get a result. - tests to see if we have basic functionality working
+
+* Simple spaced load. 1 call wait then make another call - tests already loaded pathway
+
+* Issue multiple load requests for one target. - tests in progress loading
+
+* load delete load - tests that our removal/disposal is functioning correctly.
+
+* Testing the handling of null and non-null callbacks and dispatchers. - callbacks arent necessary but if a callback is present and dispatcher isn't should throw an error.
+
+* testing that scheduling of callbacks and their dispatchers for both loaded and in progress callbacks is correct - callbacks should be sent to their dispatchers in the same order their requests were issued.
+
+* Test invalid/already released handles - acquire resource using an already released handle

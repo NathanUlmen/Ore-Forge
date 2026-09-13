@@ -1,6 +1,8 @@
 package ore.forge;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.badlogic.ashley.core.Engine;
@@ -95,8 +97,6 @@ public class TestScene implements Screen {
     private boolean debugRayHitActive = false;
     private float debugRayTimerSec = 0f;
     private final ResourceManager resourceManager;
-    private ResourceHandle<CpuAssetData> pendingMesh;
-    private ResourceHandle<CpuAssetData> pendingTexture;
     private AssetID pendingMeshID;
     private AssetID pendingTextureID;
     private boolean sceneCreated;
@@ -200,7 +200,6 @@ public class TestScene implements Screen {
         cameraController.update(delta);
         camera.update(true);
         resourceManager.synchronize();
-        tryCreateScene();
 
         if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
             Ray mouse = camera.getPickRay(Gdx.input.getX(), Gdx.input.getY());
@@ -332,21 +331,31 @@ public class TestScene implements Screen {
         AssetID loadedMeshID = meshHandle;
         AssetID loadedTextureID = textureHandle;
 
+        // The imported registry uses type 1 IDs, which makes batchLoad request
+        // GPU resources. This scene needs the CPU data first to calculate bounds,
+        // and the GPU resources are acquired by RenderCDefinition afterward.
+        loadedMeshID.setType((short) 0);
+        loadedTextureID.setType((short) 0);
         pendingMeshID = loadedMeshID;
         pendingTextureID = loadedTextureID;
-        Dispatcher loadDispatcher = new GdxRenderThreadDispatcher();
-        pendingMesh = resourceManager.acquireCpuDataAsync(loadedMeshID, null, loadDispatcher);
-        pendingTexture = resourceManager.acquireCpuDataAsync(loadedTextureID, null, loadDispatcher);
+        resourceManager.batchLoad(
+            List.of(loadedMeshID, loadedTextureID),
+            this::createSceneWhenLoaded,
+            Gdx.app::postRunnable
+        );
     }
 
-    private void tryCreateScene() {
-        if (sceneCreated || pendingMesh == null || pendingTexture == null
-            || !pendingMesh.isReady() || !pendingTexture.isReady()) {
+    private void createSceneWhenLoaded(Collection<ResourceHandle<?>> resources) {
+        if (sceneCreated) {
             return;
         }
 
-        CpuAssetData meshAsset = resourceManager.getCpuAsset(pendingMesh.handle());
-        CpuAssetData textureAsset = resourceManager.getCpuAsset(pendingTexture.handle());
+        // ResourceManager.batchLoad currently invokes this callback with an empty
+        // collection, so reacquire the already-completed CPU handles by ID.
+        ResourceHandle<CpuAssetData> meshHandle = resourceManager.acquireCpuDataAsync(pendingMeshID, null, Gdx.app::postRunnable);
+        ResourceHandle<CpuAssetData> textureHandle = resourceManager.acquireCpuDataAsync(pendingTextureID, null, Gdx.app::postRunnable);
+        CpuAssetData meshAsset = resourceManager.getCpuAsset(meshHandle.handle());
+        CpuAssetData textureAsset = resourceManager.getCpuAsset(textureHandle.handle());
         if (!(meshAsset instanceof MeshData meshData) || !(textureAsset instanceof TextureData)) {
             Gdx.app.error(LOG_TAG, "TestScene assets resolved to unexpected types.");
             sceneCreated = true;

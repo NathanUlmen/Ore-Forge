@@ -38,7 +38,7 @@ class ImporterTest {
 
     @Test
     void testImport() {
-        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString(), null);
         Path sourceModel = modelFixture("Cube.gltf");
         resourceManager.importGltf(sourceModel);
 
@@ -103,7 +103,7 @@ class ImporterTest {
 
     @Test
     void testTextureImport() throws IOException, InterruptedException {
-        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString(), null);
         resourceManager.importGltf(modelFixture("texture_test.glb"));
 
         byte[] pngBytes = Files.readAllBytes(modelFixture("test_tex01.png"));
