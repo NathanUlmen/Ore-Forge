@@ -7,9 +7,9 @@
 - `documentation/` design docs and outlines
 
 ## Requirements
-- Java 25 (Gradle toolchain resolver is configured)
+- Java 25
 
-## Build and Run (Desktop)
+## Build and Run
  ```bash
  ./gradlew lwjgl3:run
  ```
