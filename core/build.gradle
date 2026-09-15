@@ -9,5 +9,5 @@ dependencies {
   api "com.kotcrab.vis:vis-ui:$visuiVersion"
   api "de.javagl:jgltf-model:$jgltfVersion"
   api "com.esotericsoftware:kryo:$kryoVersion"
-  implementation "org.slf4j:slf4j-api:2.0.18"
+  implementation "org.slf4j:slf4j-api:2.0.19"
 }
