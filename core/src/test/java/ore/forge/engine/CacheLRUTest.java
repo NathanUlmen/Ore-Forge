@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CacheLRUTest {
     @Test
-    void putAndGetTrackEntriesAndSize() {
+    void putAndTakeTrackEntriesAndSize() {
         CacheLRU cache = new CacheLRU(10);
         AssetID key = key();
         TestSizeable value = value(4);
@@ -24,13 +24,13 @@ class CacheLRUTest {
         assertTrue(cache.contains(key));
         assertEquals(1, cache.numElements());
         assertEquals(4, cache.totalSizeBytes());
-        assertSame(value, cache.get(key));
+        assertSame(value, cache.take(key));
         assertFalse(cache.contains(key));
         assertEquals(0, cache.totalSizeBytes());
     }
 
     @Test
-    void getPromotesEntryAndEvictsLeastRecentlyUsedValue() {
+    void takePromotesEntryAndEvictsLeastRecentlyUsedValue() {
         CacheLRU cache = new CacheLRU(8);
         AssetID oldest = key();
         AssetID newest = key();
@@ -40,7 +40,7 @@ class CacheLRUTest {
 
         cache.put(oldest, oldestValue);
         cache.put(newest, newestValue);
-        assertSame(oldestValue, cache.get(oldest));
+        assertSame(oldestValue, cache.take(oldest));
         cache.put(replacement, value(4));
 
         assertFalse(cache.contains(oldest));
@@ -61,7 +61,7 @@ class CacheLRUTest {
 
         assertEquals(1, cache.numElements());
         assertEquals(6, cache.totalSizeBytes());
-        assertSame(newValue, cache.get(key));
+        assertSame(newValue, cache.take(key));
         assertTrue(oldValue.disposed);
     }
 

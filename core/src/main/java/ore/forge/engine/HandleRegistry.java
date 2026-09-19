@@ -28,22 +28,28 @@ public class HandleRegistry<E extends Disposable> {
 
     public Handle<E> accquireHandle(Handle<E> target) {
         if (!target.isValid()) {
-            assert false : "Handle is invalid";
-            return null;
+            throw new IllegalStateException("Handle is not valid");
         }
         int count = handleLookup.get(target.index()).give();
-        Gdx.app.log(LOG_TAG,"Acquiring Handle with count=" + count);
+//        Gdx.app.log(LOG_TAG, "Acquiring Handle with count=" + count);
         return new Handle<>(target);
     }
 
+    /**
+     *
+     * @return if the value has been removed from the registry.
+     *
+     */
     public boolean releaseHandle(Handle<E> handle) {
-        if (handle == null || !handle.isValid()) {return false;}
+        if (handle == null || !handle.isValid()) {
+            return false;
+        }
         var entry = handleLookup.get(handle.index());
         if (entry.version == handle.version()) {
             int count = entry.takeBack();
-            Gdx.app.log(LOG_TAG,"released handle. count=" + count);
+            Gdx.app.log(LOG_TAG, "released handle. count=" + count);
             if (count <= 0) {
-                Gdx.app.log(LOG_TAG,"Freeing Resource");
+                Gdx.app.log(LOG_TAG, "Freeing Resource");
                 removeResource(handle);
                 handle.invalidate();
                 return true;
@@ -56,16 +62,19 @@ public class HandleRegistry<E extends Disposable> {
         if (handle == null) {
             throw new IllegalArgumentException("Handle must not be null.");
         }
+
         int index = handle.index();
         if (!handle.isValid() || index >= handleLookup.size) {
-            assert false : "Handle is invalid or index is greater than table size.";
-            return null;
+            throw new IllegalArgumentException("Handle is invalid or index is greater than table size.");
         }
 
         Entry<E> entry = handleLookup.get(index);
-        if (entry == null || entry.version != handle.version()) {
-            assert false : "Entry was null or version missmatch";
-            return null;
+        if (entry == null ) {
+            throw new IllegalStateException("Entry was null");
+        }
+
+        if (entry.version != handle.version()) {
+           throw new IllegalStateException("Entry version missmatch. Expected:" + entry.version + ", got:" + handle.version());
         }
 
         return entry.data();
@@ -84,7 +93,7 @@ public class HandleRegistry<E extends Disposable> {
         return new Handle<E>(index, version);
     }
 
-    public void removeResource(Handle<E> targetHandle) {
+    private void removeResource(Handle<E> targetHandle) {
         int index = targetHandle.index();
 
         isValid(targetHandle);
@@ -95,7 +104,6 @@ public class HandleRegistry<E extends Disposable> {
         }
 
         handleLookup.set(index, null);
-        entry.slot().dispose();
         freeList.add(index);
     }
 
@@ -144,7 +152,6 @@ public class HandleRegistry<E extends Disposable> {
         public int getCheckoutCount() {
             return checkoutCount;
         }
-
         public int version() {
             return version;
         }

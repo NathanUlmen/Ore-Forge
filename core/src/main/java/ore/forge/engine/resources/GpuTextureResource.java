@@ -34,7 +34,7 @@ public final class GpuTextureResource implements GpuResource {
         var h = texture.getHeight();
         long bytes = w * h * bytesFromFormat(format);
         if (useMipMaps) {
-           bytes *= 4/3; 
+           bytes *= 4/3;
         }
         return bytes;
     }
@@ -80,12 +80,12 @@ public final class GpuTextureResource implements GpuResource {
         public Pixmap consumePixmap() {
             Pixmap toReturn = pixmap;
             pixmap = null;
-            return toReturn; 
+            return toReturn;
         }
 
         @Override
         public boolean disposePixmap() {
-            return true;
+            return false;
         }
 
         @Override

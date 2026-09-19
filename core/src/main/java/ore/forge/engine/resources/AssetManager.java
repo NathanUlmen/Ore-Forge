@@ -8,10 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.badlogic.gdx.utils.LongMap;
-import ore.forge.engine.Handle;
-import ore.forge.engine.HandleRegistry;
-import ore.forge.engine.Dispatcher;
-import ore.forge.engine.VertexAttribute;
+import ore.forge.engine.*;
 import ore.forge.engine.resources.ResourceSlot.LoadState;
 
 final class AssetManager {
@@ -20,17 +17,18 @@ final class AssetManager {
     private static final byte[] DEFAULT_TEXTURE_BYTES = Base64.getDecoder().decode(
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR42mP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC"
     );
-    private static final MeshData DEFAULT_MESH = createDefaultMesh();
-    private static final TextureData DEFAULT_TEXTURE = createDefaultTexture();
     private final HashMap<AssetID, Handle<CpuAssetData>> handleLookup;
     private final LongMap<AssetID> removeLookup; //maps handles to their asset id.
     private final HashMap<AssetID, CompletableFuture<CpuAssetData>> cpuReadyFutures;
     private final HandleRegistry<CpuAssetData> handleRegistry;
+    final Cache<AssetID, CpuAssetData> cache;
     private final AssetRegistry assetRegistry;
     private final AssetDataSerializer serializer;
     private final Dispatcher dispatcher;
+    private static final long DEFAULT_SIZE = 100 * Sizeable.MB;
 
     public AssetManager(AssetRegistry registry, Dispatcher dispatcher) {
+        this.cache = new CacheLRU<>(DEFAULT_SIZE);
         this.cpuReadyFutures = new HashMap<>();
         this.assetRegistry = registry;
         this.handleLookup = new HashMap<>();
@@ -48,7 +46,19 @@ final class AssetManager {
             return assetData;
         }
 
-        //case 2: load has not been requested
+        //case 2: in cache and needs to be added
+        CpuAssetData cacheLookup = cache.take(id);
+        if (cacheLookup != null) {
+            Handle<CpuAssetData> handle = handleRegistry.addResource(cacheLookup, LoadState.COMPLETED);
+            handleLookup.put(id, handle);
+            removeLookup.put(handle.identity(), id);
+            var cpuReadyFuture = CompletableFuture.completedFuture(cacheLookup);
+            cpuReadyFutures.put(id, cpuReadyFuture);
+            return new ResourceHandle<>(handle, cpuReadyFuture);
+        }
+
+
+        //case 3: load has not been requested
         ore.forge.engine.resources.AssetArtifact target = assetRegistry.lookUp(id);
         if (target == null) {
             IllegalArgumentException e = new IllegalArgumentException();
@@ -91,7 +101,7 @@ final class AssetManager {
             slot.setLoadState(LoadState.COMPLETED);
             cpuReady.complete(result);
         } else {
-            result.dispose();
+            cache.put(id, result);
             cpuReady.cancel(false);
         }
         cpuReadyFutures.remove(id);
@@ -127,10 +137,13 @@ final class AssetManager {
 
     public void releaseHandle(Handle<CpuAssetData> handle) {
         long handleIdentity = handle.identity();
+        CpuAssetData data = handleRegistry.getResource(handle);
         if (handleRegistry.releaseHandle(handle)) {
             AssetID id = removeLookup.remove(handleIdentity);
             if (id != null) {
+                cache.put(id, data);
                 handleLookup.remove(id);
+                cpuReadyFutures.remove(id);
             }
         }
     }

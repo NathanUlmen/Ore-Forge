@@ -2,9 +2,9 @@ package ore.forge.engine;
 
 public interface Cache<K, E extends Sizeable > {
 
-    void put(K key, Sizeable value);
+    void put(K key, E value);
 
-    Sizeable get(K key);
+    E take(K key);
 
     boolean contains(K key);
 

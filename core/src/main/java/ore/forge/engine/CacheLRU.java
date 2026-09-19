@@ -1,16 +1,16 @@
 package ore.forge.engine;
 
-import ore.forge.engine.resources.AssetID;
+import com.badlogic.gdx.Gdx;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 
-public class CacheLRU implements Cache<AssetID, Sizeable> {
+public class CacheLRU<K, E extends Sizeable> implements Cache<K, E> {
     private long maxSizeBytes;
     private long currentSizeBytes;
-    private final Deque<AssetID> elements;
-    private final HashMap<AssetID, Sizeable> lookup;
+    private final Deque<K> elements;
+    private final HashMap<K, E> lookup;
 
     public CacheLRU(long maxSizeBytes) {
         if (maxSizeBytes < 0) {
@@ -23,7 +23,7 @@ public class CacheLRU implements Cache<AssetID, Sizeable> {
     }
 
     @Override
-    public void put(AssetID key, Sizeable value) {
+    public void put(K key, E value) {
         long size = value.sizeInBytes();
         if (size > maxSizeBytes) {
             throw new IllegalArgumentException(String.format("size %d is greater than %d", size, maxSizeBytes));
@@ -46,15 +46,18 @@ public class CacheLRU implements Cache<AssetID, Sizeable> {
     }
 
     @Override
-    public Sizeable get(AssetID key) {
+    public E take(K key) {
         elements.remove(key);
         var toReturn = lookup.remove(key);
-        this.currentSizeBytes -= toReturn.sizeInBytes();
+        if (toReturn != null) {
+            this.currentSizeBytes -= toReturn.sizeInBytes();
+//            Gdx.app.log("LRU Cache", "Cache Hit!");
+        }
         return toReturn;
     }
 
     @Override
-    public boolean contains(AssetID key) {
+    public boolean contains(K key) {
         return lookup.containsKey(key);
     }
 
@@ -78,10 +81,9 @@ public class CacheLRU implements Cache<AssetID, Sizeable> {
         if (maxSizeBytes < 0) {
            throw new IllegalArgumentException("maxSizeBytes can't be negative");
         }
-        long oldSize = this.maxSizeBytes;
         this.maxSizeBytes = maxSizeBytes;
         if (this.currentSizeBytes > this.maxSizeBytes) {
-            long toFree = oldSize - this.maxSizeBytes;
+            long toFree = this.currentSizeBytes - this.maxSizeBytes;
             evict(toFree);
         }
     }
@@ -89,10 +91,11 @@ public class CacheLRU implements Cache<AssetID, Sizeable> {
     private void evict(long toFree) {
         long freed = 0;
         while (freed < toFree) {
-            Sizeable removed = lookup.remove(elements.removeLast());
+            E removed = lookup.remove(elements.removeLast());
             freed += removed.sizeInBytes();
             removed.dispose();
         }
+//        Gdx.app.log("LRU Cache", "Freed: " + freed / Sizeable.MB + "MB");
         this.currentSizeBytes -= freed;
     }
 

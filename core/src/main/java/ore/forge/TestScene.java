@@ -245,18 +245,18 @@ public class TestScene implements Screen {
         float averageFrameTimeMs = frameSamples == 0 ? 0f : (float) frameTimeTotalMs / frameSamples;
         Gdx.app.log(LOG_TAG, "Active GPU RESOURCES=" + resourceManager.activeGpuResources());
         Gdx.app.log(LOG_TAG, "Active CPU RESOURCES=" + resourceManager.activeCpuResources());
-        Gdx.app.log(LOG_TAG, "Java Heap Usage (MB)=" + Gdx.app.getJavaHeap() / 1000000);
-        Gdx.app.log(LOG_TAG, "Native Usage (MB)=" + Gdx.app.getNativeHeap() / 1000000);
-        Gdx.app.log(
-            LOG_TAG,
-            String.format(
-                "frame avg=%.2fms max=%dms fps=%d samples=%d",
-                averageFrameTimeMs,
-                maxFrameTimeMs,
-                Gdx.graphics.getFramesPerSecond(),
-                frameSamples
-            )
-        );
+//        Gdx.app.log(LOG_TAG, "Java Heap Usage (MB)=" + Gdx.app.getJavaHeap() / 1000000);
+//        Gdx.app.log(LOG_TAG, "Native Usage (MB)=" + Gdx.app.getNativeHeap() / 1000000);
+//        Gdx.app.log(
+//            LOG_TAG,
+//            String.format(
+//                "frame avg=%.2fms max=%dms fps=%d samples=%d",
+//                averageFrameTimeMs,
+//                maxFrameTimeMs,
+//                Gdx.graphics.getFramesPerSecond(),
+//                frameSamples
+//            )
+//        );
 
         frameLogAccumulatorSec = 0f;
         frameTimeTotalMs = 0L;

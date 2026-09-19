@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.TestScene;
+import ore.forge.ResourceManagerTestScene;
 import ore.forge.engine.profiling.Profiler;
 import ore.forge.engine.resources.ResourceManager;
 import ore.forge.game.items.ItemDefinition;
@@ -45,7 +45,7 @@ public class OreForge extends Game {
         ResourceManager resourceManager = new ResourceManager();
         resourceManager.importGltf(Gdx.files.internal("models/texture_test.glb").file().toPath());
         resourceManager.saveRegistry(Gdx.files.internal("registry.json").file().toPath());
-        setScreen(new TestScene(resourceManager));
+        setScreen(new ResourceManagerTestScene(resourceManager));
 
 
 //        GameContext context = GameContext.INSTANCE;
