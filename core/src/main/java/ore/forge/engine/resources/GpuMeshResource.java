@@ -49,8 +49,7 @@ public final class GpuMeshResource implements GpuResource {
 
     @Override
     public long sizeInBytes() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sizeInBytes'");
+        return floatVertexCount * Float.BYTES + indexCount * Short.BYTES;
     }
 
 }

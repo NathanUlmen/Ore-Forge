@@ -158,22 +158,6 @@ class ResourceManagerLifecycleTest {
     }
 
     @Test
-    void loadReleaseLoadCreatesNewResource() throws Exception {
-        ResourceManager manager = newManager();
-        AssetID id = meshId(manager);
-        ResourceHandle<CpuAssetData> first = manager.acquireCpuDataAsync(id, null, null);
-        await(manager, first);
-        long firstIdentity = first.handle().identity();
-        manager.releaseCpuAsset(first);
-        assertEquals(0, manager.activeCpuResources());
-        ResourceHandle<CpuAssetData> second = manager.acquireCpuDataAsync(id, null, null);
-        await(manager, second);
-        assertTrue(second.handle().identity() != firstIdentity);
-        assertNotNull(manager.getCpuAsset(second.handle()));
-        manager.releaseCpuAsset(second);
-    }
-
-    @Test
     void releasedCpuAssetIsReusedFromCache() throws Exception {
         ResourceManager manager = newManager();
         AssetID id = meshId(manager);

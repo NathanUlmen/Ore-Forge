@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.glutils.VertexBufferObjectWithVAO;
 import com.badlogic.gdx.utils.LongMap;
 import ore.forge.engine.Handle;
 import ore.forge.engine.HandleRegistry;
+import ore.forge.engine.Sizeable;
+import ore.forge.engine.CacheLRU;
 import ore.forge.engine.Dispatcher;
 import ore.forge.engine.render.Renderer;
 import ore.forge.engine.resources.ResourceSlot.LoadState;
@@ -31,7 +33,9 @@ final class GpuResourceManager {
     private final LongMap<AssetID> removeLookup;
     private final HandleRegistry<GpuResource> gpuResources;
     private final HashMap<AssetID, CompletableFuture<GpuResource>> gpuReadyFutures;
+    private final CacheLRU<AssetID, GpuResource> cache; 
     private final Dispatcher gpuDispatcher;
+    private static final long CACHE_SIZE = 100 * Sizeable.MB;
 
     public GpuResourceManager(AssetManager assetManager, Dispatcher gpuDispatcher) {
         this.gpuDispatcher = gpuDispatcher;
@@ -40,6 +44,7 @@ final class GpuResourceManager {
         this.gpuResources = new HandleRegistry<>();
         this.gpuReadyFutures = new HashMap<>();
         this.removeLookup = new LongMap<>();
+        this.cache = new CacheLRU<>(CACHE_SIZE);
     }
 
     /**
@@ -58,6 +63,19 @@ final class GpuResourceManager {
             gpuReadyFutures.replace(id, scheduleCallback(callback, resource, callbackDispatcher, gpuReadyFutures.get(id)));
             return resource;
         }
+        
+        //case 2: already in cache
+        GpuResource cachedResource = cache.take(id);
+        if (cachedResource != null) {
+            Handle<GpuResource> handle = gpuResources.addResource(cachedResource, LoadState.COMPLETED);
+            var completedFuture = CompletableFuture.completedFuture(cachedResource);
+            removeLookup.put(handle.identity(), id);
+            handleLookup.put(id, handle);
+
+            var resourceHandle = new ResourceHandle<>(handle, completedFuture);
+            gpuReadyFutures.put(id, scheduleCallback(callback, resourceHandle, callbackDispatcher, completedFuture));
+            return resourceHandle;
+        } 
 
         CompletableFuture<CpuAssetData> cpuReadyFuture = assetManager.getCpuReadyFuture(id);
         if (cpuReadyFuture == null) {//case 2: cpu not loaded at all
@@ -168,15 +186,16 @@ final class GpuResourceManager {
         this.gpuDispatcher.post(() -> {
             long handleIdentity = handle.identity();
             ResourceSlot<GpuResource> slot  = gpuResources.getResourceSlot(handle);
+            GpuResource gpuResource = gpuResources.getResource(handle);
             if (gpuResources.releaseHandle(handle)) {
                 AssetID id = removeLookup.remove(handleIdentity);
+
                 if (slot != null && !slot.isResolved()) {
                     gpuReadyFutures.get(id).cancel(false);
                 }
+
                 if (id != null) {
-                    if (slot != null) {
-                        slot.dispose();
-                    }
+                    cache.put(id, gpuResource);
                     handleLookup.remove(id);
                     gpuReadyFutures.remove(id);
                 }

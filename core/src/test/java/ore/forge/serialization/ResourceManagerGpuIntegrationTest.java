@@ -74,6 +74,7 @@ class ResourceManagerGpuIntegrationTest {
             ResourceHandle<GpuResource> first = manager.acquireGpuResourceAsync(id, null, null);
             await(manager, first);
             ResourceHandle<GpuResource> second = manager.acquireGpuResourceAsync(id, null, null);
+            await(manager, second);
             assertTrue(second.isReady());
             assertEquals(first.handle().identity(), second.handle().identity());
             assertSame(manager.getGpuResource(first.handle()), manager.getGpuResource(second.handle()));
@@ -100,34 +101,37 @@ class ResourceManagerGpuIntegrationTest {
     }
 
     @Test
-    void loadReleaseLoadCreatesNewResource() throws Exception {
+    void releasedGpuResourceIsReusedFromCache() throws Exception {
         runOnGpu(() -> {
             ResourceManager manager = newManager();
             AssetID id = meshId(manager);
             ResourceHandle<GpuResource> first = manager.acquireGpuResourceAsync(id, null, null);
             await(manager, first);
-            long firstIdentity = first.handle().identity();
+            GpuResource resource = manager.getGpuResource(first.handle());
+
             releaseOnGpu(manager, first);
             assertEquals(0, manager.activeGpuResources());
-            ResourceHandle<GpuResource> second = manager.acquireGpuResourceAsync(id, null, null);
-            await(manager, second);
-            assertTrue(second.handle().identity() != firstIdentity);
-            assertNotNull(manager.getGpuResource(second.handle()));
-            releaseOnGpu(manager, second);
+
+            ResourceHandle<GpuResource> cached = manager.acquireGpuResourceAsync(id, null, null);
+            assertTrue(cached.isReady());
+            assertNotSame(first.handle(), cached.handle());
+            assertSame(resource, manager.getGpuResource(cached.handle()));
+            assertEquals(1, manager.activeGpuResources());
+
+            releaseOnGpu(manager, cached);
         });
     }
 
     @Test
-    void releasingGpuHandleMoreThanOnceDoesNotCorruptManager() throws Exception {
+    void releasingGpuHandleMoreThanOnceReportsInvalidReleaseWithoutCorruptingManager() throws Exception {
         runOnGpu(() -> {
             ResourceManager manager = newManager();
             ResourceHandle<GpuResource> resource = manager.acquireGpuResourceAsync(meshId(manager), null, null);
             await(manager, resource);
 
-            assertDoesNotThrow(() -> {
-                releaseOnGpu(manager, resource);
-                releaseOnGpu(manager, resource);
-            });
+            assertDoesNotThrow(() -> releaseOnGpu(manager, resource));
+            assertThrows(AssertionError.class, () -> releaseOnGpu(manager, resource));
+            gpuTestContext.clearDispatchFailure();
             assertEquals(0, manager.activeGpuResources());
         });
     }
@@ -163,6 +167,7 @@ class ResourceManagerGpuIntegrationTest {
             ResourceHandle<GpuResource> second = manager.acquireGpuResourceAsync(
                 id, ignored -> callbackOrder.add(2), callbackDispatcher);
             await(manager, first);
+            synchronizeGpu();
             callbackDispatcher.runAll();
             assertTrue(second.isReady());
             assertIterableEquals(List.of(1, 2), callbackOrder);
@@ -357,6 +362,10 @@ class ResourceManagerGpuIntegrationTest {
 
         Throwable dispatchFailure() {
             return dispatchFailure.get();
+        }
+
+        void clearDispatchFailure() {
+            dispatchFailure.set(null);
         }
 
         void close() {

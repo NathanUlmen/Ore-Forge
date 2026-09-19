@@ -53,8 +53,9 @@ final class AssetManager {
             handleLookup.put(id, handle);
             removeLookup.put(handle.identity(), id);
             var cpuReadyFuture = CompletableFuture.completedFuture(cacheLookup);
-            cpuReadyFutures.put(id, cpuReadyFuture);
-            return new ResourceHandle<>(handle, cpuReadyFuture);
+            var resourceHandle = new ResourceHandle<>(handle, cpuReadyFuture);
+            cpuReadyFutures.put(id, scheduleCallback(callback, resourceHandle, callbackDispatcher, cpuReadyFuture));
+            return resourceHandle;
         }
 
 
