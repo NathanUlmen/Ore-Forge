@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.Objects;
 
 import ore.forge.engine.Dispatcher;
 
@@ -88,7 +89,7 @@ public class ResourceManager implements Dispatcher {
     }
 
     public void releaseCpuAsset(ResourceHandle<CpuAssetData> handle) {
-       assetManager.releaseHandle(handle.handle());
+        assetManager.releaseHandle(handle.handle());
     }
 
     public int activeCpuResources() {
@@ -100,7 +101,7 @@ public class ResourceManager implements Dispatcher {
     }
 
     public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id) {
-        return assetManager.acquireResourceHandle(id, null ,null);
+        return assetManager.acquireResourceHandle(id, null, null);
     }
 
     public ResourceHandle<GpuResource> acquireGpuResourceAsync(AssetID id) {
@@ -119,21 +120,17 @@ public class ResourceManager implements Dispatcher {
         List<ResourceHandle<?>> resources = new ArrayList<>();
         CompletableFuture<?>[] handles = new CompletableFuture[requests.size()];
         for (int i = 0; i < requests.size(); i++) {
-            var request = requests.get(i);
+            AssetID.BatchRequest request = requests.get(i);
             ResourceHandle<?> handle = null;
             switch (request.type()) {
-                case CPU_DATA:  {
-                    handle = assetManager.acquireResourceHandle(request.id(), null, null);
-                }
-                case GPU_RESOURCE:  {
-                    handle = gpuResourceManager.acquireResourceHandle(request.id(), null, null);
-                }
+                case CPU_DATA -> handle = assetManager.acquireResourceHandle(request.id(), null, null);
+                case GPU_RESOURCE -> handle = gpuResourceManager.acquireResourceHandle(request.id(), null, null);
             }
             handles[i] = handle.getFuture();
             resources.add(handle);
         }
         CompletableFuture.allOf(handles).thenRunAsync(() -> {
-           callback.accept(resources);
+            callback.accept(resources);
         }, callbackDispatcher::post);
     }
 

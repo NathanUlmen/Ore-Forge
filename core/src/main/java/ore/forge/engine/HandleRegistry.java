@@ -38,13 +38,16 @@ public class HandleRegistry<E extends Disposable> {
 
     public boolean releaseHandle(Handle<E> handle) {
         if (handle == null || !handle.isValid()) {return false;}
-        int count = handleLookup.get(handle.index()).take();
-        Gdx.app.log(LOG_TAG,"released handle. count=" + count);
-        if (count <= 0) {
-            Gdx.app.log(LOG_TAG,"Freeing Resource");
-            removeResource(handle);
-            handle.invalidate();
-            return true;
+        var entry = handleLookup.get(handle.index());
+        if (entry.version == handle.version()) {
+            int count = entry.takeBack();
+            Gdx.app.log(LOG_TAG,"released handle. count=" + count);
+            if (count <= 0) {
+                Gdx.app.log(LOG_TAG,"Freeing Resource");
+                removeResource(handle);
+                handle.invalidate();
+                return true;
+            }
         }
         return false;
     }
@@ -158,7 +161,7 @@ public class HandleRegistry<E extends Disposable> {
             return ++checkoutCount;
         }
 
-        public int take() {
+        public int takeBack() {
             return --checkoutCount;
         }
     }

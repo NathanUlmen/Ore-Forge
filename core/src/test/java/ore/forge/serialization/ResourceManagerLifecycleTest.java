@@ -18,12 +18,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -69,6 +71,60 @@ class ResourceManagerLifecycleTest {
         await(manager, resource);
         assertTrue(resource.isReady());
         assertNotNull(manager.getCpuAsset(resource.handle()));
+    }
+
+    @Test
+    void batchLoadLoadsCpuResourcesAndDispatchesOneCallback() throws Exception {
+        ResourceManager manager = newManager();
+        AssetID meshId = assetId(manager, AssetType.MESH);
+        AssetID secondMeshId = secondAssetId(manager, AssetType.MESH, meshId);
+        RecordingDispatcher callbackDispatcher = new RecordingDispatcher();
+        List<Collection<ResourceHandle<?>>> callbacks = new ArrayList<>();
+
+        manager.batchLoad(
+            List.of(
+                new AssetID.BatchRequest(meshId, AssetID.ResolveType.CPU_DATA),
+                new AssetID.BatchRequest(secondMeshId, AssetID.ResolveType.CPU_DATA)
+            ),
+            callbacks::add,
+            callbackDispatcher
+        );
+
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (callbacks.isEmpty() && System.nanoTime() < deadline) {
+            manager.synchronize();
+            callbackDispatcher.runAll();
+            if (callbacks.isEmpty()) Thread.sleep(1);
+        }
+
+        assertEquals(1, callbacks.size());
+        List<ResourceHandle<?>> resources = new ArrayList<>(callbacks.get(0));
+        assertEquals(2, resources.size());
+        assertTrue(resources.stream().allMatch(ResourceHandle::isReady));
+
+        manager.releaseCpuAsset(castCpuHandle(resources.get(0)));
+        manager.releaseCpuAsset(castCpuHandle(resources.get(1)));
+    }
+
+    @Test
+    void emptyBatchStillDispatchesCallback() {
+        ResourceManager manager = newManager();
+        RecordingDispatcher callbackDispatcher = new RecordingDispatcher();
+        List<Collection<ResourceHandle<?>>> callbacks = new ArrayList<>();
+
+        manager.batchLoad(List.of(), callbacks::add, callbackDispatcher);
+
+        assertTrue(callbacks.isEmpty());
+        callbackDispatcher.runAll();
+        assertEquals(1, callbacks.size());
+        assertTrue(callbacks.get(0).isEmpty());
+    }
+
+    @Test
+    void batchCallbackRequiresDispatcher() {
+        ResourceManager manager = newManager();
+        assertThrows(NullPointerException.class, () ->
+            manager.batchLoad(List.of(), ignored -> { }, null));
     }
 
     @Test
@@ -176,14 +232,31 @@ class ResourceManagerLifecycleTest {
     private ResourceManager newManager() {
         ResourceManager manager = new ResourceManager(tmpDir.toString(), null);
         manager.importGltf(modelFixture("Cube.gltf"));
+        manager.importGltf(modelFixture("Wedge.gltf"));
         return manager;
     }
 
     private AssetID meshId(ResourceManager manager) {
+        return assetId(manager, AssetType.MESH);
+    }
+
+    private AssetID assetId(ResourceManager manager, AssetType type) {
         for (AssetID id : manager.getAssetIDs()) {
-            if (manager.getAssetType(id) == AssetType.MESH) return id;
+            if (manager.getAssetType(id) == type) return id;
         }
-        throw new AssertionError("Test fixture did not produce a mesh asset");
+        throw new AssertionError("Test fixture did not produce an asset of type " + type);
+    }
+
+    private AssetID secondAssetId(ResourceManager manager, AssetType type, AssetID first) {
+        for (AssetID id : manager.getAssetIDs()) {
+            if (!id.equals(first) && manager.getAssetType(id) == type) return id;
+        }
+        throw new AssertionError("Test fixture did not produce a second asset of type " + type);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static ResourceHandle<CpuAssetData> castCpuHandle(ResourceHandle<?> handle) {
+        return (ResourceHandle<CpuAssetData>) handle;
     }
 
     private static void await(ResourceManager manager, ResourceHandle<?> resource) throws InterruptedException {

@@ -137,8 +137,8 @@ final class AssetManager {
 
     public CpuAssetData resolvePlaceHolder(AssetArtifact target) {
         return switch (target.type()) {
-            case MESH -> DEFAULT_MESH;
-            case TEXTURE -> DEFAULT_TEXTURE;
+            case MESH -> createDefaultMesh();
+            case TEXTURE -> createDefaultTexture();
             case MATERIAL, ANIMATION ->
                 throw new UnsupportedOperationException("No placeholder is defined for asset type: " + target.type());
         };
