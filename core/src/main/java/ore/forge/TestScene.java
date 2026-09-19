@@ -334,12 +334,12 @@ public class TestScene implements Screen {
         // The imported registry uses type 1 IDs, which makes batchLoad request
         // GPU resources. This scene needs the CPU data first to calculate bounds,
         // and the GPU resources are acquired by RenderCDefinition afterward.
-        loadedMeshID.setType((short) 0);
-        loadedTextureID.setType((short) 0);
+        AssetID.BatchRequest batchRequest = new AssetID.BatchRequest(loadedMeshID, AssetID.ResolveType.GPU_RESOURCE);
+        AssetID.BatchRequest batchRequest2 = new AssetID.BatchRequest(loadedTextureID, AssetID.ResolveType.GPU_RESOURCE);
         pendingMeshID = loadedMeshID;
         pendingTextureID = loadedTextureID;
         resourceManager.batchLoad(
-            List.of(loadedMeshID, loadedTextureID),
+            List.of(batchRequest, batchRequest2),
             this::createSceneWhenLoaded,
             Gdx.app::postRunnable
         );

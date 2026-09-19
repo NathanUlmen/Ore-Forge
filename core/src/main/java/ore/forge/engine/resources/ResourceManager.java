@@ -25,7 +25,6 @@ public class ResourceManager implements Dispatcher {
     private final AssetImporter importer;
     private final AssetManager assetManager;
     private final GpuResourceManager gpuResourceManager;
-    private final Dispatcher resourceManagerDispatcher;
 
     public ResourceManager() {
         this(new AssetRegistry(), null);
@@ -35,12 +34,16 @@ public class ResourceManager implements Dispatcher {
         this(new AssetRegistry(), dispatcher);
     }
 
+    public ResourceManager(String bakedOutputDir) {
+        this(new AssetRegistry(bakedOutputDir), null);
+    }
+
     public ResourceManager(String bakedOutputDir, Dispatcher dispatcher) {
         this(new AssetRegistry(bakedOutputDir), dispatcher);
     }
 
     private ResourceManager(AssetRegistry registry, Dispatcher dispatcher) {
-        resourceManagerDispatcher = dispatcher == null ? this : dispatcher;
+        Dispatcher resourceManagerDispatcher = dispatcher == null ? this : dispatcher;
         this.registry = registry;
         this.importer = new AssetImporter(registry);
         this.assetManager = new AssetManager(registry, resourceManagerDispatcher);
@@ -96,6 +99,14 @@ public class ResourceManager implements Dispatcher {
         return gpuResourceManager.resourceCount();
     }
 
+    public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id) {
+        return assetManager.acquireResourceHandle(id, null ,null);
+    }
+
+    public ResourceHandle<GpuResource> acquireGpuResourceAsync(AssetID id) {
+        return gpuResourceManager.acquireResourceHandle(id, null, null);
+    }
+
     public ResourceHandle<CpuAssetData> acquireCpuDataAsync(AssetID id, Consumer<ResourceHandle<CpuAssetData>> callback, Dispatcher callbackDispatcher) {
         return assetManager.acquireResourceHandle(id, callback, callbackDispatcher);
     }
@@ -104,19 +115,18 @@ public class ResourceManager implements Dispatcher {
         return gpuResourceManager.acquireResourceHandle(id, callback, callbackDispatcher);
     }
 
-    //TODO: user needs a way to specify what they want each id to resolve to. Do they want it to become a gpu resource or cpu resource?
-    public void batchLoad(List<AssetID> assetIds, Consumer<Collection<ResourceHandle<?>>> callback, Dispatcher callbackDispatcher) {
+    public void batchLoad(List<AssetID.BatchRequest> requests, Consumer<Collection<ResourceHandle<?>>> callback, Dispatcher callbackDispatcher) {
         List<ResourceHandle<?>> resources = new ArrayList<>();
-        CompletableFuture<?>[] handles = new CompletableFuture[assetIds.size()];
-        for (int i = 0; i < assetIds.size(); i++) {
-            var id = assetIds.get(i);
+        CompletableFuture<?>[] handles = new CompletableFuture[requests.size()];
+        for (int i = 0; i < requests.size(); i++) {
+            var request = requests.get(i);
             ResourceHandle<?> handle = null;
-            switch (id.getType()) {
-                case 0 -> {
-                    handle = assetManager.acquireResourceHandle(id, null, null);
+            switch (request.type()) {
+                case CPU_DATA:  {
+                    handle = assetManager.acquireResourceHandle(request.id(), null, null);
                 }
-                default  -> {
-                    handle = gpuResourceManager.acquireResourceHandle(id, null, null);
+                case GPU_RESOURCE:  {
+                    handle = gpuResourceManager.acquireResourceHandle(request.id(), null, null);
                 }
             }
             handles[i] = handle.getFuture();

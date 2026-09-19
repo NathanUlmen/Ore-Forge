@@ -3,7 +3,7 @@ package ore.forge.engine.resources;
 public final class AnimationData implements CpuAssetData {
 
     @Override 
-    public long sizeBytes() {
+    public long sizeInBytes() {
         throw new UnsupportedOperationException("Unimplemented method 'sizeBytes'");
     }
 

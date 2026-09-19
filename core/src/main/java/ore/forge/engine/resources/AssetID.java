@@ -14,11 +14,9 @@ import java.util.UUID;
  */
 public final class AssetID {
     private final UUID uuid;
-    private short type;
 
     public AssetID(UUID uuid) {
         this.uuid = uuid;
-        this.type = 1;
     }
 
     public AssetID(String uuid) {
@@ -27,14 +25,6 @@ public final class AssetID {
 
     public UUID getUUID() {
         return uuid;
-    }
-
-    public short getType() {
-        return type;
-    }
-
-    public void setType(short type) {
-        this.type = type;
     }
 
     @Override
@@ -46,10 +36,18 @@ public final class AssetID {
     public int hashCode() {
         return uuid.hashCode();
     }
-
     @Override
     public boolean equals(Object o) {
         return this.uuid.equals(((AssetID) o).uuid);
     }
+
+
+    public enum ResolveType {
+        GPU_RESOURCE,
+        CPU_DATA
+    }
+
+
+    public record BatchRequest(AssetID id, ResolveType type) {}
 
 }

@@ -33,7 +33,7 @@ public final class MeshData implements CpuAssetData {
     }
 
     @Override
-    public long sizeBytes() {
+    public long sizeInBytes() {
         return vbo.length * Float.BYTES + ibo.length * Short.BYTES;
     }
 

@@ -29,7 +29,7 @@ public final class GpuTextureResource implements GpuResource {
     }
 
     @Override
-    public long sizeBytes() {
+    public long sizeInBytes() {
         var w = texture.getWidth();
         var h = texture.getHeight();
         long bytes = w * h * bytesFromFormat(format);

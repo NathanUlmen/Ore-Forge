@@ -48,8 +48,9 @@ public final class GpuMeshResource implements GpuResource {
     }
 
     @Override
-    public long sizeBytes() {
+    public long sizeInBytes() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sizeBytes'");
+        throw new UnsupportedOperationException("Unimplemented method 'sizeInBytes'");
     }
+
 }

@@ -34,7 +34,7 @@ public final class TextureData implements CpuAssetData {
     }
 
     @Override 
-    public long sizeBytes() {
+    public long sizeInBytes() {
         return encodedData.length;
     }
 
