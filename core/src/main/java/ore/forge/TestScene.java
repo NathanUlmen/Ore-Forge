@@ -1,25 +1,28 @@
 package ore.forge;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
-import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -29,6 +32,7 @@ import com.kotcrab.vis.ui.widget.VisScrollPane;
 import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
+
 import ore.forge.engine.*;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
@@ -37,26 +41,21 @@ import ore.forge.engine.components.definitions.RenderCDefinition;
 import ore.forge.engine.components.definitions.WorldTransformDefinition;
 import ore.forge.engine.definitions.BoxShapeIR;
 import ore.forge.engine.definitions.PhysicsDefinition;
-import ore.forge.engine.definitions.PlaneShapeIR;
-import ore.forge.engine.render.MaterialHandle;
+import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.render.RenderPart;
-import ore.forge.engine.render.*;
+import ore.forge.engine.render.Renderer;
+import ore.forge.engine.render.passes.BasicRenderPass;
+import ore.forge.engine.resources.AssetID;
 import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.GpuResource;
 import ore.forge.engine.resources.MeshData;
+import ore.forge.engine.resources.ResourceHandle;
 import ore.forge.engine.resources.ResourceManager;
 import ore.forge.engine.resources.TextureData;
-import ore.forge.engine.resources.AssetID;
-import ore.forge.engine.render.passes.BasicRenderPass;
-import ore.forge.game.input.CameraController;
-import ore.forge.game.input.FreeCamController;
-import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.systems.PostPhysicsTransformSyncSystem;
 import ore.forge.engine.systems.PrePhysicsTransformSyncSystem;
 import ore.forge.engine.systems.RenderPrepSystem;
-
-import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import ore.forge.game.input.CameraController;
+import ore.forge.game.input.FreeCamController;
 
 public class TestScene implements Screen {
     private static final String LOG_TAG = TestScene.class.getSimpleName();
@@ -98,6 +97,9 @@ public class TestScene implements Screen {
     private boolean debugRayHitActive = false;
     private float debugRayTimerSec = 0f;
     private final ResourceManager resourceManager;
+    private AssetID pendingMeshID;
+    private AssetID pendingTextureID;
+    private boolean sceneCreated;
 
     public TestScene(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -135,9 +137,6 @@ public class TestScene implements Screen {
         initializeEngine();
         populateScene(resourceManager);
         renderEntities = engine.getEntitiesFor(Family.all(RenderC.class, WorldTransformC.class).get());
-
-
-
     }
 
     @Override
@@ -200,6 +199,7 @@ public class TestScene implements Screen {
         stopwatch.restart();
         cameraController.update(delta);
         camera.update(true);
+        resourceManager.synchronize();
 
         if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
             Ray mouse = camera.getPickRay(Gdx.input.getX(), Gdx.input.getY());
@@ -244,6 +244,9 @@ public class TestScene implements Screen {
 
         float averageFrameTimeMs = frameSamples == 0 ? 0f : (float) frameTimeTotalMs / frameSamples;
         Gdx.app.log(LOG_TAG, "Active GPU RESOURCES=" + resourceManager.activeGpuResources());
+        Gdx.app.log(LOG_TAG, "Active CPU RESOURCES=" + resourceManager.activeCpuResources());
+        Gdx.app.log(LOG_TAG, "Java Heap Usage (MB)=" + Gdx.app.getJavaHeap() / 1000000);
+        Gdx.app.log(LOG_TAG, "Native Usage (MB)=" + Gdx.app.getNativeHeap() / 1000000);
         Gdx.app.log(
             LOG_TAG,
             String.format(
@@ -272,8 +275,6 @@ public class TestScene implements Screen {
         harnessWindow.setHeight(Math.min(760f, height - 40f));
         harnessWindow.setPosition(20f, height - harnessWindow.getHeight() - 20f);
     }
-
-
 
 
     @Override
@@ -314,37 +315,77 @@ public class TestScene implements Screen {
     private void populateScene(ResourceManager resourceManager) {
         AssetID meshHandle = null;
         AssetID textureHandle = null;
-        MeshData meshData = null;
 
         for (AssetID id : resourceManager.getAssetIDs()) {
-            CpuAssetData data = resourceManager.getCpuAsset(id);
-            switch (data) {
-                case MeshData foundMeshData -> {
-                    meshData = foundMeshData;
-                    meshHandle = id;
-                }
-                case TextureData ignored -> textureHandle = id;
+            switch (resourceManager.getAssetType(id)) {
+                case MESH -> meshHandle = id;
+                case TEXTURE -> textureHandle = id;
                 default -> {
                 }
             }
         }
 
-        if (meshHandle == null || meshData == null || textureHandle == null) {
+        if (meshHandle == null || textureHandle == null) {
             throw new IllegalStateException("TestScene requires one mesh and one texture in the asset registry.");
         }
+        AssetID loadedMeshID = meshHandle;
+        AssetID loadedTextureID = textureHandle;
 
-        BoundingBox meshBounds = calculateMeshBounds(meshData);
-
-        createGround(meshHandle, textureHandle, meshBounds);
-        createCubeField(meshHandle, textureHandle, meshBounds);
+        // The imported registry uses type 1 IDs, which makes batchLoad request
+        // GPU resources. This scene needs the CPU data first to calculate bounds,
+        // and the GPU resources are acquired by RenderCDefinition afterward.
+        AssetID.BatchRequest batchRequest = new AssetID.BatchRequest(loadedMeshID, AssetID.ResolveType.GPU_RESOURCE);
+        AssetID.BatchRequest batchRequest2 = new AssetID.BatchRequest(loadedTextureID, AssetID.ResolveType.GPU_RESOURCE);
+        pendingMeshID = loadedMeshID;
+        pendingTextureID = loadedTextureID;
+        resourceManager.batchLoad(
+            List.of(batchRequest, batchRequest2),
+            this::createSceneWhenLoaded,
+            Gdx.app::postRunnable
+        );
     }
 
-    private void createGround(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
+    private void createSceneWhenLoaded(Collection<ResourceHandle<?>> resources) {
+        if (sceneCreated) {
+            return;
+        }
+
+        // ResourceManager.batchLoad currently invokes this callback with an empty
+        // collection, so reacquire the already-completed CPU handles by ID.
+        ResourceHandle<CpuAssetData> meshHandle = resourceManager.acquireCpuDataAsync(pendingMeshID, null, Gdx.app::postRunnable);
+        ResourceHandle<CpuAssetData> textureHandle = resourceManager.acquireCpuDataAsync(pendingTextureID, null, Gdx.app::postRunnable);
+        CpuAssetData meshAsset = resourceManager.getCpuAsset(meshHandle.handle());
+        CpuAssetData textureAsset = resourceManager.getCpuAsset(textureHandle.handle());
+        if (!(meshAsset instanceof MeshData meshData) || !(textureAsset instanceof TextureData)) {
+            Gdx.app.error(LOG_TAG, "TestScene assets resolved to unexpected types.");
+            sceneCreated = true;
+            return;
+        }
+
+        sceneCreated = true;
+        createScene(pendingMeshID, pendingTextureID, meshData);
+    }
+
+    private void createScene(AssetID meshHandle, AssetID textureHandle, MeshData meshData) {
+        BoundingBox meshBounds = calculateMeshBounds(meshData);
+        Vector3 meshCenter = meshBounds.getCenter(new Vector3());
+        BoundingBox centeredMeshBounds = recenterBounds(meshBounds, meshCenter);
+        Matrix4 renderLocalFromEntity = new Matrix4().setToTranslation(
+            -meshCenter.x,
+            -meshCenter.y,
+            -meshCenter.z
+        );
+
+        createGround(meshHandle, textureHandle, centeredMeshBounds, renderLocalFromEntity);
+        createCubeField(meshHandle, textureHandle, centeredMeshBounds, renderLocalFromEntity);
+    }
+
+    private void createGround(AssetID meshHandle, AssetID material, BoundingBox meshBounds, Matrix4 renderLocalFromEntity) {
         BoundingBox groundBounds = scaleBounds(meshBounds, GROUND_SCALE);
-        float groundCenterY = -groundBounds.getHeight() * 0.5f;
+        float groundCenterY = -groundBounds.max.y;
         Entity ground = createEntity(
             new WorldTransformDefinition(new Matrix4().setToTranslation(0f, groundCenterY, 0f)),
-            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), new Matrix4().idt(), resourceManager),
+            new RenderCDefinition(meshHandle, material, new Vector3(GROUND_SCALE), renderLocalFromEntity, resourceManager),
             new PhysicsDefinition(
                 "ground",
                 PhysicsBodyType.RIGID,
@@ -358,7 +399,7 @@ public class TestScene implements Screen {
         engine.addEntity(ground);
     }
 
-    private void createCubeField(AssetID meshHandle, AssetID material, BoundingBox meshBounds) {
+    private void createCubeField(AssetID meshHandle, AssetID material, BoundingBox meshBounds, Matrix4 renderLocalFromEntity) {
         final float gridWidth = (GRID_COLS - 1) * CUBE_SPACING;
         final float gridDepth = (GRID_ROWS - 1) * CUBE_SPACING;
         final float startX = -gridWidth * 0.5f;
@@ -373,7 +414,7 @@ public class TestScene implements Screen {
                     float z = startZ + row * CUBE_SPACING;
                     Entity cube = createEntity(
                         new WorldTransformDefinition(new Matrix4().setToTranslation(x, y, z)),
-                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), new Matrix4().idt(), resourceManager),
+                        new RenderCDefinition(meshHandle, material, new Vector3(1f, 1f, 1f), renderLocalFromEntity, resourceManager),
                         new PhysicsDefinition(
                             "cube-" + cubeIndex++,
                             PhysicsBodyType.RIGID,
@@ -414,6 +455,12 @@ public class TestScene implements Screen {
         return new BoundingBox(min, max);
     }
 
+    private BoundingBox recenterBounds(BoundingBox bounds, Vector3 center) {
+        Vector3 min = new Vector3(bounds.min).sub(center);
+        Vector3 max = new Vector3(bounds.max).sub(center);
+        return new BoundingBox(min, max);
+    }
+
     private BoundingBox scaleBounds(BoundingBox bounds, Vector3 scale) {
         Vector3 min = new Vector3(bounds.min).scl(scale);
         Vector3 max = new Vector3(bounds.max).scl(scale);
@@ -444,7 +491,14 @@ public class TestScene implements Screen {
     private void rebuildRenderParts() {
         renderParts.clear();
         for (Entity entity : renderEntities) {
-            renderParts.add(entity.getComponent(RenderC.class).renderPart);
+            RenderPart renderPart = entity.getComponent(RenderC.class).renderPart;
+            if (renderPart.meshHandle == null
+                || renderPart.material.baseColorTexture == null
+                || !renderPart.meshHandle.isReady()
+                || !renderPart.material.baseColorTexture.isReady()) {
+                continue;
+            }
+            renderParts.add(renderPart);
         }
     }
 

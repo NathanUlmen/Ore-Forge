@@ -5,9 +5,10 @@ import com.badlogic.gdx.math.Vector4;
 import com.badlogic.gdx.utils.Pool;
 import ore.forge.engine.Handle;
 import ore.forge.engine.resources.GpuResource;
+import ore.forge.engine.resources.ResourceHandle;
 
 public class RenderCommand implements Pool.Poolable {
-    public Handle<GpuResource> meshHandle;
+    public ResourceHandle<GpuResource> meshHandle;
     public MaterialHandle materialHandle;
 
     public final Matrix4 worldTransform;

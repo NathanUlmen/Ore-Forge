@@ -1,11 +1,5 @@
 package ore.forge.engine.resources;
 
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.esotericsoftware.kryo.io.Output;
-import de.javagl.jgltf.model.*;
-import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.VertexAttribute;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -14,9 +8,22 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.esotericsoftware.kryo.io.Output;
+
+import de.javagl.jgltf.model.AccessorModel;
+import de.javagl.jgltf.model.GltfConstants;
+import de.javagl.jgltf.model.GltfModel;
+import de.javagl.jgltf.model.MeshModel;
+import de.javagl.jgltf.model.MeshPrimitiveModel;
+import de.javagl.jgltf.model.NamedModelElement;
+import de.javagl.jgltf.model.TextureModel;
+import ore.forge.engine.VertexAttribute;
+import ore.forge.engine.definitions.AssetType;
 
 
 /**
@@ -213,18 +220,39 @@ final class AssetExtractor {
         ensureDirectory(textureOutput);
         for (TextureModel textureModel : gltfModel.getTextureModels()) {
             AssetSourceKey assetSourceKey = createAssetSourceKey(AssetType.TEXTURE, textureModel, sourceFile);
-            int byteLength = textureModel.getImageModel().getBufferViewModel().getByteLength();
-            int offset = textureModel.getImageModel().getBufferViewModel().getByteOffset();
 
             ByteBuffer imageData = textureModel.getImageModel().getImageData().duplicate();
             byte[] bytes = new byte[imageData.remaining()];
             imageData.get(bytes);
-            TextureData textureData = new TextureData(bytes);
+            TextureData textureData = new TextureData(bytes, usesMipMaps(textureModel));
 
             assets.add(createCandidate(textureModel, textureOutput, assetSourceKey, textureData));
         }
         bakeToDisk(assetRegistry, assets);
     }
+    private static boolean usesMipMaps(TextureModel textureModel) {
+      Integer minFilter = textureModel.getMinFilter();
+
+      // glTF default when minFilter is omitted:
+      // GL_LINEAR_MIPMAP_LINEAR
+      if (minFilter == null) {
+          return true;
+      }
+
+      return switch (minFilter) {
+          case GL20.GL_NEAREST_MIPMAP_NEAREST,
+               GL20.GL_LINEAR_MIPMAP_NEAREST,
+               GL20.GL_NEAREST_MIPMAP_LINEAR,
+               GL20.GL_LINEAR_MIPMAP_LINEAR -> true;
+
+          case GL20.GL_NEAREST,
+               GL20.GL_LINEAR -> false;
+
+          default -> throw new IllegalArgumentException(
+              "Unsupported glTF minification filter: " + minFilter
+          );
+      };
+  }
 
     public static Path ensureDirectory(Path dir) {
         try {

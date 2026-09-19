@@ -36,10 +36,18 @@ public final class AssetID {
     public int hashCode() {
         return uuid.hashCode();
     }
-
     @Override
     public boolean equals(Object o) {
         return this.uuid.equals(((AssetID) o).uuid);
     }
+
+
+    public enum ResolveType {
+        GPU_RESOURCE,
+        CPU_DATA
+    }
+
+
+    public record BatchRequest(AssetID id, ResolveType type) {}
 
 }

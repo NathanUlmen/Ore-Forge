@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import ore.forge.engine.Handle;
 import ore.forge.engine.resources.GpuResource;
+import ore.forge.engine.resources.ResourceHandle;
 
 public final class MaterialHandle {
 
@@ -12,7 +13,7 @@ public final class MaterialHandle {
     public ShaderProgram shader;
 
     // Textures
-    public Handle<GpuResource> baseColorTexture;
+    public ResourceHandle<GpuResource> baseColorTexture;
     public Texture normalTexture;
     public Texture metallicRoughnessTexture;
     public Texture emissiveTexture;

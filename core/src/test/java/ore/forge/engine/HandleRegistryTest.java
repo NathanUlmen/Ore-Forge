@@ -13,6 +13,9 @@ import com.badlogic.gdx.Net;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.Disposable;
+
+import ore.forge.engine.resources.ResourceSlot.LoadState;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ class HandleRegistryTest {
         HandleRegistry<TestDisposable> registry = new HandleRegistry<>();
         TestDisposable resource = new TestDisposable();
 
-        Handle<TestDisposable> handle = registry.addResource(resource);
+        Handle<TestDisposable> handle = registry.addResource(resource, LoadState.COMPLETED);
 
         assertTrue(handle.isValid());
         assertEquals(1, registry.size());
@@ -49,7 +52,7 @@ class HandleRegistryTest {
     void releaseHandleDisposesResourceWhenInitialReferenceIsReleased() {
         HandleRegistry<TestDisposable> registry = new HandleRegistry<>();
         TestDisposable resource = new TestDisposable();
-        Handle<TestDisposable> handle = registry.addResource(resource);
+        Handle<TestDisposable> handle = registry.addResource(resource, LoadState.COMPLETED);
 
         registry.releaseHandle(handle);
 
@@ -61,7 +64,7 @@ class HandleRegistryTest {
     void acquireHandleKeepsResourceAliveUntilFinalRelease() {
         HandleRegistry<TestDisposable> registry = new HandleRegistry<>();
         TestDisposable resource = new TestDisposable();
-        Handle<TestDisposable> handle = registry.addResource(resource);
+        Handle<TestDisposable> handle = registry.addResource(resource, LoadState.COMPLETED);
 
         registry.accquireHandle(handle);
         registry.releaseHandle(handle);
@@ -79,10 +82,10 @@ class HandleRegistryTest {
     @Test
     void addResourceReusesFreedIndexWithNewVersion() {
         HandleRegistry<TestDisposable> registry = new HandleRegistry<>();
-        Handle<TestDisposable> first = registry.addResource(new TestDisposable());
+        Handle<TestDisposable> first = registry.addResource(new TestDisposable(), LoadState.COMPLETED);
         registry.releaseHandle(first);
 
-        Handle<TestDisposable> second = registry.addResource(new TestDisposable());
+        Handle<TestDisposable> second = registry.addResource(new TestDisposable(), LoadState.COMPLETED);
 
         assertEquals(first.index(), second.index());
         assertNotEquals(first.version(), second.version());

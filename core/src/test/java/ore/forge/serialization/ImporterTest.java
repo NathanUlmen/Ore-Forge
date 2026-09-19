@@ -1,5 +1,6 @@
 package ore.forge.serialization;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
@@ -9,6 +10,7 @@ import ore.forge.engine.definitions.MeshDataSerializer;
 import ore.forge.engine.resources.AssetID;
 import ore.forge.engine.resources.CpuAssetData;
 import ore.forge.engine.resources.MeshData;
+import ore.forge.engine.resources.ResourceHandle;
 import ore.forge.engine.resources.ResourceManager;
 import ore.forge.engine.resources.TextureData;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +38,7 @@ class ImporterTest {
 
     @Test
     void testImport() {
-        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString(), null);
         Path sourceModel = modelFixture("Cube.gltf");
         resourceManager.importGltf(sourceModel);
 
@@ -90,27 +93,43 @@ class ImporterTest {
         resourceManager.importGltf(modelFixture("Cube.gltf"));
 
         for (AssetID id : resourceManager.getAssetIDs()) {
-            assertNotNull(resourceManager.getCpuAsset(id));
+            resourceManager.acquireCpuDataAsync(id, (resource) -> {
+                assertNotNull(resource);
+            }, (foobar) -> {
+
+            });
         }
     }
 
     @Test
-    void testTextureImport() throws IOException {
-        ResourceManager resourceManager = new ResourceManager(tmpDir.toString());
+    void testTextureImport() throws IOException, InterruptedException {
+        ResourceManager resourceManager = new ResourceManager(tmpDir.toString(), null);
         resourceManager.importGltf(modelFixture("texture_test.glb"));
 
         byte[] pngBytes = Files.readAllBytes(modelFixture("test_tex01.png"));
-        CpuAssetData data = null;
+        int textureCount = 0;
 
         for (AssetID id : resourceManager.getAssetIDs()) {
             if (resourceManager.getAssetType(id) == AssetType.TEXTURE) {
-                data = resourceManager.getCpuAsset(id);
+                textureCount++;
+                ResourceHandle<CpuAssetData> resource = resourceManager.acquireCpuDataAsync(id, null, resourceManager);
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+
+                // Loading finishes on a worker; publication requires pumping the resource queue.
+                while (!resource.isReady() && System.nanoTime() < deadline) {
+                    resourceManager.synchronize();
+                    if (!resource.isReady()) {
+                        Thread.sleep(1);
+                    }
+                }
+
+                assertTrue(resource.isReady(), "Timed out waiting for imported texture " + id);
+                TextureData textureData = assertInstanceOf(TextureData.class, resourceManager.getCpuAsset(resource.handle()));
+                assertArrayEquals(pngBytes, textureData.encodedBytes());
             }
         }
 
-        if (data instanceof TextureData textureData) {
-            assertArrayEquals(pngBytes, textureData.encodedBytes());
-        }
+        assertTrue(textureCount > 0, "Expected the fixture to import a texture");
     }
 
 

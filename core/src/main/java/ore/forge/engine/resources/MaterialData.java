@@ -3,6 +3,11 @@ package ore.forge.engine.resources;
 public final class MaterialData implements CpuAssetData {
 
     @Override
+    public long sizeInBytes() {
+        throw new UnsupportedOperationException("Unimplemented method 'sizeBytes'");
+    }
+
+    @Override
     public void dispose() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'dispose'");

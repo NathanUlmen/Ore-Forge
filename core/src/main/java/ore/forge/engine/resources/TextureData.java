@@ -9,10 +9,11 @@ import com.badlogic.gdx.graphics.Pixmap;
  *
  */
 public final class TextureData implements CpuAssetData {
-    private final byte[] encodedData;
+    private byte[] encodedData;
     private Pixmap pixmap;
+    private boolean useMipMaps;
 
-    public TextureData(byte[] encodedData) {
+    public TextureData(byte[] encodedData, boolean useMipMaps) {
         this.encodedData = encodedData;
         pixmap = null;
     }
@@ -24,16 +25,25 @@ public final class TextureData implements CpuAssetData {
         return pixmap;
     }
 
+    public boolean useMipMaps() {
+        return useMipMaps;
+    }
+
     public byte[] encodedBytes() {
         return encodedData;
     }
 
+    @Override 
+    public long sizeInBytes() {
+        return encodedData.length;
+    }
 
     @Override
     public void dispose() {
         if (pixmap != null) {
             pixmap.dispose();
         }
+        encodedData = null;
     }
 
 }

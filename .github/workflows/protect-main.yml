@@ -15,7 +15,7 @@ jobs:
     protect-main:
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout 
+            - name: Checkout
               uses: actions/checkout@v7
               with:
                 lfs: true
@@ -26,14 +26,14 @@ jobs:
               with:
                 distribution: temurin
                 java-version: "25"
-            
+
             - name: Setup Gradle
               uses: gradle/actions/setup-gradle@v6
-            
+
             - name: Make Gradle Executable
               run: chmod +x gradlew
-            
-            - name: Build Project
-              run: ./gradlew build --stacktrace --info
 
-            
+            - name: Build Project
+              run: xvfb-run -a ./gradlew build --stacktrace --info
+
+

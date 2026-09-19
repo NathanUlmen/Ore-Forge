@@ -3,6 +3,7 @@ package ore.forge.engine.resources;
 import com.badlogic.gdx.graphics.VertexAttributes;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Nathan Ulmen
@@ -10,8 +11,8 @@ import java.util.Arrays;
  */
 public final class MeshData implements CpuAssetData {
     private final VertexAttributes attributes;
-    private final float[] vbo;
-    private final short[] ibo;
+    private float[] vbo;
+    private short[] ibo;
 
     public MeshData(VertexAttributes attributes, float[] vbo, short[] ibo) {
         this.attributes = attributes;
@@ -32,9 +33,14 @@ public final class MeshData implements CpuAssetData {
     }
 
     @Override
+    public long sizeInBytes() {
+        return vbo.length * Float.BYTES + ibo.length * Short.BYTES;
+    }
+
+    @Override
     public void dispose() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dispose'");
+        vbo = null;
+        ibo = null;
     }
 
     @Override
