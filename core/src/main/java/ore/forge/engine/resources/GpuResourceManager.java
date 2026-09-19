@@ -35,16 +35,15 @@ final class GpuResourceManager {
     private final HashMap<AssetID, CompletableFuture<GpuResource>> gpuReadyFutures;
     private final CacheLRU<AssetID, GpuResource> cache; 
     private final Dispatcher gpuDispatcher;
-    private static final long CACHE_SIZE = 100 * Sizeable.MB;
 
-    public GpuResourceManager(AssetManager assetManager, Dispatcher gpuDispatcher) {
+    public GpuResourceManager(AssetManager assetManager, Dispatcher gpuDispatcher, long cacheSizeBytes) {
         this.gpuDispatcher = gpuDispatcher;
         this.assetManager = assetManager;
         this.handleLookup = new HashMap<>();
         this.gpuResources = new HandleRegistry<>();
         this.gpuReadyFutures = new HashMap<>();
         this.removeLookup = new LongMap<>();
-        this.cache = new CacheLRU<>(CACHE_SIZE);
+        this.cache = new CacheLRU<>(cacheSizeBytes);
     }
 
     /**

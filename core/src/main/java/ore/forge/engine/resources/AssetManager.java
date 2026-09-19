@@ -25,10 +25,9 @@ final class AssetManager {
     private final AssetRegistry assetRegistry;
     private final AssetDataSerializer serializer;
     private final Dispatcher dispatcher;
-    private static final long DEFAULT_SIZE = 100 * Sizeable.MB;
 
-    public AssetManager(AssetRegistry registry, Dispatcher dispatcher) {
-        this.cache = new CacheLRU<>(DEFAULT_SIZE);
+    public AssetManager(AssetRegistry registry, Dispatcher dispatcher, long cachSize) {
+        this.cache = new CacheLRU<>(cachSize);
         this.cpuReadyFutures = new HashMap<>();
         this.assetRegistry = registry;
         this.handleLookup = new HashMap<>();
