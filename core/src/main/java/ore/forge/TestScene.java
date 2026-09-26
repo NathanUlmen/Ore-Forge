@@ -352,8 +352,8 @@ public class TestScene implements Screen {
 
         // ResourceManager.batchLoad currently invokes this callback with an empty
         // collection, so reacquire the already-completed CPU handles by ID.
-        ResourceHandle<CpuAssetData> meshHandle = resourceManager.acquireCpuDataAsync(pendingMeshID, null, Gdx.app::postRunnable);
-        ResourceHandle<CpuAssetData> textureHandle = resourceManager.acquireCpuDataAsync(pendingTextureID, null, Gdx.app::postRunnable);
+        ResourceHandle<CpuAssetData> meshHandle = resourceManager.acquireCpuDataAsync(pendingMeshID);
+        ResourceHandle<CpuAssetData> textureHandle = resourceManager.acquireCpuDataAsync(pendingTextureID);
         CpuAssetData meshAsset = resourceManager.getCpuAsset(meshHandle.handle());
         CpuAssetData textureAsset = resourceManager.getCpuAsset(textureHandle.handle());
         if (!(meshAsset instanceof MeshData meshData) || !(textureAsset instanceof TextureData)) {

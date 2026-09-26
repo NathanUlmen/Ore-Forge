@@ -22,12 +22,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
 
 /**
- * Repeatedly acquires and releases CPU assets to exercise ResourceManager's
- * asynchronous loading, reference counting, and cache behavior in a running
- * libGDX application.
+ * Fuzz tests the {@link ResourceManager} by randomly acquiring and releasing
+ * assets from both the CPU and GPU. Will occasionally flush the CPU cache.
  */
 public final class ResourceManagerTestScene implements Screen {
     private static final String LOG_TAG = ResourceManagerTestScene.class.getSimpleName();
