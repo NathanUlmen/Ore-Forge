@@ -2,14 +2,14 @@ package ore.forge.engine.resources;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.utils.LongMap;
+import ore.forge.engine.*;
+import ore.forge.engine.resources.ResourceSlot.LoadState;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
-import com.badlogic.gdx.utils.LongMap;
-import ore.forge.engine.*;
-import ore.forge.engine.resources.ResourceSlot.LoadState;
 
 final class AssetManager {
     private static final String LOG_TAG = AssetManager.class.getName();

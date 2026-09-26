@@ -3,7 +3,6 @@ package ore.forge.engine.render;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector4;
 import com.badlogic.gdx.utils.Pool;
-import ore.forge.engine.Handle;
 import ore.forge.engine.resources.GpuResource;
 import ore.forge.engine.resources.ResourceHandle;
 

@@ -49,7 +49,7 @@ public final class GpuMeshResource implements GpuResource {
 
     @Override
     public long sizeInBytes() {
-        return floatVertexCount * Float.BYTES + indexCount * Short.BYTES;
+        return (long) floatVertexCount * Float.BYTES + (long) indexCount * Short.BYTES;
     }
 
 }

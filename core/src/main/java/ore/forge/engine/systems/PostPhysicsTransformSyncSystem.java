@@ -3,8 +3,8 @@ package ore.forge.engine.systems;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
-import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.PhysicsMotionType;
+import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.WorldTransformC;
 
 public class PostPhysicsTransformSyncSystem extends IteratingSystem {

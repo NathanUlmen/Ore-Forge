@@ -1,7 +1,7 @@
 package ore.forge.game.event.Events;
 
-import ore.forge.game.CurrencyType;
 import ore.forge.FontColors;
+import ore.forge.game.CurrencyType;
 import ore.forge.game.items.ItemDefinition;
 
 public record FailedPurchaseGameEvent(ItemDefinition item, CurrencyType currencyType, int amount) implements GameEvent {

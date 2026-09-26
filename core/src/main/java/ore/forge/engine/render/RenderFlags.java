@@ -1,7 +1,7 @@
 package ore.forge.engine.render;
 
 public enum RenderFlags {
-    TRANSPARENT (1 << 0),
+    TRANSPARENT (1),
     DEPTH_WRITE (1 << 1),
     DEPTH_TEST  (1 << 2),
     EMISSIVE    (1 << 3),

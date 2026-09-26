@@ -5,16 +5,12 @@ package ore.forge.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL30;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.ResourceManagerTestScene;
-import ore.forge.engine.profiling.Profiler;
 import ore.forge.engine.resources.ResourceManager;
 import ore.forge.game.items.ItemDefinition;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

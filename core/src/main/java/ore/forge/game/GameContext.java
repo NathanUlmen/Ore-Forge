@@ -1,10 +1,10 @@
 package ore.forge.game;
 
-import ore.forge.game.event.EventManager;
-import ore.forge.game.player.Player;
 import ore.forge.engine.EntityManager;
 import ore.forge.engine.PhysicsWorld;
 import ore.forge.engine.StagedCollection;
+import ore.forge.game.event.EventManager;
+import ore.forge.game.player.Player;
 
 
 public class GameContext {

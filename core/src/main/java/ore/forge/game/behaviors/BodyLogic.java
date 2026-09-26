@@ -1,10 +1,9 @@
 package ore.forge.game.behaviors;
 
-import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.game.GameContext;
-import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.PhysicsBodyData;
+import ore.forge.game.items.ItemDefinition;
 
 public interface BodyLogic {
     /**

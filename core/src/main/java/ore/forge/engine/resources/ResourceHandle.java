@@ -1,9 +1,8 @@
 package ore.forge.engine.resources;
 
-import java.util.concurrent.CompletableFuture;
-
-
 import ore.forge.engine.Handle;
+
+import java.util.concurrent.CompletableFuture;
 
 public class ResourceHandle<E> {
     private final CompletableFuture<E> handleFuture;

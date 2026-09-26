@@ -3,7 +3,7 @@ package ore.forge.engine;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
 
-import java.util.*;
+import java.util.Iterator;
 
 public class StagedCollection<E> implements Iterable<E> {
     private final Array<E> elements;

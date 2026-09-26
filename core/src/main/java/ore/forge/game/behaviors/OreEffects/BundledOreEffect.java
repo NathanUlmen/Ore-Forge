@@ -1,8 +1,8 @@
 package ore.forge.game.behaviors.OreEffects;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.components.Ore;
 import ore.forge.engine.ReflectionLoader;
+import ore.forge.game.components.Ore;
 
 @SuppressWarnings("unused")
 public class BundledOreEffect implements OreEffect {

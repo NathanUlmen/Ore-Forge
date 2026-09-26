@@ -4,10 +4,10 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.GameContext;
-import ore.forge.game.components.Ore;
 import ore.forge.game.PhysicsBodyData;
-import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.behaviors.UpgradeStrategies.UpgradeStrategy;
+import ore.forge.game.components.Ore;
+import ore.forge.game.items.ItemDefinition;
 
 public class SellOreBehavior implements BodyLogic {
     private final UpgradeStrategy upgradeStrategy;

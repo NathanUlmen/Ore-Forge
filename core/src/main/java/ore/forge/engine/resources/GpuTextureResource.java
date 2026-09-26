@@ -1,12 +1,9 @@
 package ore.forge.engine.resources;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GLTexture;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.TextureData;
-import com.badlogic.gdx.graphics.glutils.PixmapTextureData;
 
 public final class GpuTextureResource implements GpuResource {
     private final Texture texture;
@@ -32,9 +29,9 @@ public final class GpuTextureResource implements GpuResource {
     public long sizeInBytes() {
         var w = texture.getWidth();
         var h = texture.getHeight();
-        long bytes = w * h * bytesFromFormat(format);
+        long bytes = (long) w * h * bytesFromFormat(format);
         if (useMipMaps) {
-           bytes *= 4/3;
+           bytes *= 4.0 / 3;
         }
         return bytes;
     }

@@ -1,10 +1,10 @@
 package ore.forge.game.quest;
 
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.engine.ReflectionLoader;
 import ore.forge.game.event.EventManager;
 import ore.forge.game.event.Events.QuestStepCompletedGameEvent;
 import ore.forge.game.quest.Rewards.Reward;
-import ore.forge.engine.ReflectionLoader;
 
 //A QuestStep holds a reward, and an array of conditions.
 //The QuestStep is only complete

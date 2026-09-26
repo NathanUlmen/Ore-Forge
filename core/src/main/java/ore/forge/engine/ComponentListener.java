@@ -1,12 +1,12 @@
 package ore.forge.engine;
 
-import java.util.function.Consumer;
-
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 
+import java.util.function.Consumer;
+
 /** @author Nathan Ulmen
-* Listents to events 
+* Listents to events
 */
 public class ComponentListener implements EntityListener {
     private final Consumer<Entity> onEntityAdded;
@@ -26,5 +26,5 @@ public class ComponentListener implements EntityListener {
     public void entityRemoved(Entity entity) {
         onEntityRemoved.accept(entity);
     }
-    
+
 }

@@ -6,7 +6,10 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import ore.forge.engine.components.*;
+import ore.forge.engine.components.ChildC;
+import ore.forge.engine.components.PhysicsC;
+import ore.forge.engine.components.TeleportRequestC;
+import ore.forge.engine.components.WorldTransformC;
 
 /**
  * Teleport system teleports the root of an entity to a specific location in world space

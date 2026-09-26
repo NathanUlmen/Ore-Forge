@@ -7,7 +7,10 @@ import com.badlogic.gdx.utils.JsonWriter;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author Nathan Ulmen
@@ -19,9 +22,9 @@ import java.util.*;
  *
  */
 final class AssetRegistry {
-    protected HashMap<AssetSourceKey, AssetID> idLookup;
-    protected HashMap<AssetID, AssetArtifact> artifactLookup;
-    protected final Path bakedDir;
+    private final HashMap<AssetSourceKey, AssetID> idLookup;
+    private final HashMap<AssetID, AssetArtifact> artifactLookup;
+    private final Path bakedDir;
 
     /**
      * @param bakedOutputDir directory registry will save to.

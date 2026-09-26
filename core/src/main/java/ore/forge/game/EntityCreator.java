@@ -2,21 +2,7 @@ package ore.forge.game;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.physics.bullet.collision.*;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
-import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
-import ore.forge.engine.components.RenderC;
 import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.items.ItemUserData;
-import ore.forge.game.items.NodeInfo;
-import ore.forge.game.behaviors.BodyLogic;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class EntityCreator {
 

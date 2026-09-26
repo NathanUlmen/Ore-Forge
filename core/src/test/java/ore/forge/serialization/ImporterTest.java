@@ -1,18 +1,11 @@
 package ore.forge.serialization;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.engine.*;
 import ore.forge.engine.definitions.AssetType;
 import ore.forge.engine.definitions.MeshDataSerializer;
-import ore.forge.engine.resources.AssetID;
-import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.MeshData;
-import ore.forge.engine.resources.ResourceHandle;
-import ore.forge.engine.resources.ResourceManager;
-import ore.forge.engine.resources.TextureData;
+import ore.forge.engine.resources.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -21,11 +14,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;

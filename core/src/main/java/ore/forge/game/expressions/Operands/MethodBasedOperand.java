@@ -1,7 +1,7 @@
 package ore.forge.game.expressions.Operands;
 
-import ore.forge.game.components.Ore;
 import ore.forge.OreRealm;
+import ore.forge.game.components.Ore;
 
 /*
  * Basically We are going to have an object that contains a custom lambda/function, a "collection", and a search param(string)

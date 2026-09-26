@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.IntArray;
-
 import ore.forge.engine.resources.ResourceSlot;
 import ore.forge.engine.resources.ResourceSlot.LoadState;
 
@@ -100,7 +99,7 @@ public class HandleRegistry<E extends Disposable> {
 
         Entry<E> entry = handleLookup.get(index);
         if (entry == null || entry.version != targetHandle.version()) {
-            Gdx.app.error(LOG_TAG, "Target handle " + targetHandle.toString() + " has invalid version. Expected version=" + entry.version, new IllegalArgumentException());
+            Gdx.app.error(LOG_TAG, "Target handle " + targetHandle + " has invalid version. Expected version=" + entry.version, new IllegalArgumentException());
         }
 
         handleLookup.set(index, null);
@@ -134,11 +133,11 @@ public class HandleRegistry<E extends Disposable> {
 
     public void isValid(Handle<E> handle) {
         if (!handle.isValid()) {
-            Gdx.app.error(LOG_TAG, "Target handle " + handle.toString() + " has invalid index of 0.", new IllegalArgumentException());
+            Gdx.app.error(LOG_TAG, "Target handle " + handle + " has invalid index of 0.", new IllegalArgumentException());
         }
     }
 
-    private class Entry<E extends Disposable> {
+    private static class Entry<E extends Disposable> {
         private int checkoutCount;
         private final ResourceSlot<E> slot;
         private final int version;

@@ -1,7 +1,7 @@
 package ore.forge.game.expressions.Operands;
 
-import ore.forge.game.expressions.NumericOperand;
 import ore.forge.game.components.Ore;
+import ore.forge.game.expressions.NumericOperand;
 
 
 public enum NumericOreProperties implements NumericOperand {

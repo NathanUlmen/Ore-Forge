@@ -8,14 +8,10 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.math.Vector3;
 import ore.forge.engine.Sizeable;
 import ore.forge.engine.definitions.AssetType;
-import ore.forge.engine.resources.AssetID;
-import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.GpuResource;
-import ore.forge.engine.resources.ResourceHandle;
-import ore.forge.engine.resources.ResourceManager;
 import ore.forge.engine.render.RenderPart;
 import ore.forge.engine.render.Renderer;
 import ore.forge.engine.render.passes.BasicRenderPass;
+import ore.forge.engine.resources.*;
 import ore.forge.game.input.FreeCamController;
 
 import java.nio.file.Path;

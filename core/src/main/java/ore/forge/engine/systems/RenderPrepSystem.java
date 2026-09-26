@@ -6,10 +6,8 @@ import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
-import ore.forge.engine.components.ChildC;
 import ore.forge.engine.components.RenderC;
 import ore.forge.engine.components.WorldTransformC;
-import ore.forge.engine.render.RenderPart;
 
 /**
  * This systems job is to configure the transform of RenderPart

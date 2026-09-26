@@ -10,7 +10,6 @@ import ore.forge.engine.Pair;
 import ore.forge.engine.PhysicsBodyType;
 import ore.forge.engine.PhysicsMotionType;
 import ore.forge.engine.components.PhysicsC;
-import ore.forge.engine.resources.ResourceManager;
 
 /**
  * @author Nathan Ulmen

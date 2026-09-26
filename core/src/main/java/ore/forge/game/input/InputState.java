@@ -6,8 +6,8 @@ import com.badlogic.gdx.physics.bullet.collision.ClosestRayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.RayResultCallback;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseProxy;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionWorld;
-import ore.forge.game.CollisionRules;
 import ore.forge.engine.PhysicsWorld;
+import ore.forge.game.CollisionRules;
 
 public abstract class InputState {
     protected final CameraController cameraController;

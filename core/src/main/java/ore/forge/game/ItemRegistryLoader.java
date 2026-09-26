@@ -6,12 +6,11 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.items.Acquisition.AcquisitionInfo;
 import ore.forge.game.items.ItemDefinition;
+import ore.forge.game.items.ItemRole;
+import ore.forge.game.items.Tier;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import ore.forge.game.items.ItemRole;
-import ore.forge.game.items.Tier;
 
 
 /** @author Nathan Ulmen

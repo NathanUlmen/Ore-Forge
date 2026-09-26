@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /** @author Nathan Ulmen
- * AssetImporter is a "user facing/outwardfacing" interface 
+ * AssetImporter is a "user facing/outwardfacing" interface
  * used to import .glb/gltf files into the Resource Systems?
- * 
+ *
  * */
 final class AssetImporter {
-    protected static final int IMPORT_VERSION = 1;
-    protected final AssetRegistry registry;
+    static final int IMPORT_VERSION = 1;
+    private final AssetRegistry registry;
 
     public AssetImporter(AssetRegistry registry) {
         this.registry = registry;

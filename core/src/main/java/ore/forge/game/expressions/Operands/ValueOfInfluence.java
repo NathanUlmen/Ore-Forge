@@ -1,9 +1,9 @@
 package ore.forge.game.expressions.Operands;
 
-import ore.forge.game.expressions.NumericOperand;
-import ore.forge.game.components.Ore;
 import ore.forge.OreRealm;
 import ore.forge.engine.profiling.Stopwatch;
+import ore.forge.game.components.Ore;
+import ore.forge.game.expressions.NumericOperand;
 
 import java.util.Comparator;
 import java.util.List;

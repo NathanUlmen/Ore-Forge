@@ -1,5 +1,12 @@
 package ore.forge.engine.resources;
 
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.esotericsoftware.kryo.io.Output;
+import de.javagl.jgltf.model.*;
+import ore.forge.engine.VertexAttribute;
+import ore.forge.engine.definitions.AssetType;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -10,20 +17,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
-
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.esotericsoftware.kryo.io.Output;
-
-import de.javagl.jgltf.model.AccessorModel;
-import de.javagl.jgltf.model.GltfConstants;
-import de.javagl.jgltf.model.GltfModel;
-import de.javagl.jgltf.model.MeshModel;
-import de.javagl.jgltf.model.MeshPrimitiveModel;
-import de.javagl.jgltf.model.NamedModelElement;
-import de.javagl.jgltf.model.TextureModel;
-import ore.forge.engine.VertexAttribute;
-import ore.forge.engine.definitions.AssetType;
 
 
 /**
@@ -254,9 +247,9 @@ final class AssetExtractor {
       };
   }
 
-    public static Path ensureDirectory(Path dir) {
+    public static void ensureDirectory(Path dir) {
         try {
-            return Files.createDirectories(dir);
+            Files.createDirectories(dir);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

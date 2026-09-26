@@ -1,10 +1,5 @@
 package ore.forge;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
@@ -32,7 +27,6 @@ import com.kotcrab.vis.ui.widget.VisScrollPane;
 import com.kotcrab.vis.ui.widget.VisTable;
 import com.kotcrab.vis.ui.widget.VisTextButton;
 import com.kotcrab.vis.ui.widget.VisWindow;
-
 import ore.forge.engine.*;
 import ore.forge.engine.components.PhysicsC;
 import ore.forge.engine.components.RenderC;
@@ -45,17 +39,17 @@ import ore.forge.engine.profiling.Stopwatch;
 import ore.forge.engine.render.RenderPart;
 import ore.forge.engine.render.Renderer;
 import ore.forge.engine.render.passes.BasicRenderPass;
-import ore.forge.engine.resources.AssetID;
-import ore.forge.engine.resources.CpuAssetData;
-import ore.forge.engine.resources.MeshData;
-import ore.forge.engine.resources.ResourceHandle;
-import ore.forge.engine.resources.ResourceManager;
-import ore.forge.engine.resources.TextureData;
+import ore.forge.engine.resources.*;
 import ore.forge.engine.systems.PostPhysicsTransformSyncSystem;
 import ore.forge.engine.systems.PrePhysicsTransformSyncSystem;
 import ore.forge.engine.systems.RenderPrepSystem;
 import ore.forge.game.input.CameraController;
 import ore.forge.game.input.FreeCamController;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TestScene implements Screen {
     private static final String LOG_TAG = TestScene.class.getSimpleName();

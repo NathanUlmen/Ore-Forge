@@ -1,7 +1,7 @@
 package ore.forge.game.expressions.Operands;
 
-import ore.forge.game.expressions.StringOperand;
 import ore.forge.game.components.Ore;
+import ore.forge.game.expressions.StringOperand;
 
 import java.util.function.Function;
 
