@@ -78,7 +78,7 @@ class ResourceManagerLifecycleTest {
     void batchLoadLoadsCpuResourcesAndDispatchesOneCallback() throws Exception {
         ResourceManager manager = newManager();
         AssetID meshId = assetId(manager, AssetType.MESH);
-        AssetID secondMeshId = secondAssetId(manager, AssetType.MESH, meshId);
+        AssetID secondMeshId = secondAssetId(manager, meshId);
         RecordingDispatcher callbackDispatcher = new RecordingDispatcher();
         List<Collection<ResourceHandle<?>>> callbacks = new ArrayList<>();
 
@@ -184,7 +184,7 @@ class ResourceManagerLifecycleTest {
     void cacheRetainsMultipleReleasedCpuAssets() throws Exception {
         ResourceManager manager = newManager();
         AssetID firstId = meshId(manager);
-        AssetID secondId = secondAssetId(manager, AssetType.MESH, firstId);
+        AssetID secondId = secondAssetId(manager, firstId);
 
         ResourceHandle<CpuAssetData> first = manager.acquireCpuDataAsync(firstId, null, null);
         ResourceHandle<CpuAssetData> second = manager.acquireCpuDataAsync(secondId, null, null);
@@ -306,11 +306,11 @@ class ResourceManagerLifecycleTest {
         throw new AssertionError("Test fixture did not produce an asset of type " + type);
     }
 
-    private AssetID secondAssetId(ResourceManager manager, AssetType type, AssetID first) {
+    private AssetID secondAssetId(ResourceManager manager, AssetID first) {
         for (AssetID id : manager.getAssetIDs()) {
-            if (!id.equals(first) && manager.getAssetType(id) == type) return id;
+            if (!id.equals(first) && manager.getAssetType(id) == AssetType.MESH) return id;
         }
-        throw new AssertionError("Test fixture did not produce a second asset of type " + type);
+        throw new AssertionError("Test fixture did not produce a second asset of type " + AssetType.MESH);
     }
 
     @SuppressWarnings("unchecked")

@@ -83,7 +83,7 @@ public final class ResourceManagerTestScene implements Screen {
     private double frameDurationTotalSeconds;
     private long currentCacheLimitBytes = NORMAL_CPU_CACHE_BYTES;
     private boolean evictionMode;
-    private long seed;
+    private final long seed;
 
     public ResourceManagerTestScene(ResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -260,7 +260,7 @@ public final class ResourceManagerTestScene implements Screen {
     }
 
     private void createRenderables() {
-        AssetID textureId = textureAssetIds.get(0);
+        AssetID textureId = textureAssetIds.getFirst();
         int columns = Math.max(1, (int) Math.ceil(Math.sqrt(meshAssetIds.size())));
         float spacing = 5f;
         float center = (columns - 1) * spacing * 0.5f;
