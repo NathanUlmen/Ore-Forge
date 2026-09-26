@@ -46,7 +46,7 @@ final class AssetRegistry {
      * @param candidate - Asset candidate that might not already be present in the registry.
      * @return true if new entry was created, false if already present.
      */
-    public boolean createNewEntry(AssetCandidate candidate) {
+    public boolean createNewEntry(AssetExtractor.AssetCandidate candidate) {
         //Case 1: source Key already mapped to a UUID: do nothing
         if (idLookup.get(candidate.sourceKey()) != null) {
             return false;

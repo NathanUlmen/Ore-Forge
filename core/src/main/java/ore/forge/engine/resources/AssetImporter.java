@@ -15,7 +15,7 @@ final class AssetImporter {
     static final int IMPORT_VERSION = 1;
     private final AssetRegistry registry;
 
-    public AssetImporter(AssetRegistry registry) {
+    AssetImporter(AssetRegistry registry) {
         this.registry = registry;
     }
 

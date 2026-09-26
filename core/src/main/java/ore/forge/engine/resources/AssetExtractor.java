@@ -27,11 +27,6 @@ import java.util.Map;
  */
 final class AssetExtractor {
 
-    enum BakedType {
-        MESH_BIN,
-        TEXTURE_BIN,
-    }
-
     public static void extractAssets(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         AssetExtractor.extractMeshes(gltfModel, sourceFile, assetRegistry);
         AssetExtractor.extractTextures(gltfModel, sourceFile, assetRegistry);
@@ -260,6 +255,22 @@ final class AssetExtractor {
         String logicalName = sourceFile == null ? namedModelElement.getName() : containerName(sourceFile);
         assert sourceFile != null;
         return new AssetSourceKey(assetType, logicalName, assetName, sourceFile.toString(), AssetImporter.IMPORT_VERSION, null);
+    }
+
+    record AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData, AssetArtifact artifact) {
+        public AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData) {
+            this(sourceKey, assetData, null);
+        }
+
+        @Override
+        public int hashCode() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 }
