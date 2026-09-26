@@ -1,8 +1,8 @@
 package ore.forge.game.behaviors.OreEffects;
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.components.Ore;
 import ore.forge.game.behaviors.UpgradeStrategies.UpgradeStrategy;
+import ore.forge.game.components.Ore;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -3,9 +3,11 @@ package ore.forge.engine.resources;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.engine.Dispatcher;
 import ore.forge.engine.Handle;
 import ore.forge.engine.Sizeable;
 import ore.forge.engine.definitions.AssetType;
+import ore.forge.engine.profiling.Stopwatch;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,9 +17,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import ore.forge.engine.Dispatcher;
-import ore.forge.engine.profiling.Stopwatch;
 
 /**
  * By default, dispatches to self.

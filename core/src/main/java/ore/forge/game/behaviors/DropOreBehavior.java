@@ -1,17 +1,15 @@
 package ore.forge.game.behaviors;
 
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.EntityCreator;
 import ore.forge.engine.ReflectionLoader;
-import ore.forge.game.*;
-import ore.forge.game.items.ItemDefinition;
-import ore.forge.game.items.Properties.DropperProperties;
+import ore.forge.game.GameContext;
+import ore.forge.game.PhysicsBodyData;
+import ore.forge.game.Updatable;
 import ore.forge.game.behaviors.DropperStrategies.BurstDrop;
 import ore.forge.game.behaviors.DropperStrategies.DropStrategy;
+import ore.forge.game.items.ItemDefinition;
+import ore.forge.game.items.Properties.DropperProperties;
 
 @SuppressWarnings("unused")
 public class DropOreBehavior implements BodyLogic, Updatable {

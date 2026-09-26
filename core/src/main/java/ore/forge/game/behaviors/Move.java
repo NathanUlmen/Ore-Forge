@@ -5,10 +5,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.game.GameContext;
+import ore.forge.game.PhysicsBodyData;
+import ore.forge.game.components.Ore;
 import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.items.ItemUserData;
-import ore.forge.game.components.Ore;
-import ore.forge.game.PhysicsBodyData;
 
 public class Move implements BodyLogic {
     private final float force;

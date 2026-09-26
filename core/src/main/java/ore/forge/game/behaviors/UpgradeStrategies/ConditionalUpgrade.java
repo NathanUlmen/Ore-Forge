@@ -2,9 +2,9 @@ package ore.forge.game.behaviors.UpgradeStrategies;
 
 
 import com.badlogic.gdx.utils.JsonValue;
-import ore.forge.game.expressions.Condition;
-import ore.forge.game.components.Ore;
 import ore.forge.engine.ReflectionLoader;
+import ore.forge.game.components.Ore;
+import ore.forge.game.expressions.Condition;
 
 /**
  * @author Nathan Ulmen

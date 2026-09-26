@@ -1,10 +1,10 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
 import ore.forge.ButtonHelper;
-import ore.forge.game.components.Ore;
 import ore.forge.OreRealm;
 import ore.forge.game.behaviors.OreEffects.OreEffect;
 import ore.forge.game.behaviors.OreEffects.UpgradeOreEffect;
+import ore.forge.game.components.Ore;
 
 import java.util.Random;
 

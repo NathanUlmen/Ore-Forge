@@ -1,9 +1,9 @@
 package ore.forge.game.behaviors.UpgradeStrategies;
 
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.game.components.Ore;
 import ore.forge.game.expressions.Operands.NumericOreProperties;
 import ore.forge.game.expressions.Operators.NumericOperator;
-import ore.forge.game.components.Ore;
 
 import java.util.function.Consumer;
 

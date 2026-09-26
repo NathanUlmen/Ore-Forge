@@ -3,10 +3,10 @@ package ore.forge.game.quest;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Queue;
+import ore.forge.Listener;
 import ore.forge.TextColor;
 import ore.forge.game.event.EventManager;
 import ore.forge.game.event.Events.QuestCompletedGameEvent;
-import ore.forge.Listener;
 
 import java.util.ArrayList;
 

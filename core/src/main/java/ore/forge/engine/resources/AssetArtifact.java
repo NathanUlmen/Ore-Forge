@@ -1,9 +1,9 @@
 package ore.forge.engine.resources;
 
+import ore.forge.engine.definitions.AssetType;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
-
-import ore.forge.engine.definitions.AssetType;
 
 /**
  * @author Nathan Ulmen

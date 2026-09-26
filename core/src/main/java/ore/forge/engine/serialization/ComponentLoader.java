@@ -8,13 +8,14 @@ import com.badlogic.gdx.utils.*;
 import ore.forge.engine.Pair;
 import ore.forge.engine.PhysicsBodyType;
 import ore.forge.engine.PhysicsMotionType;
-import ore.forge.engine.components.*;
+import ore.forge.engine.components.DirectionC;
+import ore.forge.engine.components.TransformC;
 import ore.forge.engine.definitions.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static ore.forge.engine.definitions.DefinitionTree.*;
+import static ore.forge.engine.definitions.DefinitionTree.ComponentNode;
 
 /**
  * This class is responsible for loading "primitive" components into an intermediary
@@ -81,22 +82,11 @@ public class ComponentLoader {
      */
     public Object createComponent(JsonValue value) {
         return switch (value.getString("componentType")) {
-            case "TransformComponent" -> {
-                yield readComponentData(value, "transformComponent", TransformC.class);
-            }
-            case "RenderComponent" -> {
-
-                //TODO: Rework RenderParts so its handle based to an asset if that makes sense.
-
-                yield createRenderIR(value);
-            }
-            case "DirectionComponent" -> {
-
-                yield readComponentData(value, "directionComponent", DirectionC.class);
-            }
-            case "PhysicsComponent" -> {
-                yield createPhysicsCompIR(value);
-            }
+            case "TransformComponent" -> readComponentData(value, "transformComponent", TransformC.class);
+            case "RenderComponent" -> //TODO: Rework RenderParts so its handle based to an asset if that makes sense.
+                createRenderIR(value);
+            case "DirectionComponent" -> readComponentData(value, "directionComponent", DirectionC.class);
+            case "PhysicsComponent" -> createPhysicsCompIR(value);
             default ->
                 throw new SerializationException("Unsupported Component Type: " + value.getString("componentType"));
 

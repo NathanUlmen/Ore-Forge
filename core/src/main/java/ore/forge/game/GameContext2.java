@@ -6,8 +6,8 @@ import ore.forge.engine.PhysicsWorld;
 import ore.forge.engine.systems.PostPhysicsTransformSyncSystem;
 import ore.forge.engine.systems.PrePhysicsTransformSyncSystem;
 import ore.forge.engine.systems.RenderPrepSystem;
-import ore.forge.game.collisions.PhysicsCallbackResolverSystem;
 import ore.forge.game.collisions.CollisionManager;
+import ore.forge.game.collisions.PhysicsCallbackResolverSystem;
 import ore.forge.game.player.Player;
 
 public class GameContext2 {

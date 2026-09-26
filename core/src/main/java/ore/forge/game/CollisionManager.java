@@ -1,6 +1,5 @@
 package ore.forge.game;
 
-import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import ore.forge.engine.StagedCollection;
 

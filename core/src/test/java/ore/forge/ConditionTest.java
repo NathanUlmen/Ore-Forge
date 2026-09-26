@@ -1,7 +1,7 @@
 package ore.forge;
 
-import ore.forge.game.components.Ore;
 import ore.forge.game.UpgradeTag;
+import ore.forge.game.components.Ore;
 import ore.forge.game.expressions.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

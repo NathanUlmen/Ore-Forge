@@ -1,12 +1,12 @@
 package ore.forge.game.expressions;
 
+import ore.forge.game.components.Ore;
 import ore.forge.game.expressions.Operands.MethodBasedOperand;
 import ore.forge.game.expressions.Operands.NumericOreProperties;
 import ore.forge.game.expressions.Operands.StringOreProperty;
 import ore.forge.game.expressions.Operands.ValueOfInfluence;
 import ore.forge.game.expressions.Operators.ComparisonOperator;
 import ore.forge.game.expressions.Operators.LogicalOperator;
-import ore.forge.game.components.Ore;
 
 import java.util.*;
 import java.util.function.Function;

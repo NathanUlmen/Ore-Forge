@@ -1,7 +1,6 @@
 package ore.forge.game.collisions;
 
 import com.badlogic.ashley.core.Entity;
-import ore.forge.game.GameContext;
 import ore.forge.game.GameContext2;
 
 @FunctionalInterface

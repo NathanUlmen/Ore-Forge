@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.VertexAttributes;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Nathan Ulmen
@@ -35,7 +34,7 @@ public final class MeshData implements CpuAssetData {
 
     @Override
     public long sizeInBytes() {
-        return vbo.length * Float.BYTES + ibo.length * Short.BYTES;
+        return (long) vbo.length * Float.BYTES + (long) ibo.length * Short.BYTES;
     }
 
     @Override

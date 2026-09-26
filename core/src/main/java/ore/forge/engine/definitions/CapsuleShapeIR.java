@@ -1,6 +1,5 @@
 package ore.forge.engine.definitions;
 
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btCapsuleShape;
 
 /**

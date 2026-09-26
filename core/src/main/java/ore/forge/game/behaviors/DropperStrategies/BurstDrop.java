@@ -1,7 +1,7 @@
 package ore.forge.game.behaviors.DropperStrategies;
 
-import ore.forge.game.CoolDown;
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.game.CoolDown;
 
 @SuppressWarnings("unused")
 public class BurstDrop implements DropStrategy {

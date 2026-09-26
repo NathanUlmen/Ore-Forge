@@ -9,8 +9,6 @@ import com.esotericsoftware.kryo.io.Output;
 import ore.forge.engine.resources.MeshData;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;

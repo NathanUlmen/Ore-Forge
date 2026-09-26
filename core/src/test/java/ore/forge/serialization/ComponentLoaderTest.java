@@ -6,9 +6,9 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.SerializationException;
-import ore.forge.engine.components.DirectionC;
 import ore.forge.engine.PhysicsBodyType;
 import ore.forge.engine.PhysicsMotionType;
+import ore.forge.engine.components.DirectionC;
 import ore.forge.engine.components.TransformC;
 import ore.forge.engine.definitions.*;
 import ore.forge.engine.serialization.ComponentLoader;
@@ -19,10 +19,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ComponentLoaderTest {
     private static final String FIXTURE_ROOT = "component-loader/";

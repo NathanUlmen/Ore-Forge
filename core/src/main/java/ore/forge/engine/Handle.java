@@ -8,7 +8,7 @@ package ore.forge.engine;
  * the correct resource. This is Validated by the system that manages the resources.
  *
  */
-public class Handle<E> implements Cloneable {
+public class Handle<E> {
     private long handle;
 
     public Handle(int index, int version) {

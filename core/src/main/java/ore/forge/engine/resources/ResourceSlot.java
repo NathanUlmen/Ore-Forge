@@ -31,7 +31,7 @@ public class ResourceSlot<E extends Disposable> implements Disposable {
         if (current == null) {
             this.current = primaryResource;
         } else {
-            Gdx.app.log(LOG_STRING, "Attempted to set resource that was already set." + this.toString());
+            Gdx.app.log(LOG_STRING, "Attempted to set resource that was already set." + this);
         }
     }
 

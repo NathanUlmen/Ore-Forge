@@ -3,7 +3,6 @@ package ore.forge.game.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import ore.forge.game.GameContext;
@@ -11,7 +10,6 @@ import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.player.ItemInventory;
 import ore.forge.game.player.ItemInventoryNode;
 import ore.forge.game.ui.Widgets.Icon;
-import ore.forge.engine.components.RenderC;
 
 import java.util.ArrayList;
 import java.util.List;

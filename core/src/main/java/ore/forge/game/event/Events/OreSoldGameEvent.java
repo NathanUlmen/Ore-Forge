@@ -2,8 +2,8 @@ package ore.forge.game.event.Events;
 
 
 import ore.forge.FontColors;
-import ore.forge.game.items.ItemDefinition;
 import ore.forge.game.components.Ore;
+import ore.forge.game.items.ItemDefinition;
 
 public record OreSoldGameEvent(Ore ore, ItemDefinition item) implements GameEvent<Ore> {
 

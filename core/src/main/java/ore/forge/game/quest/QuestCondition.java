@@ -1,12 +1,12 @@
 package ore.forge.game.quest;
 
 import com.badlogic.gdx.utils.JsonValue;
+import ore.forge.Listener;
+import ore.forge.game.components.Ore;
 import ore.forge.game.event.EventManager;
 import ore.forge.game.event.Events.GameEvent;
 import ore.forge.game.event.GameEventListener;
 import ore.forge.game.expressions.Condition;
-import ore.forge.Listener;
-import ore.forge.game.components.Ore;
 
 import java.util.ArrayList;
 

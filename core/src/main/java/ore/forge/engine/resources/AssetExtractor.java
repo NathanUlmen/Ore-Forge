@@ -1,5 +1,12 @@
 package ore.forge.engine.resources;
 
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.esotericsoftware.kryo.io.Output;
+import de.javagl.jgltf.model.*;
+import ore.forge.engine.VertexAttribute;
+import ore.forge.engine.definitions.AssetType;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
@@ -11,20 +18,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.VertexAttributes;
-import com.esotericsoftware.kryo.io.Output;
-
-import de.javagl.jgltf.model.AccessorModel;
-import de.javagl.jgltf.model.GltfConstants;
-import de.javagl.jgltf.model.GltfModel;
-import de.javagl.jgltf.model.MeshModel;
-import de.javagl.jgltf.model.MeshPrimitiveModel;
-import de.javagl.jgltf.model.NamedModelElement;
-import de.javagl.jgltf.model.TextureModel;
-import ore.forge.engine.VertexAttribute;
-import ore.forge.engine.definitions.AssetType;
-
 
 /**
  * @author Nathan Ulmen
@@ -33,11 +26,6 @@ import ore.forge.engine.definitions.AssetType;
  *
  */
 final class AssetExtractor {
-
-    enum BakedType {
-        MESH_BIN,
-        TEXTURE_BIN,
-    }
 
     public static void extractAssets(GltfModel gltfModel, Path sourceFile, AssetRegistry assetRegistry) {
         AssetExtractor.extractMeshes(gltfModel, sourceFile, assetRegistry);
@@ -254,9 +242,9 @@ final class AssetExtractor {
       };
   }
 
-    public static Path ensureDirectory(Path dir) {
+    public static void ensureDirectory(Path dir) {
         try {
-            return Files.createDirectories(dir);
+            Files.createDirectories(dir);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -267,6 +255,22 @@ final class AssetExtractor {
         String logicalName = sourceFile == null ? namedModelElement.getName() : containerName(sourceFile);
         assert sourceFile != null;
         return new AssetSourceKey(assetType, logicalName, assetName, sourceFile.toString(), AssetImporter.IMPORT_VERSION, null);
+    }
+
+    record AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData, AssetArtifact artifact) {
+        public AssetCandidate(AssetSourceKey sourceKey, CpuAssetData assetData) {
+            this(sourceKey, assetData, null);
+        }
+
+        @Override
+        public int hashCode() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
 }
