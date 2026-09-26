@@ -4,6 +4,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import ore.forge.engine.Handle;
+import ore.forge.engine.Sizeable;
 import ore.forge.engine.definitions.AssetType;
 
 import java.nio.file.Path;
@@ -12,10 +13,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.Objects;
 
 import ore.forge.engine.Dispatcher;
+import ore.forge.engine.profiling.Stopwatch;
 
 /**
  * By default, dispatches to self.
@@ -26,29 +28,40 @@ public class ResourceManager implements Dispatcher {
     private final AssetImporter importer;
     private final AssetManager assetManager;
     private final GpuResourceManager gpuResourceManager;
+    private final Dispatcher dispatcher;
+    private static final long CPU_DEFAULT_CACHE = 300 * Sizeable.MB;
+    private static final long GPU_DEFAULT_CACHE = 100 * Sizeable.MB;
 
     public ResourceManager() {
-        this(new AssetRegistry(), null);
+        this(new AssetRegistry(), null, CPU_DEFAULT_CACHE, GPU_DEFAULT_CACHE);
     }
 
     public ResourceManager(Dispatcher dispatcher) {
-        this(new AssetRegistry(), dispatcher);
+        this(new AssetRegistry(), dispatcher, CPU_DEFAULT_CACHE, GPU_DEFAULT_CACHE);
+    }
+
+    public ResourceManager(long cpuCacheSizeBytes, long gpuCacheSizeBytes) {
+        this(new AssetRegistry(), null, cpuCacheSizeBytes, gpuCacheSizeBytes);
     }
 
     public ResourceManager(String bakedOutputDir) {
-        this(new AssetRegistry(bakedOutputDir), null);
+        this(new AssetRegistry(bakedOutputDir), null, CPU_DEFAULT_CACHE, GPU_DEFAULT_CACHE);
     }
 
     public ResourceManager(String bakedOutputDir, Dispatcher dispatcher) {
-        this(new AssetRegistry(bakedOutputDir), dispatcher);
+        this(new AssetRegistry(bakedOutputDir), dispatcher, CPU_DEFAULT_CACHE, GPU_DEFAULT_CACHE);
     }
 
-    private ResourceManager(AssetRegistry registry, Dispatcher dispatcher) {
-        Dispatcher resourceManagerDispatcher = dispatcher == null ? this : dispatcher;
+    public ResourceManager(String bakedOutputDir, Dispatcher dispatcher, long cpuCacheSizeBytes, long gpuCacheSizeBytes) {
+        this(new AssetRegistry(bakedOutputDir), dispatcher, cpuCacheSizeBytes, gpuCacheSizeBytes);
+    }
+
+    private ResourceManager(AssetRegistry registry, Dispatcher dispatcher, long cpuCacheSizeBytes, long gpuCacheSizeBytes) {
+        this.dispatcher = dispatcher == null ? this : dispatcher;
         this.registry = registry;
         this.importer = new AssetImporter(registry);
-        this.assetManager = new AssetManager(registry, resourceManagerDispatcher);
-        this.gpuResourceManager = new GpuResourceManager(assetManager, resourceManagerDispatcher);
+        this.assetManager = new AssetManager(registry, this.dispatcher, cpuCacheSizeBytes);
+        this.gpuResourceManager = new GpuResourceManager(assetManager, this.dispatcher, gpuCacheSizeBytes);
         this.workQueue = new ConcurrentLinkedQueue<>();
     }
 
@@ -134,12 +147,26 @@ public class ResourceManager implements Dispatcher {
         }, callbackDispatcher::post);
     }
 
+    public void setCpuCacheMaxBytes(long newMax) {
+        this.dispatcher.post(() -> {
+            assetManager.cache.setMaxSizeBytes(newMax);
+        });
+    }
+
     public void synchronize() {
         Runnable runnable = workQueue.poll();
+        long start = Stopwatch.timeNow(TimeUnit.MICROSECONDS);
         while (runnable != null) {
             runnable.run();
+            if (Stopwatch.timeNow(TimeUnit.MICROSECONDS) - start >= 500) {
+                break;
+            }
             runnable = workQueue.poll();
         }
+    }
+
+    public int queuedTaskCount() {
+        return workQueue.size();
     }
 
     @Override

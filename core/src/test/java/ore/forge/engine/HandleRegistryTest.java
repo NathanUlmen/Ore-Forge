@@ -56,7 +56,6 @@ class HandleRegistryTest {
 
         registry.releaseHandle(handle);
 
-        assertTrue(resource.disposed);
         assertEquals(0, registry.size());
     }
 
@@ -70,12 +69,10 @@ class HandleRegistryTest {
         registry.releaseHandle(handle);
 
         assertEquals(1, registry.size());
-        assertTrue(!resource.disposed);
         assertSame(resource, registry.getResource(handle));
 
         registry.releaseHandle(handle);
 
-        assertTrue(resource.disposed);
         assertEquals(0, registry.size());
     }
 

@@ -16,7 +16,7 @@ public class ResourceSlot<E extends Disposable> implements Disposable {
     public E current;
     private final E placeHolder;
     private LoadState state;
-   
+
     public ResourceSlot(E placeHolder, LoadState state) {
         this.placeHolder = placeHolder;
         this.state = state;
@@ -28,10 +28,10 @@ public class ResourceSlot<E extends Disposable> implements Disposable {
     }
 
     public void resolve(E primaryResource) {
-        if (current == null) { 
+        if (current == null) {
             this.current = primaryResource;
         } else {
-            Gdx.app.log(LOG_STRING, "Attempted to set resouce that was already set." + this.toString());
+            Gdx.app.log(LOG_STRING, "Attempted to set resource that was already set." + this.toString());
         }
     }
 
@@ -42,7 +42,8 @@ public class ResourceSlot<E extends Disposable> implements Disposable {
     public LoadState getLoadState() {
         return state;
     }
-    public boolean isResolved() { 
+
+    public boolean isResolved() {
         return current != null;
     }
 

@@ -1,5 +1,6 @@
 package ore.forge.engine.resources;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.VertexAttributes;
 
 import java.util.Arrays;
@@ -39,8 +40,13 @@ public final class MeshData implements CpuAssetData {
 
     @Override
     public void dispose() {
-        vbo = null;
-        ibo = null;
+        if (vbo != null && ibo != null) {
+            vbo = null;
+            ibo = null;
+            Gdx.app.log("MeshData", "Disposed MeshData");
+        } else {
+            throw new IllegalStateException("MeshData was already disposed");
+        }
     }
 
     @Override

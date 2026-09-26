@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -77,7 +78,7 @@ class ResourceManagerLifecycleTest {
     void batchLoadLoadsCpuResourcesAndDispatchesOneCallback() throws Exception {
         ResourceManager manager = newManager();
         AssetID meshId = assetId(manager, AssetType.MESH);
-        AssetID secondMeshId = secondAssetId(manager, AssetType.MESH, meshId);
+        AssetID secondMeshId = secondAssetId(manager, meshId);
         RecordingDispatcher callbackDispatcher = new RecordingDispatcher();
         List<Collection<ResourceHandle<?>>> callbacks = new ArrayList<>();
 
@@ -157,19 +158,77 @@ class ResourceManagerLifecycleTest {
     }
 
     @Test
-    void loadReleaseLoadCreatesNewResource() throws Exception {
+    void releasedCpuAssetIsReusedFromCache() throws Exception {
         ResourceManager manager = newManager();
         AssetID id = meshId(manager);
+
         ResourceHandle<CpuAssetData> first = manager.acquireCpuDataAsync(id, null, null);
         await(manager, first);
-        long firstIdentity = first.handle().identity();
+        CpuAssetData data = manager.getCpuAsset(first.handle());
+        long firstHandleIdentity = first.handle().identity();
+
         manager.releaseCpuAsset(first);
         assertEquals(0, manager.activeCpuResources());
-        ResourceHandle<CpuAssetData> second = manager.acquireCpuDataAsync(id, null, null);
+
+        ResourceHandle<CpuAssetData> cached = manager.acquireCpuDataAsync(id, null, null);
+
+        assertTrue(cached.isReady());
+        assertNotEquals(firstHandleIdentity, cached.handle().identity());
+        assertSame(data, manager.getCpuAsset(cached.handle()));
+        assertEquals(1, manager.activeCpuResources());
+
+        manager.releaseCpuAsset(cached);
+    }
+
+    @Test
+    void cacheRetainsMultipleReleasedCpuAssets() throws Exception {
+        ResourceManager manager = newManager();
+        AssetID firstId = meshId(manager);
+        AssetID secondId = secondAssetId(manager, firstId);
+
+        ResourceHandle<CpuAssetData> first = manager.acquireCpuDataAsync(firstId, null, null);
+        ResourceHandle<CpuAssetData> second = manager.acquireCpuDataAsync(secondId, null, null);
+        await(manager, first);
         await(manager, second);
-        assertTrue(second.handle().identity() != firstIdentity);
-        assertNotNull(manager.getCpuAsset(second.handle()));
+        CpuAssetData firstData = manager.getCpuAsset(first.handle());
+        CpuAssetData secondData = manager.getCpuAsset(second.handle());
+
+        manager.releaseCpuAsset(first);
         manager.releaseCpuAsset(second);
+        assertEquals(0, manager.activeCpuResources());
+
+        ResourceHandle<CpuAssetData> cachedFirst = manager.acquireCpuDataAsync(firstId, null, null);
+        ResourceHandle<CpuAssetData> cachedSecond = manager.acquireCpuDataAsync(secondId, null, null);
+
+        assertTrue(cachedFirst.isReady());
+        assertTrue(cachedSecond.isReady());
+        assertSame(firstData, manager.getCpuAsset(cachedFirst.handle()));
+        assertSame(secondData, manager.getCpuAsset(cachedSecond.handle()));
+
+        manager.releaseCpuAsset(cachedFirst);
+        manager.releaseCpuAsset(cachedSecond);
+    }
+
+    @Test
+    void cacheStoresCpuAssetOnlyAfterLastHandleIsReleased() throws Exception {
+        ResourceManager manager = newManager();
+        AssetID id = meshId(manager);
+
+        ResourceHandle<CpuAssetData> first = manager.acquireCpuDataAsync(id, null, null);
+        await(manager, first);
+        ResourceHandle<CpuAssetData> second = manager.acquireCpuDataAsync(id, null, null);
+
+        manager.releaseCpuAsset(first);
+        assertEquals(1, manager.activeCpuResources());
+
+        ResourceHandle<CpuAssetData> stillActive = manager.acquireCpuDataAsync(id, null, null);
+        assertTrue(stillActive.isReady());
+        assertEquals(second.handle().identity(), stillActive.handle().identity());
+        assertEquals(1, manager.activeCpuResources());
+
+        manager.releaseCpuAsset(second);
+        manager.releaseCpuAsset(stillActive);
+        assertEquals(0, manager.activeCpuResources());
     }
 
     @Test
@@ -180,8 +239,8 @@ class ResourceManagerLifecycleTest {
 
         assertDoesNotThrow(() -> {
             manager.releaseCpuAsset(resource);
-            manager.releaseCpuAsset(resource);
         });
+        assertThrows(Exception.class, () -> manager.releaseCpuAsset(resource));
         assertEquals(0, manager.activeCpuResources());
     }
 
@@ -247,11 +306,11 @@ class ResourceManagerLifecycleTest {
         throw new AssertionError("Test fixture did not produce an asset of type " + type);
     }
 
-    private AssetID secondAssetId(ResourceManager manager, AssetType type, AssetID first) {
+    private AssetID secondAssetId(ResourceManager manager, AssetID first) {
         for (AssetID id : manager.getAssetIDs()) {
-            if (!id.equals(first) && manager.getAssetType(id) == type) return id;
+            if (!id.equals(first) && manager.getAssetType(id) == AssetType.MESH) return id;
         }
-        throw new AssertionError("Test fixture did not produce a second asset of type " + type);
+        throw new AssertionError("Test fixture did not produce a second asset of type " + AssetType.MESH);
     }
 
     @SuppressWarnings("unchecked")
